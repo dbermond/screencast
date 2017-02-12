@@ -1,0 +1,366 @@
+." screencast manpage
+.TH screencast "1" "February 2017" "version 1.0.0" "User Commands"
+.SH NAME
+\fBscreencast\fR - command line interface to record a X11 desktop
+.SH SYNOPSIS
+.nf
+\fBscreencast\fR [\fIoptions\fR] output
+\fBscreencast\fR [\fIoptions\fR] \fB\-u\fR
+.fi
+.PP
+The specified output filename must have an extension which in turn must be a
+supported container format.
+.SH DESCRIPTION
+\fBscreencast\fR is a command line interface to record a X11 desktop using
+FFmpeg. It's designed to make desktop recording a simple task, eliminating the
+somewhat complex FFmpeg command line arguments and the need of multiple
+commands. It uses predefined encoder settings that should be suitable for most
+needs. The default settings provides a quick and affordable way to record the
+desktop, letting the user to be focused on just specifying the desired video
+position and size. If the user doesn't want to stick with the default settings
+it is possible to choose among a set of supported encoders and container
+formats. 
+.PP
+\fBscreencast\fR not only provides an easy way to record your desktop, but it
+also has options to automatically add some effects to the recordings, like
+video fade-in / fade-out, text watermarking and volume increase.
+.SH OPTIONS
+Long options can be used with spaces or an equal sign ('='). For example,
+\fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
+.TP
+\fB\-o\fR, \fB\-\-output\-dir\fR=\fIDIR\fR
+.RS
+Set the output video to be saved in \fIDIR\fR. This is to be used with
+\fB\-u\fR option (if you want to specify a save directory when using automatic
+output filename choosing). When not using \fB\-u\fR option you can specify the
+output directory directly in the output filename.
+.PP
+default: the local directory
+.RE
+.TP
+\fB\-t\fR, \fB\-\-tmp\-dir\fR=\fIDIR\fR
+.RS
+Set temporary files to be placed in \fIDIR\fR. By default, the \fI/tmp\fR
+directory will be used for temporary files, which usually is a ramdisk
+filesystem in most systems. You may want to change it if you have limited RAM
+and/or are recording very long videos. Make sure to have enough free space in
+the specified directory.
+.PP
+default: /tmp
+.RE
+.TP
+\fB\-u\fR, \fB\-\-auto\-filename\fR
+.RS
+Auto choose output filename based on date and time. The output filename will
+have the following format:
+.PP
+.nf
+screencast-YEAR-MONTH-DAY_HOUR.MINUTE.SECOND.FORMAT
+.fi
+.RE
+.TP
+\fB\-p\fR, \fB\-\-position\fR=\fIN\fR,\fIN\fR
+.RS
+The screen position defining from where the recording will take place. These
+are X and Y offsets from the screen top left corner. Combined with \fB\-s\fR
+option it will define a rectangular desktop area that will be recorded.
+.PP
+default: 0,0 (screen top left corner)
+.RE
+.TP
+\fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
+.RS
+The video size. This is actually the video resolution. Combined with \fB\-p\fR
+option it will define a rectangular desktop area that will be recorded.
+.PP
+default: 640x480
+.RE
+.TP
+\fB\-r\fR, \fB\-\-fps\fR=\fIN\fR
+.RS
+Video framerate (frames per second - fps).
+.PP
+default: 25
+.RE
+.TP
+\fB\-f\fR, \fB\-\-format\fR=\fITYPE\fR
+.RS
+Container format of the output video. This is to be used with \fB\-u\fR option
+(if you want to specify a container format when using automatic output filename
+choosing). When not using \fB\-u\fR option you can specify the container format
+directly in the output filename.
+.PP
+.nf
+        default: mp4
+supported types: mp4, mkv, webm, ogg
+.fi
+.RE
+.TP
+\fB\-i\fR, \fB\-\-audio\-input\fR=\fINAME\fR
+.RS
+ALSA audio input device. When setted to \fInone\fR the audio will be disabled
+(video without audio, only video stream will be present). To determine possible
+audio input device names please see:
+.nf
+<https://trac.ffmpeg.org/wiki/Capture/ALSA>
+.fi
+.PP
+default: pulse
+.RE
+.TP
+\fB\-a\fR, \fB\-\-audio\-encoder\fR=\fINAME\fR
+.RS
+Audio encoder to be used to encode the recorded audio. When setted to
+\fInone\fR the audio will be disabled (video without audio, only video stream
+will be present).
+.PP
+.nf
+        default: aac
+supported types: aac, opus, vorbis, mp3/mp3lame, shine, none
+.fi
+.RE
+.TP
+\fB\-v\fR, \fB\-\-video\-encoder\fR=\fINAME\fR
+.RS
+Video encoder to be used to encode the recorded video. If using a NVIDIA
+hardware accelerated encoder please make sure that you have a NVIDIA graphics
+card that supports the choosed encoder.
+.PP
+.nf
+        default: x264
+supported types: x264, h264_nvenc, x265, kvazaar, hevc_nvenc, theora, vp8, vp9
+.fi
+.RE
+.TP
+\fB\-e\fR, \fB\-\-fade\fR=\fITYPE\fR
+.RS
+Video fade effect to be added to the recorded video. When setted to \fInone\fR
+the recorded video will have no fade effect.
+.PP
+.nf
+        default: none
+supported types: in, out, both, none
+.fi
+.RE
+.TP
+\fB\-m\fR, \fB\-\-volume\-factor\fR=\fIN\fR
+.RS
+Volume increase effect factor. This will increase the volume of the recorded
+audio. Normally, audio volume is low with default settings, even if you
+increse your microphone capture volume. Use this to give your videos a better
+hearing experience, letting your viewers fell more confortable to watch it
+whithout needing to rise their sound volume. It works as a percentage factor.
+For example, a value of \fI1.5\fR will increase volume by 50% and a value of
+\fI2.0\fR will double volume. When setted to \fI1.0\fR or \fI0.0\fR this effect
+is disabled.
+.PP
+default: 1.0
+.RE
+.TP
+\fB\-w\fR, \fB\-\-watermark\fR=\fITEXT\fR
+.RS
+Enable text watermarking, setting text to \fITEXT\fR. Although it is a text,
+it is generated as a PNG image so it can be integrated in the video.
+.PP
+default: disabled
+.RE
+.TP
+\fB\-k\fR, \fB\-\-wmark\-position\fR=\fIN\fR,\fIN\fR
+.RS
+Set text watermark position inside the video. These are X and Y offsets from
+the video top left corner (not from the screen). Combined with \fB\-z\fR option
+it will define a rectangular area in the video that will contain the text
+watermark image.
+.PP
+default: 970,10
+.RE
+.TP
+\fB\-z\fR, \fB\-\-wmark\-size\fR=\fIN\fRx\fIN\fR
+.RS
+Set text watermark size. Combined with \fB\-k\fR option it will define a
+rectangular area in the video that will contain the text watermark image.
+.PP
+default: 255x35
+.RE
+.TP
+\fB\-c\fR, \fB\-\-wmark\-font\fR=\fINAME\fR
+.RS
+Set text watermark font to \fINAME\fR.
+.PP
+.nf
+default: Arial
+   NOTE: if the default or setted font is not installed it will be auto choosed
+.fi
+.RE
+.TP
+\fB\-x\fR, \fB\-\-fixed\fR=\fIN\fR
+.RS
+Set the video to have a fixed length of \fIN\fR seconds. When setted to \fI0\fR
+this is disabled, meaning a indefinite video length that will be recorded until
+the user stops it by presing the \fIq\fR key in the terminal window.
+.PP
+default: 0
+.RE
+.TP
+\fB\-n\fR, \fB\-\-no\-notifications\fR
+Disable desktop notifications. Desktop notifications are shown by default,
+allowing a better visual control of the recording. Use this option to disable
+them.
+.TP
+\fB\-g\fR, \fB\-\-png\-optimizer\fR=\fINAME\fR
+.RS
+Use PNG optimizer \fINAME\fR and \fIadvdef\fR (advancecomp) in the PNG image
+generated by \fB\-w\fR option that will be used as a text watermark. This
+option is useful when you want to use a big text watermark in a big video,
+allowing the video to be a few bytes smaller. Not really needed if using
+default watermark settings with a small text. When setted to \fInone\fR PNG
+optimization is disabled.
+.PP
+.nf
+       default: none
+supported ones: truepng, pingo, optipng, opt-png, none
+.fi
+.RE
+.TP
+\fB\-l\fR, \fB\-\-list\fR
+List arguments supported by these options.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Help screen.
+.SH EXAMPLES
+Use all default settings:
+.RS
+.PP
+\fBscreencast\fR myvideo.mp4
+.RE
+.PP
+Use default settings for a 1280x720 video from screen positon 200,234 with
+auto choosen output filename:
+.RS
+.PP
+\fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-u\fR
+.RE
+.PP
+Changing just the container format without specifying encoders will make it to
+auto choose them. In this case, the 'webm' format will produce a video with
+opus and vp9 encoders:
+.RS
+.PP
+\fBscreencast\fR /home/user/webmvideos/myvideo.webm
+.RE
+.PP
+Specifying save dir and container format, with auto choosen encoders and 
+output filename. In this case, the 'ogg' format will produce a video with
+vorbis (libvorbis) and theora encoders:
+.PP
+.RS
+\fBscreencast\fR \fB\-o\fR /home/user/myvideos \fB\-f\fR ogg \fB\-u\fR
+.RE
+.PP
+1280x720 video from screen positon 200,234 , 30 fps, mp3 (libmp3lame) audio
+encoder, x265 video encoder, mkv container format, fade-in video effect, volume
+increase effect of 50%, small text watermark in top right video corner:
+.RS
+.PP
+\fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-r\fR 30 \fB\-a\fR
+mp3 \fB\-v\fR x265 \fB\-e\fR in \fB\-m\fR 1.5 \fB\-w\fR www.mysitehere.com
+myvideo.mkv
+.RE
+.PP
+\fINOTE\fR:
+.PP
+When not using the \fB\-x\fR option press the \fIq\fR key in terminal window to
+end the recording.
+.SH REQUIREMENTS
+The minimum requirement is a recent \fIFFmpeg\fR version compiled with support
+for x11grab and the desired encoders. For example, if you want to use \fIvp9\fR
+video encoder and \fIopus\fR audio encoder it will require \fIFFmpeg\fR to be
+compiled with support for x11grab, libvpx and libopus. It's advised to use
+\fIFFmpeg\fR version git master.
+.PP
+When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
+\fInone\fR) \fIFFmpeg\fR must have been compiled with support for ALSA audio.
+The default \fIpulse\fR setting for \fB\-i\fR option requires \fIFFmpeg\fR to
+be compiled with support for pulseaudio (libpulse) as well.
+.PP
+\fInotify\-send\fR (libnotify) is needed for desktop notifications. Note that
+desktop notifications are enabled by default. They can be disabled by using
+the \fB\-n\fR option, eliminating the need of \fInotify\-send\fR. Running
+\fBscreencast\fR in a system without \fInotify\-send\fR and without using the
+\fB\-n\fR option will result in error.
+.PP
+Other requirements are needed according to additional options that may be
+specified by the user:
+.RS
+.PP
+\fIFFprobe\fR and \fIbc\fR are needed for video fade effect (\fB\-e\fR option).
+.PP
+\fIImageMagick\fR is needed for text watermarking (\fB\-w\fR option). Both IM6
+and IM7 are supported, but IM7 is preferred.
+.PP
+At least one supported PNG optimizer and \fIadvdef\fR (advancecomp) are needed
+for PNG (watermark) optimization (\fB\-g\fR option).
+.RE
+.SH REMARKS
+\fBscreencast\fR uses a two step recording process. Firstly the audio and
+video are recorded to a lossless format and at a second stage it is encoded
+to produce the output video. That's why you see a desktop notification
+saying 'encoding...'. This two step mechanism allows a better video and avoids
+problems.
+.PP
+When using \fIaac\fR audio encoder (which is the default setting),
+\fBscreencast\fR will check if the detected FFmpeg build has support for 
+libfdk_aac and use it if present, otherwise it will use the FFmpeg built\-in
+AAC audio encoder. Make sure to have a recent FFmpeg version as older versions
+do not support the built\-in AAC audio encoder without being experimental, or
+do not support it at all.
+.PP
+FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example,
+libx264 is called \fIx264\fR in this program.
+.PP
+Although the \fIvorbis\fR audio encoder is mentioned in the options, it is made
+this way just for simplicity as mentioned right above. When the user selects
+the \fIvorbis\fR audio encoder \fBscreencast\fR uses the libvorbis FFmpeg
+encoder, which has a much superior quality than the FFmpeg built\-in vorbis
+encoder.
+.PP
+The \fImkv\fR container format is the only one that supports all audio and 
+video encoders. All other container formats have restrictions. \fBscreencast\fR
+will exit with error if an unsupported encoder is choosed for a given container
+format. For example, you cannot use the \fIopus\fR audio encoder with \fImp4\fR
+container format.
+.PP
+When using the \fImp4\fR container format, the moov atom will be automatically
+moved to the beginning of the output video file. This is the same as running
+\fIqt-faststart\fR in the output video and is useful for uploading it to
+streaming websites like \fIYouTube\fR.
+.PP
+The default settings for container format and audio/video encoders will produce
+a video that is ready to be uploaded to \fIYouTube\fR.
+.PP
+The default \fIpulse\fR audio input setting (\fB\-i\fR option) will be suitable
+for most users as it will use the default recording device configured in
+pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
+.PP
+\fIOxygen\fR icon names are used for displaying desktop notifications. Although
+not a requirement, \fIOxygen\fR icons are recommended to be installed for a
+better visual integration.
+.PP
+\fBscreencast\fR will try to play a notification sound when the encoding
+process is finished. For this, it will use \fIpaplay\fR (from \fIpulseaudio\fR)
+and a sound file from the freedesktop sound theme (usually a package called
+\fIsound-theme-freedesktop\fR in most Linux distributions). Although not a
+requirement, they are recommended to be installed for a better user experience.
+.SH BUGS
+None are known at the moment.
+.SH AUTHOR
+Daniel Bermond < yahoo\-com: danielbermond >
+.PP
+<https://github.com/bermond/screencast>
+.SH COPYRIGHT
+Copyright \(co 2015-2017 Daniel Bermond
+.SH LICENSE
+GNU General Public License version 2 (GPL2)
+<http://www.gnu.org/licenses/gpl-2.0.html>
+.SH SEE ALSO
+ffmpeg(1)

@@ -1,0 +1,1499 @@
+#!/bin/sh
+
+# screencast - POSIX-compliant shell script to record a X11 desktop
+#
+# Copyright (c) 2015-2017 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License version 2 for more details.
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# An online version of the GNU General Public License version 2 (GPL2)
+# can be found at: <http://www.gnu.org/licenses/gpl-2.0.html>.
+
+# program settings
+screencast_version="v1.0.0"
+screencast_website="https://github.com/bermond/screencast"
+
+# system related settings
+savedir="$(pwd)"             # path to save output files
+tmpdir="/tmp"                # path for temporary files
+queue_size="2048"            # ffmpeg thread queue size
+finish_sound="/usr/share/sounds/freedesktop/stereo/complete.oga"
+
+# control settings (controls various aspects)
+auto_filename="false"        # auto choose output filename based on date/time
+fade="none"                  # fade effect
+watermark="false"            # watermark effect (true, false)
+fixed_length="0"             # fixed length video in seconds (0 disable)
+volume_factor="1.0"          # volume increase effect factor (0.0/1.0 disable)
+notifications="true"         # desktop notifications
+audio_encoder="aac"          # audio encoder
+video_encoder="x264"         # video encoder
+audio_encoder_setted="false" # controls if audio encoder was setted by cmd line
+video_encoder_setted="false" # controls if video encoder was setted by cmd line
+format="mp4"                 # container format (file extension) for output
+
+# audio settings
+audio_input="pulse"
+audio_channel_layout="-channel_layout stereo"
+audio_general_options="-f alsa -thread_queue_size ${queue_size} \
+                       -ar 48000 -ac 2 ${audio_channel_layout}"
+audio_record_codec="-acodec pcm_s16le -ar 48000 -ac 2"
+audio_encode_codec_fdkaac="-acodec libfdk_aac -ab 128k -ar 44100 -ac 2"
+audio_encode_codec_aac="-acodec aac -ab 128k -ar 44100 -ac 2"
+audio_encode_codec_vorbis="-acodec libvorbis -qscale:a 4 -ar 44100 -ac 2"
+audio_encode_codec_opus="-acodec libopus -ab 128k -ar 48000 -ac 2"
+audio_encode_codec_mp3lame="-acodec libmp3lame -ab 128k -ar 44100 -ac 2"
+audio_encode_codec_shine="-acodec libshine -b 128k -ar 44100 -ac 2"
+
+#video settings
+video_rate="25"               # video framerate (fps)
+rec_extension="mkv"           # container format (file extension) for recording
+video_position="0,0" #200,234 # X and Y screen coordinates to record video from
+video_size="640x480"          # video size (resolution)
+video_general_options="-f x11grab -thread_queue_size ${queue_size} \
+                       -probesize 10M -show_region 1 -region_border 2"
+video_record_codec="ffv1"
+video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
+video_encode_codec_x264="libx264 -r ${video_rate} -crf 21 \
+                         -preset veryslow -pix_fmt yuv420p"
+video_encode_codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 \
+                               -preset slow -cq 10 -bf 2 -g 150 \
+                               -pix_fmt yuv420p"
+video_encode_codec_x265="libx265 -r ${video_rate} -crf 25 \
+                         -preset veryslow -pix_fmt yuv420p"
+video_encode_codec_kvazaar="libkvazaar -r ${video_rate} -kvazaar-params \
+                            preset=veryslow -pix_fmt yuv420p"
+video_encode_codec_hevc_nvenc="hevc_nvenc -r ${video_rate} \
+                               -preset slow -pix_fmt yuv420p"
+video_encode_codec_theora="libtheora -r ${video_rate} -qscale:v 5 \
+                           -pix_fmt yuv420p"
+video_encode_codec_vp8="libvpx -r ${video_rate} -crf 8 -vb 2M \
+                        -pix_fmt yuv420p"
+video_encode_codec_vp9="libvpx-vp9 -r ${video_rate} -crf 30 \
+                        -vb 0 -pix_fmt yuv420p -speed 0"
+
+# watermark settings
+watermark_size="255x35"
+watermark_position="0,0"
+watermark_font="Arial"
+watermark_text="www.bmftrader.com"
+    # good position values for hd720p (1280x720) with default watermark size:
+    # 500,650 - centralized
+    # 970,10  - top right corner
+    # 970,650 - bottom right corner
+    # 10,650  - bottom left corner
+
+# png (watermark) optimization settings
+pngoptimizer="none"      # truepng, pingo, optipng, opt-png, none
+useadvdef="false"        # true, false
+truepngsettings="-o max"
+pingosettings="-s4"
+optipngsettings="-o 7"
+advdefsettings="-z4i10"
+
+# video fade settings
+vfade_color="black"      # color to be used by the video fade effect
+vfade_length="0.6"       # length (in seconds) of video fade effect itself
+vfade_solid_length="0.1" # solid color length (in seconds) of video fade effect
+
+# supported arguments (for use with '--list' ('-l'))
+supported_fade="in, out, both, none"
+supported_formats="mp4, mkv, webm, ogg"
+supported_aencoders="aac, opus, vorbis, mp3/mp3lame, shine, \
+                     none"
+supported_vencoders="x264, h264_nvenc, x265, kvazaar, \
+                     hevc_nvenc, theora, vp8, vp9"
+supported_pngopt="truepng, pingo, optipng, opt-png, none"
+
+#########################################
+#              functions                #
+#########################################
+
+# cleanup function: delete temporary files
+# arguments: none
+cleanup() {
+    rm --force "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
+    rm --force "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+}
+
+# show_header function: show program header
+# arguments: none
+show_header() {
+    printf "%s"   "screencast ${screencast_version} - "
+    printf "%s\n" "Command line interface to record a X11 desktop"
+    printf "%s"   "Copyright (c) 2015-$(date +%Y) "
+    printf "%s\n" "Daniel Bermond"
+    printf "%s\n" "$screencast_website"
+}
+
+# help function
+# arguments: none
+show_help() {
+    show_header
+    printf "%s\n" ""
+    printf "%s\n" "Usage: screencast [options] <output>"
+    printf "%s\n" "                  [options] -u"
+    printf "%s\n" ""
+    printf "%s"   "  -o, --output-dir=DIR     "
+    printf "%s\n" "save videos to DIR (to use with -u)"
+    printf "%s"   "  -t, --tmp-dir=DIR        "
+    printf "%s\n" "use DIR for temporary files [${tmpdir}]"
+    printf "%s"   "  -u, --auto-filename      "
+    printf "%s\n" "auto choose output filename based on date/time"
+    printf "%s"   "  -p, --position=N,N       "
+    printf "%s"  "recording position (screen XY top left offsets) "
+    printf "%s\n" "[${video_position}]"
+    printf "%s"   "  -s, --size=NxN           "
+    printf "%s\n" "video size (resolution) [${video_size}]"
+    printf "%s"   "  -r, --fps=N              "
+    printf "%s\n" "video framerate (fps) [${video_rate}]"
+    printf "%s"   "  -f, --format=TYPE        "
+    printf "%s\n" "container format (to use with -u) [${format}]"
+    printf "%s"   "  -i, --audio-input=NAME   "
+    printf "%s\n" "audio input device [${audio_input#* }]"
+    printf "%s"   "  -a, --audio-encoder=NAME "
+    printf "%s\n" "audio encoder [${audio_encoder}]"
+    printf "%s"   "  -v, --video-encoder=NAME "
+    printf "%s\n" "video encoder [${video_encoder}]"
+    printf "%s"   "  -e, --fade=TYPE          "
+    printf "%s\n" "video fade effect [${fade}]"
+    printf "%s"   "  -m, --volume-factor=N    "
+    printf "%s"   "volume increase effect factor (1.0 disable) "
+    printf "%s\n" "[${volume_factor}]"
+    printf "%s"   "  -w, --watermark=TEXT     "
+    printf "%s\n" "enable and set text watermark [disabled]"
+    printf "%s"   "  -k, --wmark-position=N,N "
+    printf "%s"   "watermark position (video XY top left offsets) "
+    printf "%s\n" "[${watermark_position}]"
+    printf "%s"   "  -z, --wmark-size=NxN     "
+    printf "%s\n" "watermark image size [${watermark_size}]"
+    printf "%s"   "  -c, --wmark-font=NAME    "
+    printf "%s\n" "watermark font [${watermark_font}]"
+    printf "%s"   "  -x, --fixed=N            "
+    printf "%s"   "fixed video length for N seconds (0 disable) "
+    printf "%s\n" "[${fixed_length}]"
+    printf "%s"   "  -n, --no-notifications   "
+    printf "%s\n" "disable desktop notifications"
+    printf "%s"   "  -g, --png-optimizer=NAME "
+    printf "%s\n" "use png (watermark) optimizer and advdef [${pngoptimizer}]"
+    printf "%s"   "  -l, --list               "
+    printf "%s\n" "list arguments supported by these options"
+    printf "%s"   "  -h, --help               "
+    printf "%s\n" "this help screen"
+    printf "%s\n" ""
+    printf "%s\n" "For further help run 'man screencast'"
+}
+
+# notify function: show a desktop notification if setted to do so
+# arguments: $1 - urgency level (low, normal, critial)
+#            $2 - duration in milliseconds
+#            $3 - icon name
+#            $4 - text message
+notify() {
+    if [ "$notifications" = "true" ] 
+    then
+        notify-send \
+            --urgency="$1" \
+            --expire-time="$2" \
+            --icon="$3" \
+            "screencast" "$4"
+    fi
+}
+
+# check_requirements function: check if required programs are installed
+# arguments: none
+check_requirements() {
+    # note: although bc is defined by POSIX, some GNU/Linux distributions
+    #       does not include it by default (e.g.: Arch Linux)
+    for requirement in notify-send ffmpeg ffprobe bc convert magick \
+                       "$pngoptimizer" advdef
+    do
+        # skip disabled components (unnecessary checks)
+        if {
+               {
+                   [ "$requirement"  = "ffprobe" ] ||
+                   [ "$requirement"  = "bc"      ] ;
+               } &&
+               [ "$fade"         = "none"  ] ;
+           } ||
+           {
+               {
+                   [ "$requirement"  = "convert" ] ||
+                   [ "$requirement"  = "magick"  ] ;
+               } &&
+               [ "$watermark"    = "false"  ] ;
+           } ||
+           {
+               [ "$requirement"  = "$pngoptimizer" ] &&
+               [ "$pngoptimizer" = "none"          ] ;
+           } ||
+           {
+               [ "$requirement"  = "advdef" ] &&
+               [ "$useadvdef"    = "false"  ] ;
+           } ||
+           {
+               [ "$requirement"  = "notify-send" ] &&
+               [ "$notifications" = "false"      ] ;
+           }
+        then
+            continue
+        fi
+        
+        case "$requirement" in
+            notify-send)
+                request_string=" "
+                installname="${requirement} (libnotify) (or use '-n')"
+                ;;
+            ffmpeg)
+                request_string=" "
+                installname="ffmpeg (version git master preferred)"
+                ;;
+            ffprobe)
+                request_string=" video fade effect was requested but "
+                installname="ffprobe (ffmpeg) (version git master preferred)"
+                ;;
+            bc)
+                request_string=" video fade effect was requested but "
+                installname="$requirement"
+                ;;
+            convert|magick)
+                request_string=" text watermark was requested but "
+                installname="ImageMagick (IM7 preferred)"
+                ;;
+            "$pngoptimizer")
+                request_string=" png optimization was requested but "
+                installname="${requirement}"
+                ;;
+            advdef)
+                request_string=" png optimization was requested but "
+                installname="${requirement} (advancecomp)"
+                ;;
+            *)
+                request_string=" "
+                installname="$requirement"
+                ;;
+        esac
+        
+        which "$requirement" >/dev/null 2>&1 ||
+        {
+            if [ "$requirement"  = "magick" ] 
+            then
+                # in this case IM6 was found because 'convert' goes first
+                magick() {
+                    convert "$@"
+                }
+                continue
+            else
+                message="error:${request_string}'${requirement}' was not found"
+                printf "%s\n" "$message" >&2
+                printf "%s\n" "       please install ${installname}" >&2
+                if [ "$requirement" != "notify-send" ] 
+                then
+                    notify "critical" "5000" "process-stop" "$message"
+                fi
+                exit 1
+            fi ;
+        }
+    done
+}
+
+# command_error function: print an error message regarding invalid command
+#                         line arguments, show notification and exit with error
+# arguments: $1 - command line option name (e.g.: "--fade (-e)")
+command_error() {
+    message="error: ${1} option requires an argument"
+    printf "%s\n%s%s\n" \
+           "$message" \
+           "       if you need help run 'screencast --help' " \
+           "or 'man screencast'" >&2
+    notify "critical" "5000" "process-stop" "$message"
+    exit 1
+}
+
+# exit_program: print an error message to stderr, a desktop notification
+#               (if it is enabled) and exit with error
+# arguments: $1 - error message to print/notificate
+exit_program() {
+    printf "%s\n%s%s\n" \
+           "error: ${1}" \
+           "       if you need help run 'screencast --help' " \
+           "or 'man screencast'" >&2
+    notify "critical" "5000" "process-stop" "error: $1"
+    exit 1
+}
+
+# remove_spaces function: a sed command pipe to remove two or more spaces
+# arguments: none
+remove_spaces() {
+    sed 's/[[:space:]][[:space:]]\+/ /'
+}
+
+# list_supported function: print a list of arguments supported by this program
+# arguments: none
+list_supported() {
+    show_header
+    printf "%s\n" ""
+    printf "%s\n" " Supported arguments:"
+    printf "%s\n" ""
+    printf "%s"   "  -f, --format                "
+    printf "%s\n" "$(printf "%s" "$supported_formats")"
+    printf "%s"   "  -a, --audio-encoder         "
+    printf "%s\n" "$(printf "%s" "$supported_aencoders" | remove_spaces)"
+    printf "%s"   "  -v, --video-encoder         "
+    printf "%s\n" "$(printf "%s" "$supported_vencoders" | remove_spaces)"
+    printf "%s"   "  -e, --fade                  "
+    printf "%s\n" "$(printf "%s" "$supported_fade")"
+    printf "%s"   "  -g, --png-optimizer         "
+    printf "%s\n" "$(printf "%s" "$supported_pngopt")"
+    printf "%s\n" ""
+    printf "%s"   "  NOTE: selecting vorbis audio encoder does not use "
+    printf "%s\n" "the low quality FFmpeg "
+    printf "%s"   "        built-in vorbis encoder but the high quality "
+    printf "%s\n" "libvorbis one."
+    printf "%s\n" ""
+    printf "%s"   "  NOTE: mkv is the only container format that supports "
+    printf "%s\n" "all audio and video "
+    printf "%s" "        encoders. Restrictions apply to other container "
+    printf "%s\n" "formats."
+}
+
+# parse_cmd_line function: parse command line arguments and adjust variables
+# arguments: $1 - the positional parameters passed with double quotes ("$@")
+parse_cmd_line() {
+    shift_count="0" # counts how many 'shift' commands were executed
+    
+    while :; do
+        # since this is a very long case statement only the first block will
+        # be commented. almost all other blocks follows the same sequence/logic
+        # and comments will be inserted only for what is different.
+        case $1 in
+            # short option and long option without '='
+            -i|--audio-input)
+                # search for an argument
+                if [ "$2" ] 
+                then
+                    # errors out if no argument was entered after the option
+                    # (will check for a leading '-' in the next parameter,
+                    #  meaning that another option was found)
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--audio-input (-i)"
+                    else
+                        audio_input="${2}" # assign value to corresponding var
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                # errors out if no argument is found
+                else
+                    command_error "--audio-input (-i)"
+                fi
+                ;;
+            # long option with '='
+            --audio-input=?*)
+                audio_input="${1#*=}" # assign value after '='
+                ;;
+            # errors out if a long option with '=' has nothing folling the '='
+            --audio-input=)
+                command_error "--audio-input (-i)"
+                ;;
+            
+            -o|--output-dir)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--output-dir (-o)"
+                    else
+                        savedir="${2%/}" # remove ending '/' if present
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--output-dir (-o)"
+                fi
+                ;;
+            --output-dir=?*)
+                savedir="${1#*=}"
+                savedir="${savedir%/}" # remove ending '/' if present
+                ;;
+            --output-dir=)
+                command_error "--output-dir (-o)"
+                ;;
+            
+            -t|--tmp-dir)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--tmp-dir (-t)"
+                    else
+                        tmpdir="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--tmp-dir (-t)"
+                fi
+                ;;
+            --tmp-dir=?*)
+                tmpdir="${1#*=}"
+                ;;
+            --tmp-dir=)
+                command_error "--tmp-dir (-t)"
+                ;;
+            
+            -p|--position)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--position (-p)"
+                    else
+                        video_position="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--position (-p)"
+                fi
+                ;;
+            --position=?*)
+                video_position="${1#*=}"
+                ;;
+            --position=)
+                command_error "--position (-p)"
+                ;;
+            
+            -s|--size)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--size (-s)"
+                    else
+                        video_size="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--size (-s)"
+                fi
+                ;;
+            --size=?*)
+                video_size="${1#*=}"
+                ;;
+            --size=)
+                command_error "--size (-s)"
+                ;;
+            
+            -r|--fps)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--fps (-r)"
+                    else
+                        video_rate="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--fps (-r)"
+                fi
+                ;;
+            --fps=?*)
+                video_rate="${1#*=}"
+                ;;
+            --fps=)
+                command_error "--fps (-r)"
+                ;;
+            
+            -u|--auto-filename) # option without argument
+                auto_filename="true"
+                ;;
+            
+            -f|--format)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--format (-f)"
+                    else
+                        format="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--format (-f)"
+                fi
+                ;;
+            --format=?*)
+                format="${1#*=}"
+                ;;
+            --format=)
+                command_error "--format (-f)"
+                ;;
+            
+            -a|--audio-encoder)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--audio-encoder (-a)"
+                    else
+                        audio_encoder="$2"
+                        audio_encoder_setted="true"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--audio-encoder (-a)"
+                fi
+                ;;
+            --audio-encoder=?*)
+                audio_encoder="${1#*=}"
+                audio_encoder_setted="true"
+                ;;
+            --audio-encoder=)
+                command_error "--audio-encoder (-a)"
+                ;;
+            
+            -v|--video-encoder)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--video-encoder (-v)"
+                    else
+                        video_encoder="$2"
+                        video_encoder_setted="true"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--video-encoder (-v)"
+                fi
+                ;;
+            --video-encoder=?*)
+                video_encoder="${1#*=}"
+                video_encoder_setted="true"
+                ;;
+            --video-encoder=)
+                command_error "--video-encoder (-v)"
+                ;;
+            
+            -e|--fade)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--fade (-e)"
+                    else
+                        fade="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--fade (-e)"
+                fi
+                ;;
+            --fade=?*)
+                fade="${1#*=}"
+                ;;
+            --fade=)
+                command_error "--fade (-e)"
+                ;;
+            
+            -m|--volume-factor)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--volume-factor (-u)"
+                    else
+                        volume_factor="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--volume-factor (-m)"
+                fi
+                ;;
+            --volume-factor=?*)
+                volume_factor="${1#*=}"
+                ;;
+            --volume-factor=)
+                command_error "--volume-factor (-m)"
+                ;;
+            
+            -w|--watermark)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--watermark (-w)"
+                    else
+                        watermark="true"
+                        watermark_text="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--watermark (-w)"
+                fi
+                ;;
+            --watermark=?*)
+                watermark="true"
+                watermark_text="${1#*=}"
+                ;;
+            --watermark=)
+                command_error "--watermark (-w)"
+                ;;
+            
+            -z|--wmark-size)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--wmark-size (-z)"
+                    else
+                        watermark_size="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--wmark-size (-z)"
+                fi
+                ;;
+            --wmark-size=?*)
+                watermark_size="${1#*=}"
+                ;;
+            --wmark-size=)
+                command_error "--wmark-size (-z)"
+                ;;
+            
+            -k|--wmark-position)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--wmark-position (-k)"
+                    else
+                        watermark_position="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--wmark-position (-k)"
+                fi
+                ;;
+            --wmark-position=?*)
+                watermark_position="${1#*=}"
+                ;;
+            --wmark-position=)
+                command_error "--wmark-position (-k)"
+                ;;
+            
+            -c|--wmark-font)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--wmark-font (-c)"
+                    else
+                        watermark_font="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--wmark-font (-c)"
+                fi
+                ;;
+            --wmark-font=?*)
+                watermark_font="${1#*=}"
+                ;;
+            --wmark-font=)
+                command_error "--wmark-font (-c)"
+                ;;
+            
+            -x|--fixed)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--fixed (-x)"
+                    else
+                        fixed_length="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--fixed (-x)"
+                fi
+                ;;
+            --fixed=?*)
+                fixed_length="${1#*=}"
+                ;;
+            --fixed=)
+                command_error "--fixed (-x)"
+                ;;
+            
+            -n|--no-notifications)  # option without argument
+                notifications="false"
+                ;;
+            
+            -g|--png-optimizer)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--png-optimizer (-g)"
+                    else
+                        pngoptimizer="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--png-optimizer (-g)"
+                fi
+                ;;
+            --png-optimizer=?*)
+                pngoptimizer="${1#*=}"
+                ;;
+            --png-optimizer=)
+                command_error "--png-optimizer (-g)"
+                ;;
+            
+            -l|--list)  # option without argument
+                list_supported
+                exit 0
+                ;;
+            
+            -h|-\?|--help)  # option without argument
+                show_help
+                exit 0
+                ;;
+            
+            --)   # check for the end of options marker '--'
+                shift && shift_count="$((shift_count + 1))"
+                break
+                ;;
+            
+            -?*=?*) # unknown option with '=', handle argument also with '='
+                printf "%s\n" "error: unknown option \"${1%%=*}\"" >&2
+                exit 1
+                ;;
+            
+            -?*=) # unknown option with '='
+                printf "%s\n" "error: unknown option \"${1%=*}\"" >&2
+                exit 1
+                ;;
+            
+            -?*)
+                printf "%s\n" "error: unknown option \"${1}\"" >&2
+                exit 1
+                ;;
+            
+            *)    # no more options left
+                break
+        esac
+        shift && shift_count="$((shift_count + 1))"
+done            
+}
+
+# check_ffmpeg_format function: check if detected ffmpeg build has support
+#                               for a given format
+# arguments: $1 - format generic name
+# arguments: $2 - format specific name
+# reutrn code: 0 - detected ffmpeg build has support for desired format
+#              1 - detected ffmpeg build has no support for desired format
+check_ffmpeg_format() {
+    if ! { ffmpeg -formats -v quiet | grep -q ".*${1}[[:space:]]*${2}.*" ; }
+    then
+            printf "%s"   "error: " >&2
+            printf "%s"   "the detected ffmpeg build in $(which ffmpeg) " >&2
+            printf "%s\n" "has no support for ${2}" >&2
+            printf "%s"   "       please install a ffmpeg build with " >&2
+            printf "%s\n" "support for ${2}" >&2
+            notify "critical" "5000" "process-stop" \
+                   "error: ${2} is not supported by your ffmpeg build"
+            return 1
+    fi
+}
+
+# check_ffmpeg_encoder function: check if detected ffmpeg build has support
+#                                for a given encoder
+# arguments: $1 - encoder generic name
+# arguments: $2 - encoder specific name
+# reutrn code: 0 - detected ffmpeg build has support for desired encoder
+#              1 - detected ffmpeg build has no support for desired encoder
+check_ffmpeg_encoder() {
+    if ! { ffmpeg -codecs -v quiet | grep -q ".*${1}.*encoders:.*${2}.*" ; }
+    then
+        if [ "$2" != "libfdk_aac" ] 
+        then
+            printf "%s"   "error: " >&2
+            printf "%s"   "the detected ffmpeg build in $(which ffmpeg) " >&2
+            printf "%s\n" "has no support for ${2}" >&2
+            printf "%s"   "       please install a ffmpeg build with " >&2
+            printf "%s\n" "support for ${2}" >&2
+            notify "critical" "5000" "process-stop" \
+                   "error: ${2} is not supported by your ffmpeg build"
+        fi
+        return 1
+    fi
+}
+
+# randomstr function: generate a random string
+# arguments: $1 - desired string length
+randomstr() {
+    if [ -c "/dev/urandom" ] 
+    then
+        rnd="$(LC_CTYPE=C tr -dc '[:alnum:]' < /dev/urandom | head -c"$1")"
+    elif [ -x "$(which shuf 2>/dev/null)" ] 
+    then
+        alphanum="a b c d e f g h i j k l m n o p q r s t u v w x y z \
+                  A B C D E F G H Y J K L M N O P Q R S T U V W X Y Z \
+                  0 1 2 3 4 5 6 7 8 9"
+        # redirect stderr to /dev/null to avoid a warning in some bash versions
+        { rnd="$(printf "%s" "$(shuf -ez -n"$1" "$alphanum")")"; } 2>/dev/null
+    elif [ -x "$(which pwgen 2>/dev/null)" ] 
+    then
+        rnd="$(pwgen -cns "$1" 1)"
+    elif [ -x "$(which openssl 2>/dev/null)" ] 
+    then
+        rnd="$(openssl rand -hex "$1" | cut -c-"$1")"
+    else
+        rnd="$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
+        while [ "$(printf "%s" "$rnd" | wc -m)" -lt "$1" ] 
+        do
+            sleep 1
+            rnd="$rnd""$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
+        done
+        rnd="$(printf "%s" "$rnd" | cut -c-"$1")"
+    fi
+    
+    printf "%s" "$rnd"
+}
+
+# optimizepng function: optimize a PNG image with predefined settings
+# arguments  : $1 - png image file
+# return code:  0 - predefined command was executed
+#               1 - not a PNG image, predefined command not executed
+#             note: it will not check if optimization command worked correctly
+# note: original image will be modified (make a backup if needed)
+optimizepng() {
+    # check if file is a PNG image
+    if file "$1" | grep -q 'PNG image data'
+    then
+        case "$pngoptimizer" in
+            truepng)
+                truepng "$truepngsettings" "$1"
+                ;;
+            pingo)
+                pingo "$pingosettings" "$1"
+                ;;
+            optipng)
+                optipng "$optipngsettings" "$1"
+                ;;
+            opt-png)
+                opt-png "$1"
+                ;;
+            none)
+                :
+                ;;
+        esac
+        
+        # use advdef if setted to be used (-w / --watermark)
+        if [ "$useadvdef" = "true" ] 
+        then
+            advdef "$advdefsettings" "$1"
+        fi
+    
+    else
+        printf "%s\n" "error: invalid image format (must be PNG)" >&2
+        return 1
+    fi
+}
+
+# create_watermark function: create a watermark and set watermark options
+#                            to be passed to ffmpeg command
+# arguments: none
+create_watermark() {
+    wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
+    
+    # get font pointsize
+    watermark_pointsize="$(magick \
+                               -size "$watermark_size" \
+                               -font "$watermark_font" \
+                               label:"$watermark_text" \
+                               -format '%[label:pointsize]' \
+                               info: 2>/dev/null)"
+    
+    # generate the watermark
+    magick \
+        -size "$watermark_size" \
+        -font "$watermark_font" \
+        -pointsize "$watermark_pointsize" \
+        -gravity center \
+        \( \
+            xc:grey30 \
+            -draw "fill gray70  text 0,0  '${watermark_text}'" \
+        \) \
+        \( \
+            xc:black \
+            -draw "fill white  text  1,1  '${watermark_text}'  \
+                               text  0,0  '${watermark_text}'  \
+                   fill black  text -1,-1 '${watermark_text}'" \
+            -alpha Off \
+        \) \
+        -alpha Off \
+        -compose copy-opacity \
+        -composite \
+        -trim \
+        +repage \
+        "$wmark_image"
+        
+    # optimize PNG image file
+    optimizepng "$wmark_image"
+    
+    watermark_options="-r ${video_rate} \
+                       -thread_queue_size ${queue_size} \
+                       -i ${wmark_image} \
+                       -filter_complex overlay=${watermark_position}"
+}
+
+# video_fade function: sets video fade options to be passed to ffmpeg command
+# arguments: none
+videofade() {
+    # get recorded video length in seconds
+    tmp_1stpart="screencast-tmpvideo-${$}-"  # split large line
+    tmp_2ndpart="${randomstring_rec}.${rec_extension}"
+    videolength="$(ffprobe \
+                    -i "${tmpdir}/${tmp_1stpart}${tmp_2ndpart}" \
+                    -show_entries format=duration \
+                    -v quiet \
+                    -of csv="p=0")"
+    
+    # set start time of fade-out in seconds
+    total_vfadeout="$(printf "%s\n" "${vfade_length} + \
+                                     ${vfade_solid_length}" | bc)"
+    vfadeoutstart="$(printf "%s\n" "${videolength} - ${total_vfadeout}" | bc)"
+    
+    # build ffmpeg fade in/out options
+    fadein="fade=type=in:start_time=${vfade_solid_length}"       # split large line
+    fadein="${fadein}:duration=${vfade_length}"
+    fadein="${fadein}:color=${vfade_color}"
+    fadeout="fade=type=out:start_time=${vfadeoutstart}" # split large line
+    fadeout="${fadeout}:duration=${vfade_length}"
+    fadeout="${fadeout}:color=${vfade_color}"
+    
+    # check the choosed fade type and set ffmpeg fade options if necessary
+    case "$fade" in
+        in)
+            fade_options="-vf $fadein"
+            ;;
+        out)
+            fade_options="-vf $fadeout"
+            ;;
+        both)
+            fade_options="-vf ${fadein},${fadeout}"
+            ;;
+    esac
+}
+
+#########################################
+#            program start              #
+#########################################
+
+trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
+
+# enable some options if the executing shell is zsh
+if [ -n "$ZSH_VERSION" ] 
+then
+    which setopt >/dev/null 2>&1 ||
+    {
+        exit_program \
+            "script appears to running in zsh but setopt was not found";
+    }
+    setopt SH_WORD_SPLIT  # enable variable word splitting
+fi
+
+parse_cmd_line "$@"  # parse command line arguments
+shift "$shift_count" # destroy all arguments except a possible output filename
+
+# check for a valid png optimizer (-g/--png-optimizer)
+case "$pngoptimizer" in
+    truepng|pingo|optipng|opt-png)
+        useadvdef="true"
+        ;;
+    none)
+        :
+        ;;
+    *)
+        exit_program \
+        "'$pngoptimizer' is not a valid PNG optimizer for this program"
+        ;;
+esac
+
+check_requirements  # check if binary requirements are installed
+
+# check if the detected ffmpeg build has support for basic recording formats
+check_ffmpeg_format "x11grab" "X11"  || exit 1
+if [ "$audio_input"   != "none" ] &&
+   [ "$audio_encoder" != "none" ] 
+then
+    check_ffmpeg_format "alsa" "ALSA audio" || exit 1
+    if [ "$audio_input" = "pulse" ] 
+    then
+        check_ffmpeg_format "pulse" "Pulse audio" || exit 1
+    fi
+fi
+
+# adjust audio input variable with user input
+case "$audio_input" in
+    none)  # video without audio
+        #disable all audio options (audio will not be recorded)
+        audio_input=""
+        audio_channel_layout=""
+        audio_general_options=""
+        audio_record_codec=""
+        audio_encoder="none"
+        ;;
+    *)
+        audio_input="-i ${audio_input}"
+        ;;
+esac
+
+# if '-u' is not set, make some needed checks and settings
+if [ "$auto_filename" = "false" ] 
+then
+    # check if user have not entered an output filename after the options
+    if [ "$#" -eq "0" ] 
+    then
+        exit_program \
+            "you must enter an output filename with extension (or use '-u')"
+    fi
+    
+    # if user specified a save directory directly with output filename that
+    # is different than the current working directory, use it
+    # ('-o' setting will be discarded if it was also specified in command line)
+    if [ "$(dirname "$1")" != "." ] 
+    then
+        savedir="$(dirname "$1")"
+    fi
+    
+    # if user specified './' as a save directory directly with output
+    # filename, use it ('pwd' makes the program output more clear)
+    # ('-o' setting will be discarded if it was also specified in command line)
+    if { printf "%s" "$1" | grep -q '^\./.*' ; }
+    then
+        savedir="$(pwd)"
+    fi
+    
+    # the case that user specifies '../' as a save directory directly with output
+    # filename is already covered above in 'if [ "$(dirname "$1")" != "." ]'.
+    # here we just use 'dirname "$(pwd)"' to make the program output more clear
+    # ('-o' setting will be discarded if it was also specified in command line)
+    if { printf "%s" "$1" | grep -q '^\.\./.*' ; }
+    then
+        savedir="$(printf "%s" "$(dirname "$(pwd)")")"
+    fi
+    
+    # get output filename extension and assign to container format
+    tmpstr="$(basename "$1")"
+    tmpstr="${tmpstr##*/}"
+    output_extension="${tmpstr##*.}"
+    format="$output_extension"
+# if '-u' is set, don't allow to set an output filename in command line
+else
+    if [ "$#" -gt "0" ] 
+    then
+        exit_program \
+            "--auto-filename ('-u') does not allow to set an output filename"
+    fi
+fi
+
+# check if user entered tilde ('~') as a starting character of $savedir
+# ('~' will not expand to $HOME in ffmpeg command line)
+case "$savedir" in
+    "~")
+        savedir="$HOME"
+        ;;
+    "~"*)
+        savedir="${HOME}${savedir#~}"
+        ;;
+    *)
+        :
+        ;;
+esac
+
+# check if user entered tilde ('~') as a starting character of $tmpdir
+# ('~' will not expand to $HOME in ffmpeg command line)
+case "$tmpdir" in
+    "~")
+        tmpdir="$HOME"
+        ;;
+    "~"*)
+        tmpdir="${HOME}${tmpdir#~}"
+        ;;
+    *)
+        :
+        ;;
+esac
+
+# check for valid output and tmp directories (-o/--output-dir and -t/--tmp-dir)
+for directory in "$savedir" "$tmpdir"
+do
+    # check if the entered $savedir/$tmpdir already exists and mkdir dir if not
+    if ! [ -e "$directory" ] 
+    then
+        mkdir -p "$savedir" 2>/dev/null ||
+        {
+            exit_program "failed to create save direcotry '${savedir}'";
+        }
+    fi
+    
+    # check if the entered $savedir/$tmpdir is a directory
+    if [ -d "$directory" ] 
+    then
+        # check if the entered $savedir/$tmpdir has write permission
+        if ! [ -w "$directory" ] 
+        then
+            exit_program "no write permission for directory '${directory}'"
+        fi
+    else
+        exit_program "'${directory}' is not a directory"
+    fi
+done
+
+# check for a valid screen position format to record (N,N) (-p/--position)
+if ! { printf "%s" "$video_position" | grep -Eq '^[0-9]+,[0-9]*$' ; }
+then
+    exit_program "'${video_position}' is not a valid screen position format"
+fi
+
+# check for a valid video size format (NxN) (-s/--size)
+if ! { printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' ; }
+then
+    exit_program "'${video_size}' is not a valid video size format"
+fi
+
+# check if entered framerate (fps) is a valid integer/float number (-r/--fps)
+if ! { printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
+then
+    exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+fi
+
+# check if a valid container format was selected (-f/--format) and change 
+# audio/video encoder for some needed formats if not setted by command line
+case "$format" in
+    mp4)
+        faststart="-movflags +faststart"
+        ;;
+    mkv)
+        :  # no action needed for 'mkv' format
+        ;;
+    webm)
+        if [ "$auto_filename" = "false" ] 
+        then
+            if [ "$audio_encoder_setted" = "false" ] 
+            then
+                audio_encoder="opus"
+            fi
+            if [ "$video_encoder_setted" = "false" ] 
+            then
+                video_encoder="vp9"
+            fi
+        fi
+        ;;
+    ogg)
+        if [ "$auto_filename" = "false" ] 
+        then
+            if [ "$audio_encoder_setted" = "false" ] 
+            then
+                audio_encoder="vorbis"
+            fi
+            if [ "$video_encoder_setted" = "false" ] 
+            then
+                video_encoder="theora"
+            fi
+        fi
+        ;;
+    *)
+        message="'${format}' is not a valid container \
+                 format for this program"
+        exit_program "$(printf "%s" "$message" | remove_spaces)"
+        ;;
+esac
+
+# check for invalid combination of audio encoder and container format
+if {
+       [ "$format" = "mp4" ] && 
+       {
+           [ "$audio_encoder" = "opus" ] ;
+       } ;
+   } ||
+   {
+       [ "$format" = "webm" ] && 
+       {
+           { [ "$audio_encoder" = "aac"     ] ; } ||
+           { [ "$audio_encoder" = "mp3"     ] ; } ||
+           { [ "$audio_encoder" = "mp3lame" ] ; } ||
+           { [ "$audio_encoder" = "shine"   ] ; } ;
+       } ;
+   } ||
+   {
+       [ "$format" = "ogg" ] && 
+       {
+           { [ "$audio_encoder" = "aac"     ] ; } ||
+           { [ "$audio_encoder" = "mp3"     ] ; } ||
+           { [ "$audio_encoder" = "mp3lame" ] ; } ||
+           { [ "$audio_encoder" = "shine"   ] ; } ;
+       } ;
+   }
+then
+    exit_program \
+        "container format ${format} does not support ${audio_encoder} encoder"
+fi
+
+# check for invalid combination of video encoder and container format
+if [ "$format" = "mp4" ] && [ "$video_encoder" = "vp9" ] 
+then
+    # special case for mp4 + vp9 (support is experimental and not enabled)
+    message="support for vp9 encoder in mp4 container format is \
+             currently experimental and not enabled"
+    exit_program "$(printf "%s" "$message" | remove_spaces)"
+fi
+if {
+       [ "$format" = "mp4" ] && 
+       {
+           { [ "$video_encoder" = "theora" ] ; } ||
+           { [ "$video_encoder" = "vp8" ] ; } ;
+       } ;
+   } ||
+   {
+       [ "$format" = "webm" ] && 
+       {
+           { [ "$video_encoder" = "x264" ] ; } ||
+           { [ "$video_encoder" = "x265" ] ; } ||
+           { [ "$video_encoder" = "kvazaar" ] ; } ||
+           { [ "$video_encoder" = "theora" ] ; } ;
+       } ;
+   } ||
+   {
+       [ "$format" = "ogg" ] && 
+       {
+           { [ "$video_encoder" = "x264" ] ; } ||
+           { [ "$video_encoder" = "x265" ] ; } ||
+           { [ "$video_encoder" = "kvazaar" ] ; } ||
+           { [ "$video_encoder" = "vp9" ] ; } ;
+       } ;
+   }
+then
+    exit_program \
+        "container format ${format} does not support ${video_encoder} encoder"
+fi
+
+# set recording and encoding options for the selected audio encoder
+case "$audio_encoder" in
+    aac)
+        if check_ffmpeg_encoder aac libfdk_aac
+        then
+            audio_encode_codec="$audio_encode_codec_fdkaac"
+        else
+            audio_encode_codec="$audio_encode_codec_aac"
+        fi
+        ;;
+    vorbis)
+        check_ffmpeg_encoder vorbis libvorbis || exit 1
+        audio_encode_codec="$audio_encode_codec_vorbis"
+        ;;
+    opus)
+        check_ffmpeg_encoder opus libopus || exit 1
+        audio_encode_codec="$audio_encode_codec_opus"
+        ;;
+    mp3|mp3lame)
+        check_ffmpeg_encoder mp3 libmp3lame || exit 1
+        audio_encode_codec="$audio_encode_codec_mp3lame"
+        ;;
+    shine)
+        check_ffmpeg_encoder mp3 libshine || exit 1
+        audio_encode_codec="$audio_encode_codec_shine"
+        ;;
+    none)  # video without audio
+        #disable all audio options (audio will not be recorded)
+        audio_input=""
+        audio_channel_layout=""
+        audio_general_options=""
+        audio_record_codec=""
+        ;;
+    *)
+        exit_program "'${audio_encoder}' is not a valid audio encoder"
+        ;;
+esac
+
+# set recording and encoding options for the selected video encoder
+case "$video_encoder" in
+    x264)
+        check_ffmpeg_encoder h264 libx264 || exit 1
+        video_encode_codec="$video_encode_codec_x264"
+        ;;
+    h264_nvenc)
+        check_ffmpeg_encoder h264 h264_nvenc || exit 1
+        video_encode_codec="$video_encode_codec_h264_nvenc"
+        ;;
+    x265)
+        check_ffmpeg_encoder hevc libx265 || exit 1
+        video_encode_codec="$video_encode_codec_x265"
+        ;;
+    kvazaar)
+        check_ffmpeg_encoder hevc libkvazaar || exit 1
+        video_encode_codec="$video_encode_codec_kvazaar"
+        ;;
+    hevc_nvenc)
+        check_ffmpeg_encoder hevc hevc_nvenc || exit 1
+        video_encode_codec="$video_encode_codec_hevc_nvenc"
+        ;;
+    theora)
+        check_ffmpeg_encoder theora libtheora || exit 1
+        video_encode_codec="$video_encode_codec_theora"
+        ;;
+    vp8)
+        check_ffmpeg_encoder vp8 libvpx || exit 1
+        video_record_codec="$video_record_codec_vp8"
+        video_encode_codec="$video_encode_codec_vp8"
+        ;;
+    vp9)
+        check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
+        video_encode_codec="$video_encode_codec_vp9"
+        ;;
+    *)
+        exit_program "'${video_encoder}' is not a valid video encoder"
+        ;;
+esac
+
+# check if a valid fade effect was entered (-e/--fade)
+case "$fade" in
+    in|out|both|none)
+        :
+        ;;
+    *)
+        exit_program "'${fade}' is not a valid fade effect"
+        ;;
+esac
+
+# check if entered fixed video length is a valid integer/float number (-x)
+if { printf "%s" "$fixed_length" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
+then
+    # check if user enabled fixed video duration (disabled by default)
+    if ! { printf "%s" "$fixed_length" | grep -Eq '^[0]+\.?[0]*$' ; }
+    then
+        fixed_length_options="-t ${fixed_length}"
+    fi
+else
+    exit_program \
+        "'${fixed_length}' is not a valid number for fixed video length"
+fi
+
+# check if entered volume factor is a valid integer/float number (-m)
+if { printf "%s" "$volume_factor" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
+then
+    # check if volume increase effect is disabled (value '1.0' or '0.0')
+    if { printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ; } ||
+       { printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$' ; }
+    then
+        volume_options=""
+    else
+        volume_options="-af volume=${volume_factor}"
+    fi
+else
+    exit_program \
+        "'${volume_factor}' is not a valid number for volume increase effect"
+fi
+
+# check for a valid watermark size format (NxN) (-z/--wmark-size)
+if ! { printf "%s" "$watermark_size" | grep -Eq '^[0-9]+x[0-9]*$' ; }
+then
+    exit_program "'${watermark_size}' is not a valid watermark size format"
+fi
+
+# check for a valid watermark position format (N,N) (-k/--wmark-position)
+if ! { printf "%s" "$watermark_position" | grep -Eq '^[0-9]+,[0-9]*$' ; }
+then
+    exit_program \
+        "'${watermark_position}' is not a valid watermark position format"
+else
+    # translate watermark position to what is really used in ffmpeg command
+    watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
+fi
+
+# enable watermark effect if necessary (-w/--watermark)
+if [ "$watermark" = "true" ] 
+then
+    randomstring_png="$(randomstr "20")" # random string for tmp png filename
+    create_watermark
+fi
+
+randomstring_rec="$(randomstr "20")" # random string for tmp video filename
+tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
+
+notify "normal" "1700" "media-record" "recording..."
+
+# record screen to a lossless video
+# shellcheck disable=SC2086
+if ffmpeg \
+       $audio_general_options $audio_input \
+       $video_general_options -r $video_rate -s $video_size \
+       -i :0.0+$video_position \
+       $watermark_options \
+       $audio_record_codec \
+       -vcodec $video_record_codec -r $video_rate \
+       $fixed_length_options \
+       -y \
+       "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+then 
+    notify "normal" "3000" "media-playback-stop" "encoding..."
+    
+    # set fade effect if necessary (-e/--fade)
+    case "$fade" in
+        in|out|both)
+            videofade
+            ;;
+        *)
+            :
+            ;;
+    esac
+    
+    # set output filename
+    if [ "$auto_filename" = "true" ] 
+    then
+        output_file="screencast-$(date +%Y-%m-%d_%H.%M.%S).${format}"
+    else
+        output_file="$(basename "$1")"
+    fi
+    
+    # encode the recorded lossless video file
+    # shellcheck disable=SC2086
+    if ffmpeg \
+           $audio_channel_layout \
+           -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
+           $fade_options \
+           $volume_options \
+           $audio_encode_codec \
+           -vcodec $video_encode_codec -r $video_rate \
+           $faststart \
+           -y \
+           "${savedir}/${output_file}"
+    then
+        notify "normal" "3000" "mail-mark-notjunk" "finish"
+        
+        # play a sound after finish if requirements are present
+        if [ -x "$(which paplay 2>/dev/null)" ] && [ -f "$finish_sound" ] 
+        then
+            paplay "$finish_sound" 2>/dev/null
+        fi
+    else
+        printf "%s\n" "screencast: encoding error!" >&2
+        notify "critical" "5000" "process-stop" "encoding error!"
+        exit 1
+    fi
+else
+    printf "%s\n" "screencast: recording error!" >&2
+    notify "critical" "5000" "process-stop" "recording error!"
+    exit 1
+fi
