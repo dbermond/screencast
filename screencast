@@ -191,6 +191,8 @@ show_help() {
     printf "%s\n" "list arguments supported by these options"
     printf "%s"   "  -h, --help               "
     printf "%s\n" "this help screen"
+    printf "%s"   "      --version            "
+    printf "%s\n" "version information"
     printf "%s\n" ""
     printf "%s\n" "For further help run 'man screencast'"
 }
@@ -765,6 +767,11 @@ parse_cmd_line() {
             
             -h|-\?|--help)  # option without argument
                 show_help
+                exit 0
+                ;;
+            
+            --version)  # option without argument
+                show_header
                 exit 0
                 ;;
             

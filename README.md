@@ -25,6 +25,7 @@ screencast
     - [```-g, --png-optimizer=NAME```](#-g---png-optimizername)
     - [```-l, --list```](#-l---list)
     - [```-h, --help```](#-h---help)
+    - [```--version```](#--version)
 - [EXAMPLES](#examples)
 - [INSTALLATION](#installation)
 - [REQUIREMENTS](#requirements)
@@ -184,6 +185,10 @@ List arguments supported by these options.
 #### ```-h, --help```
 
 Help screen.
+
+#### ```--version```
+
+Show program version information.
 
 ## EXAMPLES
 - Use all default settings:
