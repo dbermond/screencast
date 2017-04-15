@@ -146,6 +146,13 @@ Set text watermark position inside the video. These are X and Y offsets from the
 
 default: ```0,0``` (video top left corner)
 
+- Good position values for hd720p video (```-s 1280x720```) with default watermark size:
+    - ```970,10```  - top right corner
+    - ```10,10```   - top left corner
+    - ```970,688``` - bottom right corner
+    - ```10,688```  - bottom left corner
+    - ```550,350``` - centralized
+
 #### ```-z, --wmark-size=NxN```
 
 Set text watermark size. Combined with ```-k``` option it will define a rectangular area in the video that will contain the text watermark image.
