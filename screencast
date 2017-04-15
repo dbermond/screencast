@@ -1139,12 +1139,12 @@ esac
 # check for valid output and tmp directories (-o/--output-dir and -t/--tmp-dir)
 for directory in "$savedir" "$tmpdir"
 do
-    # check if the entered $savedir/$tmpdir already exists and mkdir dir if not
+    # check if the entered $savedir/$tmpdir already exists and mkdir if not
     if ! [ -e "$directory" ] 
     then
-        mkdir -p "$savedir" 2>/dev/null ||
+        mkdir -p "$directory" 2>/dev/null ||
         {
-            exit_program "failed to create save direcotry '${savedir}'";
+            exit_program "failed to create direcotry '${directory}'";
         }
     fi
     
