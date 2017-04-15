@@ -89,10 +89,11 @@ watermark_position="0,0"
 watermark_font="Arial"
 watermark_text="www.bmftrader.com"
     # good position values for hd720p (1280x720) with default watermark size:
-    # 500,650 - centralized
     # 970,10  - top right corner
-    # 970,650 - bottom right corner
-    # 10,650  - bottom left corner
+    # 10,10   - top left  corner
+    # 970,688 - bottom right corner
+    # 10,688  - bottom left  corner
+    # 550,350 - centralized
 
 # png (watermark) optimization settings
 pngoptimizer="none"      # truepng, pingo, optipng, opt-png, none
