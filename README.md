@@ -144,7 +144,7 @@ default: disabled
 
 Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with ```-z``` option it will define a rectangular area in the video that will contain the text watermark image.
 
-default: ```970,10``` (video top right corner)
+default: ```0,0``` (video top left corner)
 
 #### ```-z, --wmark-size=NxN```
 
