@@ -1055,7 +1055,7 @@ fi
 # adjust audio input variable with user input
 case "$audio_input" in
     none)  # video without audio
-        #disable all audio options (audio will not be recorded)
+        # disable all audio options (audio will not be recorded)
         audio_input=""
         audio_channel_layout=""
         audio_general_options=""
