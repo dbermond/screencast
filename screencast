@@ -405,7 +405,7 @@ parse_cmd_line() {
             --audio-input=?*)
                 audio_input="${1#*=}" # assign value after '='
                 ;;
-            # errors out if a long option with '=' has nothing folling the '='
+            # errors out if a long option with '=' has nothing following the '='
             --audio-input=)
                 command_error "--audio-input (-i)"
                 ;;
@@ -1016,7 +1016,7 @@ then
     which setopt >/dev/null 2>&1 ||
     {
         exit_program \
-            "script appears to running in zsh but setopt was not found";
+            "script appears to be running in zsh but setopt was not found";
     }
     setopt SH_WORD_SPLIT  # enable variable word splitting
 fi
@@ -1152,7 +1152,7 @@ do
     then
         mkdir -p "$directory" 2>/dev/null ||
         {
-            exit_program "failed to create direcotry '${directory}'";
+            exit_program "failed to create directory '${directory}'";
         }
     fi
     
