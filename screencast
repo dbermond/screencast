@@ -747,7 +747,7 @@ parse_cmd_line() {
                     then
                         command_error "--tmp-dir (-t)"
                     else
-                        tmpdir="$2"
+                        tmpdir="${2%/}" # remove ending '/' if present
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -756,6 +756,7 @@ parse_cmd_line() {
                 ;;
             --tmp-dir=?*)
                 tmpdir="${1#*=}"
+                tmpdir="${tmpdir%/}" # remove ending '/' if present
                 ;;
             --tmp-dir=)
                 command_error "--tmp-dir (-t)"
