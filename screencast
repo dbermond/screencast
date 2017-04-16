@@ -146,12 +146,6 @@ show_help() {
     printf "%s\n" "Usage: screencast [options] <output>"
     printf "%s\n" "                  [options] -u"
     printf "%s\n" ""
-    printf "%s"   "  -o, --output-dir=DIR     "
-    printf "%s\n" "save videos to DIR (to use with -u)"
-    printf "%s"   "  -t, --tmp-dir=DIR        "
-    printf "%s\n" "use DIR for temporary files [${tmpdir}]"
-    printf "%s"   "  -u, --auto-filename      "
-    printf "%s\n" "auto choose output filename based on date/time"
     printf "%s"   "  -p, --position=N,N       "
     printf "%s"  "recording position (screen XY top left offsets) "
     printf "%s\n" "[${video_position}]"
@@ -188,6 +182,12 @@ show_help() {
     printf "%s\n" "disable desktop notifications"
     printf "%s"   "  -g, --png-optimizer=NAME "
     printf "%s\n" "use png (watermark) optimizer and advdef [${pngoptimizer}]"
+    printf "%s"   "  -o, --output-dir=DIR     "
+    printf "%s\n" "save videos to DIR (to use with -u)"
+    printf "%s"   "  -t, --tmp-dir=DIR        "
+    printf "%s\n" "use DIR for temporary files [${tmpdir}]"
+    printf "%s"   "  -u, --auto-filename      "
+    printf "%s\n" "auto choose output filename based on date/time"
     printf "%s"   "  -l, --list               "
     printf "%s\n" "list arguments supported by these options"
     printf "%s"   "  -h, --help               "
@@ -408,49 +408,6 @@ parse_cmd_line() {
             # errors out if a long option with '=' has nothing folling the '='
             --audio-input=)
                 command_error "--audio-input (-i)"
-                ;;
-            
-            -o|--output-dir)
-                if [ "$2" ] 
-                then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
-                    then
-                        command_error "--output-dir (-o)"
-                    else
-                        savedir="${2%/}" # remove ending '/' if present
-                        shift && shift_count="$((shift_count + 1))"
-                    fi
-                else
-                    command_error "--output-dir (-o)"
-                fi
-                ;;
-            --output-dir=?*)
-                savedir="${1#*=}"
-                savedir="${savedir%/}" # remove ending '/' if present
-                ;;
-            --output-dir=)
-                command_error "--output-dir (-o)"
-                ;;
-            
-            -t|--tmp-dir)
-                if [ "$2" ] 
-                then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
-                    then
-                        command_error "--tmp-dir (-t)"
-                    else
-                        tmpdir="$2"
-                        shift && shift_count="$((shift_count + 1))"
-                    fi
-                else
-                    command_error "--tmp-dir (-t)"
-                fi
-                ;;
-            --tmp-dir=?*)
-                tmpdir="${1#*=}"
-                ;;
-            --tmp-dir=)
-                command_error "--tmp-dir (-t)"
                 ;;
             
             -p|--position)
@@ -759,6 +716,49 @@ parse_cmd_line() {
                 ;;
             --png-optimizer=)
                 command_error "--png-optimizer (-g)"
+                ;;
+            
+            -o|--output-dir)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--output-dir (-o)"
+                    else
+                        savedir="${2%/}" # remove ending '/' if present
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--output-dir (-o)"
+                fi
+                ;;
+            --output-dir=?*)
+                savedir="${1#*=}"
+                savedir="${savedir%/}" # remove ending '/' if present
+                ;;
+            --output-dir=)
+                command_error "--output-dir (-o)"
+                ;;
+            
+            -t|--tmp-dir)
+                if [ "$2" ] 
+                then
+                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    then
+                        command_error "--tmp-dir (-t)"
+                    else
+                        tmpdir="$2"
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--tmp-dir (-t)"
+                fi
+                ;;
+            --tmp-dir=?*)
+                tmpdir="${1#*=}"
+                ;;
+            --tmp-dir=)
+                command_error "--tmp-dir (-t)"
                 ;;
             
             -l|--list)  # option without argument
