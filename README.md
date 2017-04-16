@@ -257,7 +257,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example, libx264 is called ```x264``` in this program.
 
-- Although the ```vorbis``` audio encoder is mentioned in the options, it is made this way just for simplicity as mentioned right above. When the user selects the ```vorbis``` audio encoder **screencast** uses the FFmpeg libvorbis encoder, which has a much superior quality than the FFmpeg built-in vorbis encoder.
+- For vorbis and opus audio, FFmpeg has both an external library encoder (named '*libvorbis*' and '*libopus*' encoders) and a native built-in encoder (named '*vorbis*' and '*opus*' encoders). Although the ```vorbis``` and ```opus``` audio encoders are mentioned in the options, it is made this way just for simplicity as stated right above. When the user selects the ```vorbis``` or ```opus``` audio encoder **screencast** uses respectively the FFmpeg libvorbis or libopus encoder, which has a much superior quality than the FFmpeg native built-in vorbis and opus encoder.
 
 - The ```mkv``` container format is the only one that supports all audio and video encoders. All other container formats have restrictions. **screencast** will exit with error if an unsupported encoder is choosed for a given container format. For example, you cannot use the ```opus``` audio encoder with ```mp4``` container format.
 

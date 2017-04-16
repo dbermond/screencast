@@ -335,11 +335,14 @@ do not support it at all.
 FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example,
 libx264 is called \fIx264\fR in this program.
 .PP
-Although the \fIvorbis\fR audio encoder is mentioned in the options, it is made
-this way just for simplicity as mentioned right above. When the user selects
-the \fIvorbis\fR audio encoder \fBscreencast\fR uses the libvorbis FFmpeg
-encoder, which has a much superior quality than the FFmpeg built\-in vorbis
-encoder.
+For vorbis and opus audio, FFmpeg has both an external library encoder (named
+\'libvorbis\' and \'libopus\' encoders) and a native built-in encoder (named
+\'vorbis\' and \'opus\' encoders). Although the \fIvorbis\fR and \fIopus\fR
+audio encoders are mentioned in the options, it is made this way just for
+simplicity as stated right above. When the user selects the \fIvorbis\fR or
+\fIopus\fR audio encoder \fBscreencast\fR uses respectively the FFmpeg
+libvorbis or libopus encoder, which has a much superior quality than the FFmpeg
+native built\-in vorbis and opus encoders.
 .PP
 The \fImkv\fR container format is the only one that supports all audio and 
 video encoders. All other container formats have restrictions. \fBscreencast\fR
