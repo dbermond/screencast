@@ -25,7 +25,7 @@ screencast
     - [```-g, --png-optimizer=NAME```](#-g---png-optimizername)
     - [```-l, --list```](#-l---list)
     - [```-h, --help```](#-h---help)
-    - [```--version```](#--version)
+    - [```-V, --version```](#-v---version)
 - [EXAMPLES](#examples)
 - [INSTALLATION](#installation)
 - [REQUIREMENTS](#requirements)
@@ -193,7 +193,7 @@ List arguments supported by these options.
 
 Help screen.
 
-#### ```--version```
+#### ```-V, --version```
 
 Show program version information.
 
