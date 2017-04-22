@@ -21,7 +21,7 @@
 # can be found at: <http://www.gnu.org/licenses/gpl-2.0.html>.
 
 # program settings
-screencast_version="v1.1.0"
+screencast_version="v1.1.0.next"
 screencast_website="https://github.com/bermond/screencast"
 
 # system related settings
