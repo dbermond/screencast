@@ -811,7 +811,7 @@ done
 # reutrn code: 0 - detected ffmpeg build has support for desired format
 #              1 - detected ffmpeg build has no support for desired format
 check_ffmpeg_format() {
-    if ! { ffmpeg -formats -v quiet | grep -q ".*${1}[[:space:]]*${2}.*" ; }
+    if ! printf "%s\n" "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
             printf "%s"   "error: " >&2
             printf "%s"   "the detected ffmpeg build in $(which ffmpeg) " >&2
@@ -831,7 +831,7 @@ check_ffmpeg_format() {
 # reutrn code: 0 - detected ffmpeg build has support for desired encoder
 #              1 - detected ffmpeg build has no support for desired encoder
 check_ffmpeg_encoder() {
-    if ! { ffmpeg -codecs -v quiet | grep -q ".*${1}.*encoders:.*${2}.*" ; }
+    if ! printf "%s\n" "$ffmpeg_encoders" | grep -q ".*${1}.*encoders:.*${2}.*"
     then
         if [ "$2" != "libfdk_aac" ] 
         then
@@ -1040,6 +1040,9 @@ case "$pngoptimizer" in
 esac
 
 check_requirements  # check if binary requirements are installed
+
+ffmpeg_formats="$(ffmpeg -formats -v quiet)" # store ffmpeg formats/encoders
+ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 
 # check if the detected ffmpeg build has support for basic recording formats
 check_ffmpeg_format "x11grab" "X11"  || exit 1
