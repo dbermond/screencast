@@ -236,7 +236,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ```
 
 ## REQUIREMENTS
-- The minimum requirement is a recent *FFmpeg* version compiled with support for x11grab and the desired encoders. For example, if you want to use *vp9* video encoder and *opus* audio encoder it will require *FFmpeg* to be compiled with support for x11grab, libvpx and libopus. It’s advised to use *FFmpeg* version git master. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
+- The minimum requirement is a recent *FFmpeg* version compiled with support for x11grab (libxcb) and the desired encoders. For example, if you want to use *vp9* video encoder and *opus* audio encoder it will require *FFmpeg* to be compiled with support for x11grab (libxcb), libvpx and libopus. It’s advised to use *FFmpeg* version git master. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
 
 - When recording audio (```-i``` and ```-a``` options not setted to ```none```) *FFmpeg* must have been compiled with support for ALSA audio. The default ```pulse``` setting for ```-i``` option requires *FFmpeg* to be compiled with support for pulseaudio (libpulse) as well.
 
