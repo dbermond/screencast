@@ -28,37 +28,6 @@ video fade-in / fade-out, text watermarking and volume increase.
 Long options can be used with spaces or an equal sign ('='). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
 .TP
-\fB\-o\fR, \fB\-\-output\-dir\fR=\fIDIR\fR
-.RS
-Set the output video to be saved in \fIDIR\fR. This is to be used with
-\fB\-u\fR option (if you want to specify a save directory when using automatic
-output filename choosing). When not using \fB\-u\fR option you can specify the
-output directory directly in the output filename.
-.PP
-default: the local directory
-.RE
-.TP
-\fB\-t\fR, \fB\-\-tmp\-dir\fR=\fIDIR\fR
-.RS
-Set temporary files to be placed in \fIDIR\fR. By default, the \fI/tmp\fR
-directory will be used for temporary files, which usually is a ramdisk
-filesystem in most systems. You may want to change it if you have limited RAM
-and/or are recording very long videos. Make sure to have enough free space in
-the specified directory.
-.PP
-default: /tmp
-.RE
-.TP
-\fB\-u\fR, \fB\-\-auto\-filename\fR
-.RS
-Auto choose output filename based on date and time. The output filename will
-have the following format:
-.PP
-.nf
-screencast-YEAR-MONTH-DAY_HOUR.MINUTE.SECOND.FORMAT
-.fi
-.RE
-.TP
 \fB\-p\fR, \fB\-\-position\fR=\fIN\fR,\fIN\fR
 .RS
 The screen position defining from where the recording will take place. These
@@ -233,6 +202,37 @@ optimization is disabled.
 .nf
        default: none
 supported ones: truepng, pingo, optipng, opt-png, none
+.fi
+.RE
+.TP
+\fB\-o\fR, \fB\-\-output\-dir\fR=\fIDIR\fR
+.RS
+Set the output video to be saved in \fIDIR\fR. This is to be used with
+\fB\-u\fR option (if you want to specify a save directory when using automatic
+output filename choosing). When not using \fB\-u\fR option you can specify the
+output directory directly in the output filename.
+.PP
+default: the local directory
+.RE
+.TP
+\fB\-t\fR, \fB\-\-tmp\-dir\fR=\fIDIR\fR
+.RS
+Set temporary files to be placed in \fIDIR\fR. By default, the \fI/tmp\fR
+directory will be used for temporary files, which usually is a ramdisk
+filesystem in most systems. You may want to change it if you have limited RAM
+and/or are recording very long videos. Make sure to have enough free space in
+the specified directory.
+.PP
+default: /tmp
+.RE
+.TP
+\fB\-u\fR, \fB\-\-auto\-filename\fR
+.RS
+Auto choose output filename based on date and time. The output filename will
+have the following format:
+.PP
+.nf
+screencast-YEAR-MONTH-DAY_HOUR.MINUTE.SECOND.FORMAT
 .fi
 .RE
 .TP

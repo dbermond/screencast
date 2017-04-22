@@ -4,9 +4,6 @@ screencast
 - [DESCRIPTION](#description)
 - [USAGE](#usage)
 - [OPTIONS](#options)
-    - [```-o, --output-dir=DIR```](#-o---output-dirdir)
-    - [```-t, --tmp-dir=DIR```](#-t---tmp-dirdir)
-    - [```-u, --auto-filename```](#-u---auto-filename)
     - [```-p, --position=N,N```](#-p---positionnn)
     - [```-s, --size=NxN```](#-s---sizenxn)
     - [```-r, --fps=N```](#-r---fpsn)
@@ -23,6 +20,9 @@ screencast
     - [```-x, --fixed=N```](#-x---fixedn)
     - [```-n, --no-notifications```](#-n---no-notifications)
     - [```-g, --png-optimizer=NAME```](#-g---png-optimizername)
+    - [```-o, --output-dir=DIR```](#-o---output-dirdir)
+    - [```-t, --tmp-dir=DIR```](#-t---tmp-dirdir)
+    - [```-u, --auto-filename```](#-u---auto-filename)
     - [```-l, --list```](#-l---list)
     - [```-h, --help```](#-h---help)
     - [```-V, --version```](#-v---version)
@@ -52,24 +52,6 @@ The specified output filename must have an extension which in turn must be a sup
 
 ## OPTIONS
 Long options can be used with spaces or an equal sign (’```=```’). For example, ```--fade in``` is the same as ```--fade=in```.
-
-#### ```-o, --output-dir=DIR```
-
-Set the output video to be saved in *DIR*. This is to be used with ```-u``` option (if you want to specify a save directory when using automatic output filename choosing). When not using ```-u``` option you can specify the output directory directly in the output filename.
-
-default: the local directory
-
-#### ```-t, --tmp-dir=DIR```
-
-Set temporary files to be placed in *DIR*. By default, the ```/tmp``` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
-
-default: ```/tmp```
-
-#### ```-u, --auto-filename```
-
-Auto choose output filename based on date and time. The output filename will have the following format:
-
-screencast-YEAR-MONTH-DAY\_HOUR.MINUTE.SECOND.FORMAT
 
 #### ```-p, --position=N,N```
 
@@ -184,6 +166,24 @@ Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated b
 default: ```none```
 
 supported ones: ```truepng```, ```pingo```, ```optipng```, ```opt-png```, ```none```
+
+#### ```-o, --output-dir=DIR```
+
+Set the output video to be saved in *DIR*. This is to be used with ```-u``` option (if you want to specify a save directory when using automatic output filename choosing). When not using ```-u``` option you can specify the output directory directly in the output filename.
+
+default: the local directory
+
+#### ```-t, --tmp-dir=DIR```
+
+Set temporary files to be placed in *DIR*. By default, the ```/tmp``` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
+
+default: ```/tmp```
+
+#### ```-u, --auto-filename```
+
+Auto choose output filename based on date and time. The output filename will have the following format:
+
+screencast-YEAR-MONTH-DAY\_HOUR.MINUTE.SECOND.FORMAT
 
 #### ```-l, --list```
 
