@@ -289,11 +289,12 @@ myvideo.mkv
 When not using the \fB\-x\fR option press the \fIq\fR key in terminal window to
 end the recording.
 .SH REQUIREMENTS
-The minimum requirement is a recent \fIFFmpeg\fR version compiled with support
-for x11grab (libxcb) and the desired encoders. For example, if you want to use
-\fIvp9\fR video encoder and \fIopus\fR audio encoder it will require
-\fIFFmpeg\fR to be compiled with support for x11grab (libxcb), libvpx and
-libopus. It's advised to use \fIFFmpeg\fR version git master.
+The minimum requirements are a running X session and a recent \fIFFmpeg\fR
+version compiled with support for x11grab (libxcb) and the desired encoders.
+For example, if you want to use \fIvp9\fR video encoder and \fIopus\fR audio
+encoder it will require \fIFFmpeg\fR to be compiled with support for x11grab
+(libxcb), libvpx and libopus. It's advised to use \fIFFmpeg\fR version git
+master.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
 \fInone\fR) \fIFFmpeg\fR must have been compiled with support for ALSA audio.

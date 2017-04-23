@@ -1044,6 +1044,9 @@ case "$pngoptimizer" in
         ;;
 esac
 
+# check if a X session is running
+[ -z "$DISPLAY" ] && exit_program "it seems that a X session is not running"
+
 check_requirements  # check if binary requirements are installed
 
 ffmpeg_formats="$(ffmpeg -formats -v quiet)" # store ffmpeg formats/encoders
