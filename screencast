@@ -121,11 +121,19 @@ supported_pngopt="truepng, pingo, optipng, opt-png, none"
 #              functions                #
 #########################################
 
-# cleanup function: delete temporary files
+# cleanup function: delete unneeded files
 # arguments: none
 cleanup() {
-    rm --force "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
-    rm --force "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+    # delete temporary files
+    rm -f "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
+    rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+    
+    # delete zero-sized output file in case some unexpected error occurred
+    if [ -f "${savedir}/${output_file}" ] 
+    then
+        output_filesize="$(du -k "${savedir}/${output_file}" | cut -f1)"
+        [ "$output_filesize" -eq "0" ] && rm -f "${savedir}/${output_file}"
+    fi
 }
 
 # show_header function: show program header
