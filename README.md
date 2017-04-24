@@ -289,9 +289,9 @@ Daniel Bermond
 Copyright © 2015-2017 Daniel Bermond
 
 ## LICENSE
-GNU General Public License version 2 (GPL2).
+GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
 For details see the file COPYING or visit:
-[http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
+[http://www.gnu.org/licenses/](http://www.gnu.org/licenses/)
 
 ------------------------------------------------------------------------
