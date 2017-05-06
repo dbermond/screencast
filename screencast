@@ -886,15 +886,16 @@ optimizepng() {
     # check if file is a PNG image
     if file "$1" | grep -q 'PNG image data'
     then
+        # shellcheck disable=SC2086
         case "$pngoptimizer" in
             truepng)
-                truepng "$truepngsettings" "$1"
+                truepng $truepngsettings "$1"
                 ;;
             pingo)
-                pingo "$pingosettings" "$1"
+                pingo $pingosettings "$1"
                 ;;
             optipng)
-                optipng "$optipngsettings" "$1"
+                optipng $optipngsettings "$1"
                 ;;
             opt-png)
                 opt-png "$1"
@@ -905,7 +906,8 @@ optimizepng() {
         esac
         
         # use advdef if setted to be used (-w / --watermark)
-        [ "$useadvdef" = "true" ] && advdef "$advdefsettings" "$1"
+        # shellcheck disable=SC2086
+        [ "$useadvdef" = "true" ] && advdef $advdefsettings "$1"
     
     else
         printf "%s\n" "error: invalid image format (must be PNG)" >&2
