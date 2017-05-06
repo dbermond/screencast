@@ -4,28 +4,28 @@ screencast
 - [DESCRIPTION](#description)
 - [USAGE](#usage)
 - [OPTIONS](#options)
-    - [```-p, --position=N,N```](#-p---positionnn)
-    - [```-s, --size=NxN```](#-s---sizenxn)
-    - [```-r, --fps=N```](#-r---fpsn)
-    - [```-f, --format=TYPE```](#-f---formattype)
-    - [```-i, --audio-input=NAME```](#-i---audio-inputname)
-    - [```-a, --audio-encoder=NAME```](#-a---audio-encodername)
-    - [```-v, --video-encoder=NAME```](#-v---video-encodername)
-    - [```-e, --fade=TYPE```](#-e---fadetype)
-    - [```-m, --volume-factor=N```](#-m---volume-factorn)
-    - [```-w, --watermark=TEXT```](#-w---watermarktext)
-    - [```-k, --wmark-position=N,N```](#-k---wmark-positionnn)
-    - [```-z, --wmark-size=NxN```](#-z---wmark-sizenxn)
-    - [```-c, --wmark-font=NAME```](#-c---wmark-fontname)
-    - [```-x, --fixed=N```](#-x---fixedn)
-    - [```-n, --no-notifications```](#-n---no-notifications)
-    - [```-g, --png-optimizer=NAME```](#-g---png-optimizername)
-    - [```-o, --output-dir=DIR```](#-o---output-dirdir)
-    - [```-t, --tmp-dir=DIR```](#-t---tmp-dirdir)
-    - [```-u, --auto-filename```](#-u---auto-filename)
-    - [```-l, --list```](#-l---list)
-    - [```-h, --help```](#-h---help)
-    - [```-V, --version```](#-v---version)
+    - [`-p, --position=N,N`](#-p---positionnn)
+    - [`-s, --size=NxN`](#-s---sizenxn)
+    - [`-r, --fps=N`](#-r---fpsn)
+    - [`-f, --format=TYPE`](#-f---formattype)
+    - [`-i, --audio-input=NAME`](#-i---audio-inputname)
+    - [`-a, --audio-encoder=NAME`](#-a---audio-encodername)
+    - [`-v, --video-encoder=NAME`](#-v---video-encodername)
+    - [`-e, --fade=TYPE`](#-e---fadetype)
+    - [`-m, --volume-factor=N`](#-m---volume-factorn)
+    - [`-w, --watermark=TEXT`](#-w---watermarktext)
+    - [`-k, --wmark-position=N,N`](#-k---wmark-positionnn)
+    - [`-z, --wmark-size=NxN`](#-z---wmark-sizenxn)
+    - [`-c, --wmark-font=NAME`](#-c---wmark-fontname)
+    - [`-x, --fixed=N`](#-x---fixedn)
+    - [`-n, --no-notifications`](#-n---no-notifications)
+    - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
+    - [`-o, --output-dir=DIR`](#-o---output-dirdir)
+    - [`-t, --tmp-dir=DIR`](#-t---tmp-dirdir)
+    - [`-u, --auto-filename`](#-u---auto-filename)
+    - [`-l, --list`](#-l---list)
+    - [`-h, --help`](#-h---help)
+    - [`-V, --version`](#-v---version)
 - [EXAMPLES](#examples)
 - [INSTALLATION](#installation)
 - [REQUIREMENTS](#requirements)
@@ -51,180 +51,180 @@ $ screencast [options] -u
 The specified output filename must have an extension which in turn must be a supported container format.
 
 ## OPTIONS
-Long options can be used with spaces or an equal sign (’```=```’). For example, ```--fade in``` is the same as ```--fade=in```.
+Long options can be used with spaces or an equal sign (`=`). For example, `--fade in` is the same as `--fade=in`.
 
-#### ```-p, --position=N,N```
+#### `-p, --position=N,N`
 
-The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with ```-s``` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with `-s` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
-default: ```0,0``` (screen top left corner)
+default: `0,0` (screen top left corner)
 
-#### ```-s, --size=NxN```
+#### `-s, --size=NxN`
 
-The video size. This is actually the video resolution. Combined with ```-p``` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+The video size. This is actually the video resolution. Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
-default: ```640x480```
+default: `640x480`
 
-#### ```-r, --fps=N```
+#### `-r, --fps=N`
 
 Video framerate (frames per second - fps).
 
-default: ```25```
+default: `25`
 
-#### ```-f, --format=TYPE```
+#### `-f, --format=TYPE`
 
-Container format of the output video. This is to be used with ```-u``` option (if you want to specify a container format when using automatic output filename choosing). When not using ```-u``` option you can specify the container format directly in the output filename.
+Container format of the output video. This is to be used with `-u` option (if you want to specify a container format when using automatic output filename choosing). When not using `-u` option you can specify the container format directly in the output filename.
 
-default: ```mp4```
+default: `mp4`
 
-supported types: ```mp4```, ```mkv```, ```webm```, ```ogg```
+supported types: `mp4`, `mkv`, `webm`, `ogg`
 
-#### ```-i, --audio-input=NAME```
+#### `-i, --audio-input=NAME`
 
-ALSA audio input device. When setted to ```none``` the audio will be disabled (video without audio, only video stream will be present). To determine possible audio input device names please see the
+ALSA audio input device. When setted to `none` the audio will be disabled (video without audio, only video stream will be present). To determine possible audio input device names please see the
 [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
 
-default: ```pulse```
+default: `pulse`
 
-#### ```-a, --audio-encoder=NAME```
+#### `-a, --audio-encoder=NAME`
 
-Audio encoder to be used to encode the recorded audio. When setted to ```none``` the audio will be disabled (video without audio, only video stream will be present).
+Audio encoder to be used to encode the recorded audio. When setted to `none` the audio will be disabled (video without audio, only video stream will be present).
 
-default: ```aac```
+default: `aac`
 
-supported types: ```aac```, ```opus```, ```vorbis```, ```mp3```/```mp3lame```, ```shine```, ```none```
+supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
 
-#### ```-v, --video-encoder=NAME```
+#### `-v, --video-encoder=NAME`
 
 Video encoder to be used to encode the recorded video. If using a NVIDIA hardware accelerated encoder please make sure that you have a NVIDIA graphics card that supports the choosed encoder.
 
-default: ```x264```
+default: `x264`
 
-supported types: ```x264```, ```h264_nvenc```, ```x265```, ```kvazaar```, ```hevc_nvenc```, ```theora```, ```vp8```, ```vp9```
+supported types: `x264`, `h264_nvenc`, `x265`, `kvazaar`, `hevc_nvenc`, `theora`, `vp8`, `vp9`
 
-#### ```-e, --fade=TYPE```
+#### `-e, --fade=TYPE`
 
-Video fade effect to be added to the recorded video. When setted to ```none``` the recorded video will have no fade effect.
+Video fade effect to be added to the recorded video. When setted to `none` the recorded video will have no fade effect.
 
-default: ```none```
+default: `none`
 
-supported types: ```in```, ```out```, ```both```, ```none```
+supported types: `in`, `out`, `both`, `none`
 
-#### ```-m, --volume-factor=N```
+#### `-m, --volume-factor=N`
 
-Volume increase effect factor. This will increase the volume of the recorded audio. Normally, audio volume is low with default settings, even if you increse your microphone capture volume. Use this to give your videos a better hearing experience, letting your viewers fell more confortable to watch it whithout needing to rise their sound volume. It works as a percentage factor. For example, a value of ```1.5``` will increase volume by 50% and a value of ```2.0``` will double volume. When setted to ```1.0``` or ```0.0``` this effect is disabled.
+Volume increase effect factor. This will increase the volume of the recorded audio. Normally, audio volume is low with default settings, even if you increse your microphone capture volume. Use this to give your videos a better hearing experience, letting your viewers fell more confortable to watch it whithout needing to rise their sound volume. It works as a percentage factor. For example, a value of `1.5` will increase volume by 50% and a value of `2.0` will double volume. When setted to `1.0` or `0.0` this effect is disabled.
 
-default: ```1.0```
+default: `1.0`
 
-#### ```-w, --watermark=TEXT```
+#### `-w, --watermark=TEXT`
 
 Enable text watermarking, setting text to *TEXT*. Although it is a text, it is generated as a PNG image so it can be integrated in the video.
 
 default: disabled
 
-#### ```-k, --wmark-position=N,N```
+#### `-k, --wmark-position=N,N`
 
-Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with ```-z``` option it will define a rectangular area in the video that will contain the text watermark image.
+Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with `-z` option it will define a rectangular area in the video that will contain the text watermark image.
 
-default: ```0,0``` (video top left corner)
+default: `0,0` (video top left corner)
 
-- Good position values for hd720p video (```-s 1280x720```) with default watermark size:
-    - ```970,10```  - top right corner
-    - ```10,10```   - top left corner
-    - ```970,688``` - bottom right corner
-    - ```10,688```  - bottom left corner
-    - ```550,350``` - centralized
+- Good position values for hd720p video (`-s 1280x720`) with default watermark size:
+    - `970,10`  - top right corner
+    - `10,10`   - top left corner
+    - `970,688` - bottom right corner
+    - `10,688`  - bottom left corner
+    - `550,350` - centralized
 
-#### ```-z, --wmark-size=NxN```
+#### `-z, --wmark-size=NxN`
 
-Set text watermark size. Combined with ```-k``` option it will define a rectangular area in the video that will contain the text watermark image.
+Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image.
 
-default: ```255x35```
+default: `255x35`
 
-#### ```-c, --wmark-font=NAME```
+#### `-c, --wmark-font=NAME`
 
 Set text watermark font to *NAME*.
 
-default: ```Arial```
+default: `Arial`
 
 note: if the default or setted font is not installed it will be auto choosed
 
-#### ```-x, --fixed=N```
+#### `-x, --fixed=N`
 
-Set the video to have a fixed length of *N* seconds. When setted to ```0``` this is disabled, meaning a indefinite video length that will be  recorded until the user stops it by presing the **q** key in the terminal window.
+Set the video to have a fixed length of *N* seconds. When setted to `0` this is disabled, meaning a indefinite video length that will be  recorded until the user stops it by presing the **q** key in the terminal window.
 
-default: ```0```
+default: `0`
 
-#### ```-n, --no-notifications```
+#### `-n, --no-notifications`
 
 Disable desktop notifications. Desktop notifications are shown by default, allowing a better visual control of the recording. Use this option to disable them.
 
-#### ```-g, --png-optimizer=NAME```
+#### `-g, --png-optimizer=NAME`
 
-Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated by ```-w``` option that will be used as a text watermark. This option is useful when you want to use a big text watermark in a big video, allowing the video to be a few bytes smaller. Not really needed if using default watermark settings with a small text. When setted to ```none``` PNG optimization is disabled.
+Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated by `-w` option that will be used as a text watermark. This option is useful when you want to use a big text watermark in a big video, allowing the video to be a few bytes smaller. Not really needed if using default watermark settings with a small text. When setted to `none` PNG optimization is disabled.
 
-default: ```none```
+default: `none`
 
-supported ones: ```truepng```, ```pingo```, ```optipng```, ```opt-png```, ```none```
+supported ones: `truepng`, `pingo`, `optipng`, `opt-png`, `none`
 
-#### ```-o, --output-dir=DIR```
+#### `-o, --output-dir=DIR`
 
-Set the output video to be saved in *DIR*. This is to be used with ```-u``` option (if you want to specify a save directory when using automatic output filename choosing). When not using ```-u``` option you can specify the output directory directly in the output filename.
+Set the output video to be saved in *DIR*. This is to be used with `-u` option (if you want to specify a save directory when using automatic output filename choosing). When not using `-u` option you can specify the output directory directly in the output filename.
 
 default: the local directory
 
-#### ```-t, --tmp-dir=DIR```
+#### `-t, --tmp-dir=DIR`
 
-Set temporary files to be placed in *DIR*. By default, the ```/tmp``` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
+Set temporary files to be placed in *DIR*. By default, the `/tmp` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
 
-default: ```/tmp```
+default: `/tmp`
 
-#### ```-u, --auto-filename```
+#### `-u, --auto-filename`
 
 Auto choose output filename based on date and time. The output filename will have the following format:
 
-screencast-YEAR-MONTH-DAY\_HOUR.MINUTE.SECOND.FORMAT
+screencast-YEAR-MONTH-DAY_HOUR.MINUTE.SECOND.FORMAT
 
-#### ```-l, --list```
+#### `-l, --list`
 
 List arguments supported by these options.
 
-#### ```-h, --help```
+#### `-h, --help`
 
 Help screen.
 
-#### ```-V, --version```
+#### `-V, --version`
 
 Show program version information.
 
 ## EXAMPLES
 - Use all default settings:
 
-    - ```$ screencast myvideo.mp4```
+    - `$ screencast myvideo.mp4`
 
 - Use default settings for a 1280x720 video from screen positon 200,234 with auto choosen output filename:
 
-    - ```$ screencast -p 200,234 -s 1280x720 -u```
+    - `$ screencast -p 200,234 -s 1280x720 -u`
 
-- Changing just the container format without specifying encoders will make it to auto choose them. In this case, the ```webm``` format will produce a video with opus and vp9 encoders:
+- Changing just the container format without specifying encoders will make it to auto choose them. In this case, the `webm` format will produce a video with opus and vp9 encoders:
 
-    - ```$ screencast /home/user/webmvideos/myvideo.webm```
+    - `$ screencast /home/user/webmvideos/myvideo.webm`
 
-- Specifying save dir and container format, with auto choosen encoders and output filename. In this case, the ```ogg``` format will produce a video with vorbis (libvorbis) and theora encoders:
+- Specifying save dir and container format, with auto choosen encoders and output filename. In this case, the `ogg` format will produce a video with vorbis (libvorbis) and theora encoders:
 
-    - ```$ screencast -o /home/user/myvideos -f ogg -u```
+    - `$ screencast -o /home/user/myvideos -f ogg -u`
 
 - 1280x720 video from screen positon 200,234 , 30 fps, mp3 (libmp3lame) audio encoder, x265 video encoder, mkv container format, fade-in video effect, volume increase effect of 50%, small text watermark in top right video corner:
 
-    - ```$ screencast -p 200,234 -s 1280x720 -r 30 -a mp3 -v x265 -e in -m 1.5 -w www.mysitehere.com myvideo.mkv```
+    - `$ screencast -p 200,234 -s 1280x720 -r 30 -a mp3 -v x265 -e in -m 1.5 -w www.mysitehere.com myvideo.mkv`
 
 **NOTE**:
-When not using the ```-x``` option press the **q** key in terminal window to end the recording.
+When not using the `-x` option press the **q** key in terminal window to end the recording.
 
 ## INSTALLATION
 Make the  **screencast** file executable and copy it to a directory that is in your *PATH*.
 
-Copy the *screencast.1* man page file to your user commands man page directory, usually at ```/usr/share/man/man1```. For convenience, firstly compress the man page with *gzip*.
+Copy the *screencast.1* man page file to your user commands man page directory, usually at `/usr/share/man/man1`. For convenience, firstly compress the man page with *gzip*.
 
 You can acomplish this by doing:
 
@@ -238,34 +238,34 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REQUIREMENTS
 - The minimum requirements are a running X session, a recent *FFmpeg* version and *xdpyinfo*. It’s advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
 
-- When recording audio (```-i``` and ```-a``` options not setted to ```none```) *FFmpeg* must have been compiled with support for ALSA audio. The default ```pulse``` setting for ```-i``` option requires *FFmpeg* to be compiled with support for pulseaudio (libpulse) as well.
+- When recording audio (`-i` and `-a` options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for `-i` option requires *FFmpeg* to be compiled with support for pulseaudio (libpulse) as well.
 
-- *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the ```-n``` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the ```-n``` option will result in error.
+- *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the `-n` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the `-n` option will result in error.
 
 - Other requirements are needed according to additional options that may be specified by the user:
 
-    - *FFprobe* and *bc* are needed for video fade effect (```-e``` option).
+    - *FFprobe* and *bc* are needed for video fade effect (`-e` option).
 
-    - *ImageMagick* is needed for text watermarking (```-w``` option). Both IM6 and IM7 are supported, but IM7 is preferred.
+    - *ImageMagick* is needed for text watermarking (`-w` option). Both IM6 and IM7 are supported, but IM7 is preferred.
 
-    - At least one supported PNG optimizer and *advdef* (advancecomp) are needed for PNG (watermark) optimization (```-g``` option).
+    - At least one supported PNG optimizer and *advdef* (advancecomp) are needed for PNG (watermark) optimization (`-g` option).
 
 ## REMARKS
 - **screencast** uses a two step recording process. Firstly the audio and video are recorded to a lossless format and at a second stage it is encoded to produce the output video. That’s why you see a desktop notification saying ’*encoding...*’. This mechanism allows a better video and avoids problems.
 
-- When using ```aac``` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older  versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
+- When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older  versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
 
-- FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example, libx264 is called ```x264``` in this program.
+- FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example, libx264 is called `x264` in this program.
 
-- For vorbis and opus audio, FFmpeg has both an external library encoder (named '*libvorbis*' and '*libopus*' encoders) and a native built-in encoder (named '*vorbis*' and '*opus*' encoders). Although the ```vorbis``` and ```opus``` audio encoders are mentioned in the options, it is made this way just for simplicity as stated right above. When the user selects the ```vorbis``` or ```opus``` audio encoder **screencast** uses respectively the FFmpeg libvorbis or libopus encoder, which has a much superior quality than the FFmpeg native built-in vorbis and opus encoder.
+- For vorbis and opus audio, FFmpeg has both an external library encoder (named '*libvorbis*' and '*libopus*' encoders) and a native built-in encoder (named '*vorbis*' and '*opus*' encoders). Although the `vorbis` and `opus` audio encoders are mentioned in the options, it is made this way just for simplicity as stated right above. When the user selects the `vorbis` or `opus` audio encoder **screencast** uses respectively the FFmpeg libvorbis or libopus encoder, which has a much superior quality than the FFmpeg native built-in vorbis and opus encoder.
 
-- The ```mkv``` container format is the only one that supports all audio and video encoders. All other container formats have restrictions. **screencast** will exit with error if an unsupported encoder is choosed for a given container format. For example, you cannot use the ```opus``` audio encoder with ```mp4``` container format.
+- The `mkv` container format is the only one that supports all audio and video encoders. All other container formats have restrictions. **screencast** will exit with error if an unsupported encoder is choosed for a given container format. For example, you cannot use the `opus` audio encoder with `mp4` container format.
 
-- When using the ```mp4``` container format, the moov atom will be automatically moved to the beginning of the output video file. This is the same as running *qt-faststart* in the output video and is useful for uploading it to streaming websites like [YouTube](https://www.youtube.com/).
+- When using the `mp4` container format, the moov atom will be automatically moved to the beginning of the output video file. This is the same as running *qt-faststart* in the output video and is useful for uploading it to streaming websites like [YouTube](https://www.youtube.com/).
 
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
 
-- The default ```pulse``` audio input setting (```-i``` option) will be suitable for most users as it will use the default recording device configured in pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
+- The default `pulse` audio input setting (`-i` option) will be suitable for most users as it will use the default recording device configured in pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
 
 - *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
 
