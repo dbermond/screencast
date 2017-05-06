@@ -82,10 +82,9 @@ video_encode_codec_vp9="libvpx-vp9 -r ${video_rate} -crf 30 \
                         -vb 0 -pix_fmt yuv420p -speed 0"
 
 # watermark settings
+watermark_font="Arial"
 watermark_size="255x35"
 watermark_position="0,0"
-watermark_font="Arial"
-watermark_text="www.bmftrader.com"
     # good position values for hd720p (1280x720) with default watermark size:
     # 970,10  - top right corner
     # 10,10   - top left  corner
