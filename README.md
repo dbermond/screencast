@@ -31,6 +31,7 @@ screencast
 - [INSTALLATION](#installation)
 - [REQUIREMENTS](#requirements)
 - [REMARKS](#remarks)
+- [LIMITATIONS](#limitations)
 - [LINKS](#links)
 - [AUTHOR](#author)
 - [COPYRIGHT](#copyright)
