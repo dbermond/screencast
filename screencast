@@ -209,14 +209,9 @@ show_help() {
 #            $3 - icon name
 #            $4 - text message
 notify() {
-    if [ "$notifications" = "true" ] 
-    then
-        notify-send \
-            --urgency="$1" \
-            --expire-time="$2" \
-            --icon="$3" \
-            "screencast" "$4"
-    fi
+    notify_args="--urgency=${1} --expire-time=${2} --icon=${3}"
+    # shellcheck disable=SC2086
+    [ "$notifications" = "true" ] && notify-send $notify_args screencast "$4"
 }
 
 # check_requirements function: check if required programs are installed
@@ -233,26 +228,25 @@ check_requirements() {
                    [ "$requirement"  = "ffprobe" ] ||
                    [ "$requirement"  = "bc"      ] ;
                } &&
-               [ "$fade"         = "none"  ] ;
+               [ "$fade" = "none"  ] ;
            } ||
            {
                {
                    [ "$requirement"  = "convert" ] ||
                    [ "$requirement"  = "magick"  ] ;
                } &&
-               [ "$watermark"    = "false"  ] ;
+               [ "$watermark" = "false"  ] ;
            } ||
            {
                [ "$requirement"  = "$pngoptimizer" ] &&
                [ "$pngoptimizer" = "none"          ] ;
            } ||
            {
-               [ "$requirement"  = "advdef" ] &&
-               [ "$useadvdef"    = "false"  ] ;
+               [ "$requirement" = "advdef" ] && [ "$useadvdef" = "false" ] ;
            } ||
            {
-               [ "$requirement"  = "notify-send" ] &&
-               [ "$notifications" = "false"      ] ;
+               [ "$requirement"   = "notify-send" ] &&
+               [ "$notifications" = "false"       ] ;
            }
         then
             continue
@@ -306,10 +300,8 @@ check_requirements() {
                 message="error:${request_string}'${requirement}' was not found"
                 printf "%s\n" "$message" >&2
                 printf "%s\n" "       please install ${installname}" >&2
-                if [ "$requirement" != "notify-send" ] 
-                then
+                [ "$requirement" != "notify-send" ] &&
                     notify "critical" "5000" "process-stop" "$message"
-                fi
                 exit 1
             fi ;
         }
@@ -394,7 +386,7 @@ parse_cmd_line() {
                     # errors out if no argument was entered after the option
                     # (will check for a leading '-' in the next parameter,
                     #  meaning that another option was found)
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--audio-input (-i)"
                     else
@@ -418,7 +410,7 @@ parse_cmd_line() {
             -p|--position)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--position (-p)"
                     else
@@ -439,7 +431,7 @@ parse_cmd_line() {
             -s|--size)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--size (-s)"
                     else
@@ -460,7 +452,7 @@ parse_cmd_line() {
             -r|--fps)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--fps (-r)"
                     else
@@ -485,7 +477,7 @@ parse_cmd_line() {
             -f|--format)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--format (-f)"
                     else
@@ -506,7 +498,7 @@ parse_cmd_line() {
             -a|--audio-encoder)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--audio-encoder (-a)"
                     else
@@ -529,7 +521,7 @@ parse_cmd_line() {
             -v|--video-encoder)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--video-encoder (-v)"
                     else
@@ -552,7 +544,7 @@ parse_cmd_line() {
             -e|--fade)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--fade (-e)"
                     else
@@ -573,7 +565,7 @@ parse_cmd_line() {
             -m|--volume-factor)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--volume-factor (-u)"
                     else
@@ -594,7 +586,7 @@ parse_cmd_line() {
             -w|--watermark)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--watermark (-w)"
                     else
@@ -617,7 +609,7 @@ parse_cmd_line() {
             -z|--wmark-size)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--wmark-size (-z)"
                     else
@@ -638,7 +630,7 @@ parse_cmd_line() {
             -k|--wmark-position)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--wmark-position (-k)"
                     else
@@ -659,7 +651,7 @@ parse_cmd_line() {
             -c|--wmark-font)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--wmark-font (-c)"
                     else
@@ -680,7 +672,7 @@ parse_cmd_line() {
             -x|--fixed)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--fixed (-x)"
                     else
@@ -705,7 +697,7 @@ parse_cmd_line() {
             -g|--png-optimizer)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--png-optimizer (-g)"
                     else
@@ -748,7 +740,7 @@ parse_cmd_line() {
             -t|--tmp-dir)
                 if [ "$2" ] 
                 then
-                    if { printf "%.1s\n" "$2" | grep -q '-' ; }
+                    if printf "%.1s\n" "$2" | grep -q '-'
                     then
                         command_error "--tmp-dir (-t)"
                     else
@@ -913,10 +905,7 @@ optimizepng() {
         esac
         
         # use advdef if setted to be used (-w / --watermark)
-        if [ "$useadvdef" = "true" ] 
-        then
-            advdef "$advdefsettings" "$1"
-        fi
+        [ "$useadvdef" = "true" ] && advdef "$advdefsettings" "$1"
     
     else
         printf "%s\n" "error: invalid image format (must be PNG)" >&2
@@ -965,9 +954,9 @@ create_watermark() {
     # optimize PNG image file
     optimizepng "$wmark_image"
     
-    watermark_options="-r ${video_rate} \
-                       -thread_queue_size ${queue_size} \
-                       -i ${wmark_image} \
+    watermark_options="-r ${video_rate}
+                       -thread_queue_size ${queue_size}
+                       -i ${wmark_image}
                        -filter_complex overlay=${watermark_position}"
 }
 
@@ -1019,11 +1008,8 @@ trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
 then
-    which setopt >/dev/null 2>&1 ||
-    {
-        exit_program \
-            "script appears to be running in zsh but setopt was not found";
-    }
+    which setopt >/dev/null 2>&1 || exit_program \
+        "script appears to be running in zsh but setopt was not found";
     setopt SH_WORD_SPLIT  # enable variable word splitting
 fi
 
@@ -1040,7 +1026,7 @@ case "$pngoptimizer" in
         ;;
     *)
         exit_program \
-        "'$pngoptimizer' is not a valid PNG optimizer for this program"
+            "'$pngoptimizer' is not a valid PNG optimizer for this program"
         ;;
 esac
 
@@ -1083,36 +1069,26 @@ esac
 if [ "$auto_filename" = "false" ] 
 then
     # check if user have not entered an output filename after the options
-    if [ "$#" -eq "0" ] 
-    then
-        exit_program \
-            "you must enter an output filename with extension (or use '-u')"
-    fi
+    [ "$#" -eq "0" ] && exit_program \
+        "you must enter an output filename with extension (or use '-u')"
     
     # if user specified a save directory directly with output filename that
     # is different than the current working directory, use it
     # ('-o' setting will be discarded if it was also specified in command line)
-    if [ "$(dirname "$1")" != "." ] 
-    then
-        savedir="$(dirname "$1")"
-    fi
+    [ "$(dirname "$1")" != "." ] && savedir="$(dirname "$1")"
     
     # if user specified './' as a save directory directly with output
     # filename, use it ('pwd' makes the program output more clear)
     # ('-o' setting will be discarded if it was also specified in command line)
-    if { printf "%s" "$1" | grep -q '^\./.*' ; }
-    then
-        savedir="$(pwd)"
-    fi
+    printf "%s" "$1" | grep -q '^\./.*' && savedir="$(pwd)"
     
-    # the case that user specifies '../' as a save directory directly with output
-    # filename is already covered above in 'if [ "$(dirname "$1")" != "." ]'.
-    # here we just use 'dirname "$(pwd)"' to make the program output more clear
-    # ('-o' setting will be discarded if it was also specified in command line)
-    if { printf "%s" "$1" | grep -q '^\.\./.*' ; }
-    then
+    # the case that user specifies '../' as a save directory directly with
+    # output filename is already covered above in
+    # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
+    # to make the program output more clear ('-o' setting will be discarded if
+    # it was also specified in command line)
+    printf "%s" "$1" | grep -q '^\.\./.*' && 
         savedir="$(printf "%s" "$(dirname "$(pwd)")")"
-    fi
     
     # get output filename extension and assign to container format
     tmpstr="$(basename "$1")"
@@ -1121,11 +1097,8 @@ then
     format="$output_extension"
 # if '-u' is set, don't allow to set an output filename in command line
 else
-    if [ "$#" -gt "0" ] 
-    then
-        exit_program \
-            "--auto-filename ('-u') does not allow to set an output filename"
-    fi
+    [ "$#" -gt "0" ] && exit_program \
+        "--auto-filename ('-u') does not allow to set an output filename"
 fi
 
 # check if user entered tilde ('~') as a starting character of $savedir
@@ -1160,38 +1133,30 @@ esac
 for directory in "$savedir" "$tmpdir"
 do
     # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    if ! [ -e "$directory" ] 
-    then
-        mkdir -p "$directory" 2>/dev/null ||
-        {
-            exit_program "failed to create directory '${directory}'";
-        }
-    fi
+    [ -e "$directory" ] ||
+    {
+        mkdir -p "$directory" 2>/dev/null || exit_program \
+            "failed to create directory '${directory}'" ;
+    }
     
     # check if the entered $savedir/$tmpdir is a directory
     if [ -d "$directory" ] 
     then
         # check if the entered $savedir/$tmpdir has write permission
-        if ! [ -w "$directory" ] 
-        then
-            exit_program "no write permission for directory '${directory}'"
-        fi
+        [ -w "$directory" ] || exit_program \
+            "no write permission for directory '${directory}'"
     else
         exit_program "'${directory}' is not a directory"
     fi
 done
 
 # check for a valid screen position format to record (N,N) (-p/--position)
-if ! { printf "%s" "$video_position" | grep -Eq '^[0-9]+,[0-9]*$' ; }
-then
-    exit_program "'${video_position}' is not a valid screen position format"
-fi
+printf "%s" "$video_position" | grep -Eq '^[0-9]+,[0-9]*$' || exit_program \
+    "'${video_position}' is not a valid screen position format"
 
 # check for a valid video size format (NxN) (-s/--size)
-if ! { printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' ; }
-then
-    exit_program "'${video_size}' is not a valid video size format"
-fi
+printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
+    "'${video_size}' is not a valid video size format"
 
 # check for valid video size and position in relation to the screen size
 screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
@@ -1209,10 +1174,8 @@ video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
         "video height + position Y is greater then the current screen height"
 
 # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
-if ! { printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
-then
-    exit_program "'${video_rate}' is not a valid video framerate (fps) format"
-fi
+printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' || exit_program \
+    "'${video_rate}' is not a valid video framerate (fps) format"
 
 # check if a valid container format was selected (-f/--format) and change 
 # audio/video encoder for some needed formats if not setted by command line
@@ -1226,27 +1189,15 @@ case "$format" in
     webm)
         if [ "$auto_filename" = "false" ] 
         then
-            if [ "$audio_encoder_setted" = "false" ] 
-            then
-                audio_encoder="opus"
-            fi
-            if [ "$video_encoder_setted" = "false" ] 
-            then
-                video_encoder="vp9"
-            fi
+            [ "$audio_encoder_setted" = "false" ] && audio_encoder="opus"
+            [ "$video_encoder_setted" = "false" ] && video_encoder="vp9"
         fi
         ;;
     ogg)
         if [ "$auto_filename" = "false" ] 
         then
-            if [ "$audio_encoder_setted" = "false" ] 
-            then
-                audio_encoder="vorbis"
-            fi
-            if [ "$video_encoder_setted" = "false" ] 
-            then
-                video_encoder="theora"
-            fi
+            [ "$audio_encoder_setted" = "false" ] && audio_encoder="vorbis"
+            [ "$video_encoder_setted" = "false" ] && video_encoder="theora"
         fi
         ;;
     *)
@@ -1258,27 +1209,24 @@ esac
 
 # check for invalid combination of audio encoder and container format
 if {
-       [ "$format" = "mp4" ] && 
-       {
-           [ "$audio_encoder" = "opus" ] ;
-       } ;
+       [ "$format" = "mp4" ] && [ "$audio_encoder" = "opus" ] ;
    } ||
    {
        [ "$format" = "webm" ] && 
        {
-           { [ "$audio_encoder" = "aac"     ] ; } ||
-           { [ "$audio_encoder" = "mp3"     ] ; } ||
-           { [ "$audio_encoder" = "mp3lame" ] ; } ||
-           { [ "$audio_encoder" = "shine"   ] ; } ;
+           [ "$audio_encoder" = "aac"     ] ||
+           [ "$audio_encoder" = "mp3"     ] ||
+           [ "$audio_encoder" = "mp3lame" ] ||
+           [ "$audio_encoder" = "shine"   ] ;
        } ;
    } ||
    {
        [ "$format" = "ogg" ] && 
        {
-           { [ "$audio_encoder" = "aac"     ] ; } ||
-           { [ "$audio_encoder" = "mp3"     ] ; } ||
-           { [ "$audio_encoder" = "mp3lame" ] ; } ||
-           { [ "$audio_encoder" = "shine"   ] ; } ;
+           [ "$audio_encoder" = "aac"     ] ||
+           [ "$audio_encoder" = "mp3"     ] ||
+           [ "$audio_encoder" = "mp3lame" ] ||
+           [ "$audio_encoder" = "shine"   ] ;
        } ;
    }
 then
@@ -1297,26 +1245,25 @@ fi
 if {
        [ "$format" = "mp4" ] && 
        {
-           { [ "$video_encoder" = "theora" ] ; } ||
-           { [ "$video_encoder" = "vp8" ] ; } ;
+           [ "$video_encoder" = "theora" ] || [ "$video_encoder" = "vp8" ] ;
        } ;
    } ||
    {
        [ "$format" = "webm" ] && 
        {
-           { [ "$video_encoder" = "x264" ] ; } ||
-           { [ "$video_encoder" = "x265" ] ; } ||
-           { [ "$video_encoder" = "kvazaar" ] ; } ||
-           { [ "$video_encoder" = "theora" ] ; } ;
+           [ "$video_encoder" = "x264"    ] ||
+           [ "$video_encoder" = "x265"    ] ||
+           [ "$video_encoder" = "kvazaar" ] ||
+           [ "$video_encoder" = "theora"  ] ;
        } ;
    } ||
    {
        [ "$format" = "ogg" ] && 
        {
-           { [ "$video_encoder" = "x264" ] ; } ||
-           { [ "$video_encoder" = "x265" ] ; } ||
-           { [ "$video_encoder" = "kvazaar" ] ; } ||
-           { [ "$video_encoder" = "vp9" ] ; } ;
+           [ "$video_encoder" = "x264"    ] ||
+           [ "$video_encoder" = "x265"    ] ||
+           [ "$video_encoder" = "kvazaar" ] ||
+           [ "$video_encoder" = "vp9"     ] ;
        } ;
    }
 then
@@ -1413,24 +1360,22 @@ case "$fade" in
 esac
 
 # check if entered fixed video length is a valid integer/float number (-x)
-if { printf "%s" "$fixed_length" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
+if printf "%s" "$fixed_length" | grep -Eq '^[0-9]+\.?[0-9]*$'
 then
     # check if user enabled fixed video duration (disabled by default)
-    if ! { printf "%s" "$fixed_length" | grep -Eq '^[0]+\.?[0]*$' ; }
-    then
+    printf "%s" "$fixed_length" | grep -Eq '^[0]+\.?[0]*$' ||
         fixed_length_options="-t ${fixed_length}"
-    fi
 else
     exit_program \
         "'${fixed_length}' is not a valid number for fixed video length"
 fi
 
 # check if entered volume factor is a valid integer/float number (-m)
-if { printf "%s" "$volume_factor" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
+if printf "%s" "$volume_factor" | grep -Eq '^[0-9]+\.?[0-9]*$'
 then
     # check if volume increase effect is disabled (value '1.0' or '0.0')
-    if { printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ; } ||
-       { printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$' ; }
+    if printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ||
+       printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$'
     then
         volume_options=""
     else
@@ -1442,19 +1387,17 @@ else
 fi
 
 # check for a valid watermark size format (NxN) (-z/--wmark-size)
-if ! { printf "%s" "$watermark_size" | grep -Eq '^[0-9]+x[0-9]*$' ; }
-then
-    exit_program "'${watermark_size}' is not a valid watermark size format"
-fi
+printf "%s" "$watermark_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
+    "'${watermark_size}' is not a valid watermark size format"
 
 # check for a valid watermark position format (N,N) (-k/--wmark-position)
-if ! { printf "%s" "$watermark_position" | grep -Eq '^[0-9]+,[0-9]*$' ; }
+if printf "%s" "$watermark_position" | grep -Eq '^[0-9]+,[0-9]*$'
 then
-    exit_program \
-        "'${watermark_position}' is not a valid watermark position format"
-else
     # translate watermark position to what is really used in ffmpeg command
     watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
+else
+    exit_program \
+        "'${watermark_position}' is not a valid watermark position format"
 fi
 
 # enable watermark effect if necessary (-w/--watermark)
@@ -1518,10 +1461,8 @@ then
         notify "normal" "3000" "mail-mark-notjunk" "finish"
         
         # play a sound after finish if requirements are present
-        if [ -x "$(which paplay 2>/dev/null)" ] && [ -f "$finish_sound" ] 
-        then
+        [ -x "$(which paplay 2>/dev/null)" ] && [ -f "$finish_sound" ] &&
             paplay "$finish_sound" 2>/dev/null
-        fi
     else
         printf "%s\n" "screencast: encoding error!" >&2
         notify "critical" "5000" "process-stop" "encoding error!"
