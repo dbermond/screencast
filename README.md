@@ -271,6 +271,11 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from *pulseaudio*) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
 
+## LIMITATIONS
+**screencast** currently records only display `0` and screen `0`
+(`DISPLAY` value of `:0.0` - or `:0`), which is sufficient for
+single monitor environments. It may not produce the expected results when using a multi-monitor environment depending on your settings.
+
 ## LINKS
 - FFmpeg: [https://www.ffmpeg.org/](https://www.ffmpeg.org/)
 
