@@ -194,7 +194,7 @@ show_help() {
     printf "%s"   "  -t, --tmp-dir=DIR        "
     printf "%s\n" "use DIR for temporary files [${tmpdir}]"
     printf "%s"   "  -K, --keep-tmpvideo      "
-    printf "%s\n" "keep (don't delete) the temporary video [${keep_tmpvideo}]"
+    printf "%s\n" "keep (don't delete) the temporary video"
     printf "%s"   "  -u, --auto-filename      "
     printf "%s\n" "auto choose output filename based on date/time"
     printf "%s"   "  -l, --list               "
