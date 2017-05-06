@@ -4,8 +4,8 @@ screencast
 - [DESCRIPTION](#description)
 - [USAGE](#usage)
 - [OPTIONS](#options)
-    - [`-p, --position=N,N`](#-p---positionnn)
     - [`-s, --size=NxN`](#-s---sizenxn)
+    - [`-p, --position=N,N`](#-p---positionnn)
     - [`-r, --fps=N`](#-r---fpsn)
     - [`-f, --format=TYPE`](#-f---formattype)
     - [`-i, --audio-input=NAME`](#-i---audio-inputname)
@@ -14,8 +14,8 @@ screencast
     - [`-e, --fade=TYPE`](#-e---fadetype)
     - [`-m, --volume-factor=N`](#-m---volume-factorn)
     - [`-w, --watermark=TEXT`](#-w---watermarktext)
-    - [`-k, --wmark-position=N,N`](#-k---wmark-positionnn)
     - [`-z, --wmark-size=NxN`](#-z---wmark-sizenxn)
+    - [`-k, --wmark-position=N,N`](#-k---wmark-positionnn)
     - [`-c, --wmark-font=NAME`](#-c---wmark-fontname)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
@@ -54,17 +54,17 @@ The specified output filename must have an extension which in turn must be a sup
 ## OPTIONS
 Long options can be used with spaces or an equal sign (`=`). For example, `--fade in` is the same as `--fade=in`.
 
-#### `-p, --position=N,N`
-
-The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with `-s` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
-
-default: `0,0` (screen top left corner)
-
 #### `-s, --size=NxN`
 
 The video size. This is actually the video resolution. Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: `640x480`
+
+#### `-p, --position=N,N`
+
+The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with `-s` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+
+default: `0,0` (screen top left corner)
 
 #### `-r, --fps=N`
 
@@ -123,6 +123,12 @@ Enable text watermarking, setting text to *TEXT*. Although it is a text, it is g
 
 default: disabled
 
+#### `-z, --wmark-size=NxN`
+
+Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image.
+
+default: `255x35`
+
 #### `-k, --wmark-position=N,N`
 
 Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with `-z` option it will define a rectangular area in the video that will contain the text watermark image.
@@ -135,12 +141,6 @@ default: `0,0` (video top left corner)
     - `970,688` - bottom right corner
     - `10,688`  - bottom left corner
     - `550,350` - centralized
-
-#### `-z, --wmark-size=NxN`
-
-Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image.
-
-default: `255x35`
 
 #### `-c, --wmark-font=NAME`
 

@@ -28,6 +28,16 @@ video fade-in / fade-out, text watermarking and volume increase.
 Long options can be used with spaces or an equal sign ('='). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
 .TP
+\fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
+.RS
+The video size. This is actually the video resolution. Combined with \fB\-p\fR
+option it will define a rectangular desktop area that will be recorded. This
+rectangular area must be inside of the current screen size/resolution (cannot
+be out of screen bounds).
+.PP
+default: 640x480
+.RE
+.TP
 \fB\-p\fR, \fB\-\-position\fR=\fIN\fR,\fIN\fR
 .RS
 The screen position defining from where the recording will take place. These
@@ -37,16 +47,6 @@ rectangular area must be inside of the current screen size/resolution (cannot
 be out of screen bounds).
 .PP
 default: 0,0 (screen top left corner)
-.RE
-.TP
-\fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
-.RS
-The video size. This is actually the video resolution. Combined with \fB\-p\fR
-option it will define a rectangular desktop area that will be recorded. This
-rectangular area must be inside of the current screen size/resolution (cannot
-be out of screen bounds).
-.PP
-default: 640x480
 .RE
 .TP
 \fB\-r\fR, \fB\-\-fps\fR=\fIN\fR
@@ -138,6 +138,14 @@ it is generated as a PNG image so it can be integrated in the video.
 default: disabled
 .RE
 .TP
+\fB\-z\fR, \fB\-\-wmark\-size\fR=\fIN\fRx\fIN\fR
+.RS
+Set text watermark size. Combined with \fB\-k\fR option it will define a
+rectangular area in the video that will contain the text watermark image.
+.PP
+default: 255x35
+.RE
+.TP
 \fB\-k\fR, \fB\-\-wmark\-position\fR=\fIN\fR,\fIN\fR
 .RS
 Set text watermark position inside the video. These are X and Y offsets from
@@ -160,14 +168,6 @@ Good position values for hd720p video (\fB\-s 1280x720\fR) with default watermar
 .PP
 550,350 - centralized
 .RE
-.RE
-.TP
-\fB\-z\fR, \fB\-\-wmark\-size\fR=\fIN\fRx\fIN\fR
-.RS
-Set text watermark size. Combined with \fB\-k\fR option it will define a
-rectangular area in the video that will contain the text watermark image.
-.PP
-default: 255x35
 .RE
 .TP
 \fB\-c\fR, \fB\-\-wmark\-font\fR=\fINAME\fR

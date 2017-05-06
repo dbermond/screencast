@@ -153,11 +153,11 @@ show_help() {
     printf "%s\n" "Usage: screencast [options] <output>"
     printf "%s\n" "                  [options] -u"
     printf "%s\n" ""
+    printf "%s"   "  -s, --size=NxN           "
+    printf "%s\n" "video size (resolution) [${video_size}]"
     printf "%s"   "  -p, --position=N,N       "
     printf "%s"  "recording position (screen XY top left offsets) "
     printf "%s\n" "[${video_position}]"
-    printf "%s"   "  -s, --size=NxN           "
-    printf "%s\n" "video size (resolution) [${video_size}]"
     printf "%s"   "  -r, --fps=N              "
     printf "%s\n" "video framerate (fps) [${video_rate}]"
     printf "%s"   "  -f, --format=TYPE        "
@@ -175,11 +175,11 @@ show_help() {
     printf "%s\n" "[${volume_factor}]"
     printf "%s"   "  -w, --watermark=TEXT     "
     printf "%s\n" "enable and set text watermark [disabled]"
+    printf "%s"   "  -z, --wmark-size=NxN     "
+    printf "%s\n" "watermark image size [${watermark_size}]"
     printf "%s"   "  -k, --wmark-position=N,N "
     printf "%s"   "watermark position (video XY top left offsets) "
     printf "%s\n" "[${watermark_position}]"
-    printf "%s"   "  -z, --wmark-size=NxN     "
-    printf "%s\n" "watermark image size [${watermark_size}]"
     printf "%s"   "  -c, --wmark-font=NAME    "
     printf "%s\n" "watermark font [${watermark_font}]"
     printf "%s"   "  -x, --fixed=N            "
@@ -382,7 +382,7 @@ parse_cmd_line() {
         # and comments will be inserted only for what is different.
         case $1 in
             # short option and long option without '='
-            -i|--audio-input)
+            -s|--size)
                 # search for an argument
                 if [ "$2" ] 
                 then
@@ -391,23 +391,23 @@ parse_cmd_line() {
                     #  meaning that another option was found)
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
-                        command_error "--audio-input (-i)"
+                        command_error "--size (-s)"
                     else
-                        audio_input="${2}" # assign value to corresponding var
+                        video_size="$2"
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 # errors out if no argument is found
                 else
-                    command_error "--audio-input (-i)"
+                    command_error "--size (-s)"
                 fi
                 ;;
             # long option with '='
-            --audio-input=?*)
-                audio_input="${1#*=}" # assign value after '='
+            --size=?*)
+                video_size="${1#*=}" # assign value after '='
                 ;;
             # errors out if a long option with '=' has nothing following the '='
-            --audio-input=)
-                command_error "--audio-input (-i)"
+            --size=)
+                command_error "--size (-s)"
                 ;;
             
             -p|--position)
@@ -431,27 +431,6 @@ parse_cmd_line() {
                 command_error "--position (-p)"
                 ;;
             
-            -s|--size)
-                if [ "$2" ] 
-                then
-                    if printf "%.1s\n" "$2" | grep -q '-'
-                    then
-                        command_error "--size (-s)"
-                    else
-                        video_size="$2"
-                        shift && shift_count="$((shift_count + 1))"
-                    fi
-                else
-                    command_error "--size (-s)"
-                fi
-                ;;
-            --size=?*)
-                video_size="${1#*=}"
-                ;;
-            --size=)
-                command_error "--size (-s)"
-                ;;
-            
             -r|--fps)
                 if [ "$2" ] 
                 then
@@ -473,10 +452,6 @@ parse_cmd_line() {
                 command_error "--fps (-r)"
                 ;;
             
-            -u|--auto-filename) # option without argument
-                auto_filename="true"
-                ;;
-            
             -f|--format)
                 if [ "$2" ] 
                 then
@@ -496,6 +471,27 @@ parse_cmd_line() {
                 ;;
             --format=)
                 command_error "--format (-f)"
+                ;;
+            
+            -i|--audio-input)
+                if [ "$2" ] 
+                then
+                    if printf "%.1s\n" "$2" | grep -q '-'
+                    then
+                        command_error "--audio-input (-i)"
+                    else
+                        audio_input="${2}" # assign value to corresponding var
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error "--audio-input (-i)"
+                fi
+                ;;
+            --audio-input=?*)
+                audio_input="${1#*=}"
+                ;;
+            --audio-input=)
+                command_error "--audio-input (-i)"
                 ;;
             
             -a|--audio-encoder)
@@ -764,6 +760,10 @@ parse_cmd_line() {
             
             -K|--keep-tmpvideo) # option without argument
                 keep_tmpvideo="true"
+                ;;
+            
+            -u|--auto-filename) # option without argument
+                auto_filename="true"
                 ;;
             
             -l|--list)  # option without argument
