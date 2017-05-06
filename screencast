@@ -20,7 +20,7 @@
 
 # program settings
 screencast_version="v1.1.0.next"
-screencast_website="https://github.com/bermond/screencast"
+screencast_website="https://github.com/dbermond/screencast"
 
 # system related settings
 savedir="$(pwd)"             # path to save output files

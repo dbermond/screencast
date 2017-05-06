@@ -294,7 +294,7 @@ single monitor environments. It may not produce the expected results when using 
 ## AUTHOR
 Daniel Bermond
 
-[https://github.com/bermond/screencast](https://github.com/bermond/screencast)
+[https://github.com/dbermond/screencast](https://github.com/dbermond/screencast)
 
 ## COPYRIGHT
 Copyright © 2015-2017 Daniel Bermond
