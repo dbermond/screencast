@@ -32,7 +32,9 @@ Long options can be used with spaces or an equal sign ('='). For example,
 .RS
 The screen position defining from where the recording will take place. These
 are X and Y offsets from the screen top left corner. Combined with \fB\-s\fR
-option it will define a rectangular desktop area that will be recorded.
+option it will define a rectangular desktop area that will be recorded. This
+rectangular area must be inside of the current screen size/resolution (cannot
+be out of screen bounds).
 .PP
 default: 0,0 (screen top left corner)
 .RE
@@ -40,7 +42,9 @@ default: 0,0 (screen top left corner)
 \fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
 .RS
 The video size. This is actually the video resolution. Combined with \fB\-p\fR
-option it will define a rectangular desktop area that will be recorded.
+option it will define a rectangular desktop area that will be recorded. This
+rectangular area must be inside of the current screen size/resolution (cannot
+be out of screen bounds).
 .PP
 default: 640x480
 .RE
@@ -289,12 +293,10 @@ myvideo.mkv
 When not using the \fB\-x\fR option press the \fIq\fR key in terminal window to
 end the recording.
 .SH REQUIREMENTS
-The minimum requirements are a running X session and a recent \fIFFmpeg\fR
-version compiled with support for x11grab (libxcb) and the desired encoders.
-For example, if you want to use \fIvp9\fR video encoder and \fIopus\fR audio
-encoder it will require \fIFFmpeg\fR to be compiled with support for x11grab
-(libxcb), libvpx and libopus. It's advised to use \fIFFmpeg\fR version git
-master.
+The minimum requirements are a running X session, a recent \fIFFmpeg\fR version
+and \fIxdpyinfo\fR. It’s advised to use \fIFFmpeg\fR version git master.
+\fIFFmpeg\fR needs to be compiled with support for x11grab (libxcb) and the
+desired encoders.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
 \fInone\fR) \fIFFmpeg\fR must have been compiled with support for ALSA audio.

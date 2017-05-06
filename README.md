@@ -55,13 +55,13 @@ Long options can be used with spaces or an equal sign (’```=```’). For examp
 
 #### ```-p, --position=N,N```
 
-The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with ```-s``` option it will define a rectangular desktop area that will be recorded.
+The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with ```-s``` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: ```0,0``` (screen top left corner)
 
 #### ```-s, --size=NxN```
 
-The video size. This is actually the video resolution. Combined with ```-p``` option it will define a rectangular desktop area that will be recorded.
+The video size. This is actually the video resolution. Combined with ```-p``` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: ```640x480```
 
@@ -236,7 +236,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ```
 
 ## REQUIREMENTS
-- The minimum requirements are a running X session and a recent *FFmpeg* version compiled with support for x11grab (libxcb) and the desired encoders. For example, if you want to use *vp9* video encoder and *opus* audio encoder it will require *FFmpeg* to be compiled with support for x11grab (libxcb), libvpx and libopus. It’s advised to use *FFmpeg* version git master. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
+- The minimum requirements are a running X session, a recent *FFmpeg* version and *xdpyinfo*. It’s advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
 
 - When recording audio (```-i``` and ```-a``` options not setted to ```none```) *FFmpeg* must have been compiled with support for ALSA audio. The default ```pulse``` setting for ```-i``` option requires *FFmpeg* to be compiled with support for pulseaudio (libpulse) as well.
 
@@ -278,7 +278,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - **screencast** Arch Linux AUR package: [https://aur.archlinux.org/packages/screencast/](https://aur.archlinux.org/packages/screencast/)
 
-- FFmpeg version git master Arch Linux AUR package (with all possible libs including libfdk_aac): [https://aur.archlinux.org/packages/ffmpeg-full-git/](https://aur.archlinux.org/packages/ffmpeg-full-git/)
+- Arch Linux AUR package for FFmpeg version git master (with all possible libs including libfdk_aac): [https://aur.archlinux.org/packages/ffmpeg-full-git/](https://aur.archlinux.org/packages/ffmpeg-full-git/)
 
 ## AUTHOR
 Daniel Bermond

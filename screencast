@@ -224,7 +224,7 @@ notify() {
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send ffmpeg ffprobe bc convert magick \
+    for requirement in notify-send xdpyinfo ffmpeg ffprobe bc convert magick \
                        "$pngoptimizer" advdef
     do
         # skip disabled components (unnecessary checks)
@@ -1192,6 +1192,21 @@ if ! { printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' ; }
 then
     exit_program "'${video_size}' is not a valid video size format"
 fi
+
+# check for valid video size and position in relation to the screen size
+screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
+screen_width="$(printf  "%s" "$screen_size" | cut -d 'x' -f1)"
+screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
+video_width="$(printf   "%s" "$video_size"  | cut -d 'x' -f1)"
+video_height="$(printf  "%s" "$video_size"  | cut -d 'x' -f2)"
+video_position_x="$(printf "%s" "$video_position" | cut -d ',' -f1)"
+video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
+[ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
+    exit_program \
+        "video width + position X is greater then the current screen width"
+[ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
+    exit_program \
+        "video height + position Y is greater then the current screen height"
 
 # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
 if ! { printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' ; }
