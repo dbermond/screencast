@@ -22,6 +22,7 @@ screencast
     - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
     - [`-o, --output-dir=DIR`](#-o---output-dirdir)
     - [`-t, --tmp-dir=DIR`](#-t---tmp-dirdir)
+    - [`-K, --keep-tmpvideo`](#-k---keep-tmpvideo)
     - [`-u, --auto-filename`](#-u---auto-filename)
     - [`-l, --list`](#-l---list)
     - [`-h, --help`](#-h---help)
@@ -178,6 +179,10 @@ default: the local directory
 Set temporary files to be placed in *DIR*. By default, the `/tmp` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
 
 default: `/tmp`
+
+#### `-K, --keep-tmpvideo`
+
+Keep (don't delete) the temporary video.
 
 #### `-u, --auto-filename`
 

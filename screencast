@@ -30,6 +30,7 @@ finish_sound="/usr/share/sounds/freedesktop/stereo/complete.oga"
 
 # control settings (controls various aspects)
 auto_filename="false"        # auto choose output filename based on date/time
+keep_tmpvideo="false"        # keep the temporary video in $tmpdir
 fade="none"                  # fade effect
 watermark="false"            # watermark effect (true, false)
 fixed_length="0"             # fixed length video in seconds (0 disable)
@@ -123,7 +124,8 @@ supported_pngopt="truepng, pingo, optipng, opt-png, none"
 cleanup() {
     # delete temporary files
     rm -f "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
-    rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+    [ "$keep_tmpvideo" = "false" ] &&
+        rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
@@ -191,6 +193,8 @@ show_help() {
     printf "%s\n" "save videos to DIR (to use with -u)"
     printf "%s"   "  -t, --tmp-dir=DIR        "
     printf "%s\n" "use DIR for temporary files [${tmpdir}]"
+    printf "%s"   "  -K, --keep-tmpvideo      "
+    printf "%s\n" "keep (don't delete) the temporary video [${keep_tmpvideo}]"
     printf "%s"   "  -u, --auto-filename      "
     printf "%s\n" "auto choose output filename based on date/time"
     printf "%s"   "  -l, --list               "
@@ -756,6 +760,10 @@ parse_cmd_line() {
                 ;;
             --tmp-dir=)
                 command_error "--tmp-dir (-t)"
+                ;;
+            
+            -K|--keep-tmpvideo) # option without argument
+                keep_tmpvideo="true"
                 ;;
             
             -l|--list)  # option without argument
