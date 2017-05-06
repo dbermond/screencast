@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2086
 
 # screencast - POSIX-compliant shell script to record a X11 desktop
 #
@@ -210,7 +211,6 @@ show_help() {
 #            $4 - text message
 notify() {
     notify_args="--urgency=${1} --expire-time=${2} --icon=${3}"
-    # shellcheck disable=SC2086
     [ "$notifications" = "true" ] && notify-send $notify_args screencast "$4"
 }
 
@@ -886,7 +886,6 @@ optimizepng() {
     # check if file is a PNG image
     if file "$1" | grep -q 'PNG image data'
     then
-        # shellcheck disable=SC2086
         case "$pngoptimizer" in
             truepng)
                 truepng $truepngsettings "$1"
@@ -906,7 +905,6 @@ optimizepng() {
         esac
         
         # use advdef if setted to be used (-w / --watermark)
-        # shellcheck disable=SC2086
         [ "$useadvdef" = "true" ] && advdef $advdefsettings "$1"
     
     else
@@ -1415,7 +1413,6 @@ tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
 notify "normal" "1700" "media-record" "recording..."
 
 # record screen to a lossless video
-# shellcheck disable=SC2086
 if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -r $video_rate -s $video_size \
@@ -1448,7 +1445,6 @@ then
     fi
     
     # encode the recorded lossless video file
-    # shellcheck disable=SC2086
     if ffmpeg \
            $audio_channel_layout \
            -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
