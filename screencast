@@ -1258,19 +1258,23 @@ if {
    {
        [ "$format" = "webm" ] && 
        {
-           [ "$video_encoder" = "x264"    ] ||
-           [ "$video_encoder" = "x265"    ] ||
-           [ "$video_encoder" = "kvazaar" ] ||
-           [ "$video_encoder" = "theora"  ] ;
+           [ "$video_encoder" = "x264"       ] ||
+           [ "$video_encoder" = "h264_nvenc" ] ||
+           [ "$video_encoder" = "x265"       ] ||
+           [ "$video_encoder" = "kvazaar"    ] ||
+           [ "$video_encoder" = "hevc_nvenc" ] ||
+           [ "$video_encoder" = "theora"     ] ;
        } ;
    } ||
    {
        [ "$format" = "ogg" ] && 
        {
-           [ "$video_encoder" = "x264"    ] ||
-           [ "$video_encoder" = "x265"    ] ||
-           [ "$video_encoder" = "kvazaar" ] ||
-           [ "$video_encoder" = "vp9"     ] ;
+           [ "$video_encoder" = "x264"       ] ||
+           [ "$video_encoder" = "h264_nvenc" ] ||
+           [ "$video_encoder" = "x265"       ] ||
+           [ "$video_encoder" = "kvazaar"    ] ||
+           [ "$video_encoder" = "hevc_nvenc" ] ||
+           [ "$video_encoder" = "vp9"        ] ;
        } ;
    }
 then
