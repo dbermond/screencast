@@ -278,7 +278,7 @@ check_requirements() {
                 ;;
             "$pngoptimizer")
                 request_string=" png optimization was requested but "
-                installname="${requirement}"
+                installname="$requirement"
                 ;;
             advdef)
                 request_string=" png optimization was requested but "
@@ -1427,7 +1427,7 @@ notify "normal" "1700" "media-record" "recording..."
 if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -r $video_rate -s $video_size \
-       -i :0.0+$video_position \
+       -i :0.0+${video_position} \
        $watermark_options \
        $audio_record_codec \
        -vcodec $video_record_codec -r $video_rate \
