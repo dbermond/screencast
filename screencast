@@ -1459,7 +1459,7 @@ then
            $audio_encode_codec \
            -vcodec $video_encode_codec -r $video_rate \
            $faststart \
-           -y \
+           -map 0 -y \
            "${savedir}/${output_file}"
     then
         notify "normal" "3000" "mail-mark-notjunk" "finish"
