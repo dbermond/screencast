@@ -1057,18 +1057,13 @@ then
     fi
 fi
 
-# adjust audio input variable with user input
+# audio adjustments based on $audio_input value
 case "$audio_input" in
-    none)  # video without audio
-        # disable all audio options (audio will not be recorded)
-        audio_input=""
-        audio_channel_layout=""
-        audio_general_options=""
-        audio_record_codec=""
-        audio_encoder="none"
+    none)  # video without audio stream (audio will not be recorded)
+        audio_encoder="none" # trigger adjustments during $audio_encoder checks
         ;;
     *)
-        audio_input="-i ${audio_input}"
+        audio_input="-i ${audio_input}" # add ffmpeg '-i' option
         ;;
 esac
 
@@ -1308,8 +1303,7 @@ case "$audio_encoder" in
         check_ffmpeg_encoder mp3 libshine || exit 1
         audio_encode_codec="$audio_encode_codec_shine"
         ;;
-    none)  # video without audio
-        #disable all audio options (audio will not be recorded)
+    none)  # video without audio stream (audio will not be recorded)
         audio_input=""
         audio_channel_layout=""
         audio_general_options=""
