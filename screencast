@@ -1058,14 +1058,13 @@ then
 fi
 
 # audio adjustments based on $audio_input value
-case "$audio_input" in
-    none)  # video without audio stream (audio will not be recorded)
-        audio_encoder="none" # trigger adjustments during $audio_encoder checks
-        ;;
-    *)
-        audio_input="-i ${audio_input}" # add ffmpeg '-i' option
-        ;;
-esac
+if [ "$audio_input" = "none" ] 
+then
+    # video without audio stream (audio will not be recorded)
+    audio_encoder="none" # trigger adjustments during $audio_encoder checks
+else
+    audio_input="-i ${audio_input}" # add ffmpeg '-i' option
+fi
 
 # if '-u' is not set, make some needed checks and settings
 if [ "$auto_filename" = "false" ] 
