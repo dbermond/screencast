@@ -1307,7 +1307,8 @@ case "$audio_encoder" in
         audio_input=""
         audio_channel_layout=""
         audio_general_options=""
-        audio_record_codec=""
+        audio_record_codec="-an"
+        audio_encode_codec="-an"
         ;;
     *)
         exit_program "'${audio_encoder}' is not a valid audio encoder"
