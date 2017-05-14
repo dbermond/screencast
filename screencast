@@ -46,7 +46,7 @@ format="mp4"                 # container format (file extension) for output
 audio_input="pulse"
 audio_channel_layout="-channel_layout stereo"
 audio_general_options="-f alsa -thread_queue_size ${queue_size} \
-                       -ar 48000 -ac 2 ${audio_channel_layout}"
+                       -sample_rate 48000 -channels 2 ${audio_channel_layout}"
 audio_record_codec="-acodec pcm_s16le -ar 48000 -ac 2"
 audio_encode_codec_fdkaac="-acodec libfdk_aac -ab 128k -ar 44100 -ac 2"
 audio_encode_codec_aac="-acodec aac -ab 128k -ar 44100 -ac 2"
@@ -1426,7 +1426,7 @@ notify "normal" "1700" "media-record" "recording..."
 # record screen to a lossless video
 if ffmpeg \
        $audio_general_options $audio_input \
-       $video_general_options -r $video_rate -s $video_size \
+       $video_general_options -framerate $video_rate -video_size $video_size \
        -i :0.0+${video_position} \
        $watermark_options \
        $audio_record_codec \
