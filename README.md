@@ -6,6 +6,7 @@ screencast
 - [OPTIONS](#options)
     - [`-s, --size=NxN`](#-s---sizenxn)
     - [`-p, --position=N,N`](#-p---positionnn)
+    - [`-S, --select-region`](#-s---select-region)
     - [`-r, --fps=N`](#-r---fpsn)
     - [`-f, --format=TYPE`](#-f---formattype)
     - [`-i, --audio-input=NAME`](#-i---audio-inputname)
@@ -66,6 +67,10 @@ default: `640x480`
 The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with `-s` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: `0,0` (screen top left corner)
+
+#### `-S, --select-region`
+
+Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use arrow keys to fine tune, right click or any other keystroke to cancel. The `-s` and `-p` options are ignored when using this option.
 
 #### `-r, --fps=N`
 
@@ -249,6 +254,8 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 - *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the `-n` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the `-n` option will result in error.
 
 - Other requirements are needed according to additional options that may be specified by the user:
+
+    - *slop* is needed for selecting the screen region with mouse (`-S` option).
 
     - *FFprobe* and *bc* are needed for video fade effect (`-e` option).
 

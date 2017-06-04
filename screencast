@@ -40,6 +40,7 @@ audio_encoder="aac"          # audio encoder
 video_encoder="x264"         # video encoder
 audio_encoder_setted="false" # controls if audio encoder was setted by cmd line
 video_encoder_setted="false" # controls if video encoder was setted by cmd line
+select_region="false"        # user selects with mouse the screen region to rec
 format="mp4"                 # container format (file extension) for output
 
 # audio settings
@@ -158,6 +159,8 @@ show_help() {
     printf "%s"   "  -p, --position=N,N       "
     printf "%s"  "recording position (screen XY top left offsets) "
     printf "%s\n" "[${video_position}]"
+    printf "%s"   "  -S, --select-region      "
+    printf "%s\n" "select with mouse the screen region to record"
     printf "%s"   "  -r, --fps=N              "
     printf "%s\n" "video framerate (fps) [${video_rate}]"
     printf "%s"   "  -f, --format=TYPE        "
@@ -222,11 +225,15 @@ notify() {
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send xdpyinfo ffmpeg ffprobe bc convert magick \
-                       "$pngoptimizer" advdef
+    for requirement in notify-send xdpyinfo slop bc ffmpeg ffprobe convert \
+                       magick "$pngoptimizer" advdef
     do
         # skip disabled components (unnecessary checks)
         if {
+               [ "$requirement"   = "slop"  ] &&
+               [ "$select_region" = "false" ] ;
+           } ||
+           {
                {
                    [ "$requirement"  = "ffprobe" ] ||
                    [ "$requirement"  = "bc"      ] ;
@@ -429,6 +436,10 @@ parse_cmd_line() {
                 ;;
             --position=)
                 command_error "--position (-p)"
+                ;;
+            
+            -S|--select-region) # option without argument
+                select_region="true"
                 ;;
             
             -r|--fps)
@@ -1150,29 +1161,6 @@ do
     fi
 done
 
-# check for a valid screen position format to record (N,N) (-p/--position)
-printf "%s" "$video_position" | grep -Eq '^[0-9]+,[0-9]*$' || exit_program \
-    "'${video_position}' is not a valid screen position format"
-
-# check for a valid video size format (NxN) (-s/--size)
-printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
-    "'${video_size}' is not a valid video size format"
-
-# check for valid video size and position in relation to the screen size
-screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
-screen_width="$(printf  "%s" "$screen_size" | cut -d 'x' -f1)"
-screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
-video_width="$(printf   "%s" "$video_size"  | cut -d 'x' -f1)"
-video_height="$(printf  "%s" "$video_size"  | cut -d 'x' -f2)"
-video_position_x="$(printf "%s" "$video_position" | cut -d ',' -f1)"
-video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
-[ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
-    exit_program \
-        "video width + position X is greater then the current screen width"
-[ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
-    exit_program \
-        "video height + position Y is greater then the current screen height"
-
 # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
 printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' || exit_program \
     "'${video_rate}' is not a valid video framerate (fps) format"
@@ -1409,6 +1397,48 @@ fi
 
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
+
+# select with mouse the screen region to record if choosed by user
+if [ "$select_region" = "true" ] 
+then
+    printf "%s\n" "please select with mouse a screen region to record..."
+    printf "%s"   "info: single click to select a window, "
+    printf "%s\n" "click and drag to select a region"
+    printf "%s"   "info: when dragging, use arrow keys to fine tune, "
+    printf "%s\n" "right click or any other keystroke to cancel"
+    screen_region="$(slop -f '%x %y %w %h')"
+    [ -z "$screen_region" ] && exit_program "screen region was not selected"
+    video_position_x="$(printf "%s" "$screen_region" | cut -d ' ' -f1)"
+    video_position_y="$(printf "%s" "$screen_region" | cut -d ' ' -f2)"
+    video_width="$(     printf "%s" "$screen_region" | cut -d ' ' -f3)"
+    video_height="$(    printf "%s" "$screen_region" | cut -d ' ' -f4)"
+    video_position="${video_position_x},${video_position_y}"
+    video_size="${video_width}x${video_height}"
+# otherwise use settings from -s/--size and -p/--position (or the defaults)
+else
+    # check for a valid video size format (NxN) (-s/--size)
+    printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
+        "'${video_size}' is not a valid video size format"
+    
+    # check for a valid screen position format to record (N,N) (-p/--position)
+    printf "%s" "$video_position" |grep -Eq '^[0-9]+,[0-9]*$' || exit_program \
+        "'${video_position}' is not a valid screen position format"
+    
+    # check for valid video size and position in relation to the screen size
+    screen_size="$(xdpyinfo |grep 'dimensions'  |head -n1 |awk '{ print $2 }')"
+    screen_width="$( printf "%s" "$screen_size" | cut -d 'x' -f1)"
+    screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
+    video_width="$(  printf "%s" "$video_size"  | cut -d 'x' -f1)"
+    video_height="$( printf "%s" "$video_size"  | cut -d 'x' -f2)"
+    video_position_x="$(printf "%s" "$video_position" | cut -d ',' -f1)"
+    video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
+    [ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
+        exit_program \
+          "video width + position X is greater then the current screen width"
+    [ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
+        exit_program \
+          "video height + position Y is greater then the current screen height"
+fi
 
 notify "normal" "1700" "media-record" "recording..."
 

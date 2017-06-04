@@ -49,6 +49,12 @@ be out of screen bounds).
 default: 0,0 (screen top left corner)
 .RE
 .TP
+\fB\-S\fR, \fB\-\-select-region\fR
+Select with mouse the screen region to record. Use a single mouse click to
+select an entire window. Click and drag with mouse to select a region. When
+dragging, use arrow keys to fine tune, right click or any other keystroke to
+cancel. The \fB\-s\fR and \fB\-p\fR options are ignored when using this option.
+.TP
 \fB\-r\fR, \fB\-\-fps\fR=\fIN\fR
 .RS
 Video framerate (frames per second - fps).
@@ -316,6 +322,9 @@ the \fB\-n\fR option, eliminating the need of \fInotify\-send\fR. Running
 Other requirements are needed according to additional options that may be
 specified by the user:
 .RS
+.PP
+\fIslop\fR is needed for selecting the screen region with mouse
+(\fB\-S\fR option).
 .PP
 \fIFFprobe\fR and \fIbc\fR are needed for video fade effect (\fB\-e\fR option).
 .PP
