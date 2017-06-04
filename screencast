@@ -1047,8 +1047,7 @@ ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 
 # check if the detected ffmpeg build has support for basic recording formats
 check_ffmpeg_format "x11grab" "X11"  || exit 1
-if [ "$audio_input"   != "none" ] &&
-   [ "$audio_encoder" != "none" ] 
+if [ "$audio_input"   != "none" ] && [ "$audio_encoder" != "none" ] 
 then
     check_ffmpeg_format "alsa" "ALSA audio" || exit 1
     if [ "$audio_input" = "pulse" ] 
