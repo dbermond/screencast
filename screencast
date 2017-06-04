@@ -1178,28 +1178,24 @@ video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
 printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' || exit_program \
     "'${video_rate}' is not a valid video framerate (fps) format"
 
-# check if a valid container format was selected (-f/--format) and change 
+# check if a valid container format was selected (-f/--format) and change
 # audio/video encoder for some needed formats if not setted by command line
 case "$format" in
     mp4)
+        # no need to adjust encoders (default settings are for mp4)
         faststart="-movflags +faststart"
         ;;
     mkv)
-        :  # no action needed for 'mkv' format
+        # no action needed (mkv accepts a combination of all encoders)
+        :
         ;;
     webm)
-        if [ "$auto_filename" = "false" ] 
-        then
-            [ "$audio_encoder_setted" = "false" ] && audio_encoder="opus"
-            [ "$video_encoder_setted" = "false" ] && video_encoder="vp9"
-        fi
+        [ "$audio_encoder_setted" = "false" ] && audio_encoder="opus"
+        [ "$video_encoder_setted" = "false" ] && video_encoder="vp9"
         ;;
     ogg)
-        if [ "$auto_filename" = "false" ] 
-        then
-            [ "$audio_encoder_setted" = "false" ] && audio_encoder="vorbis"
-            [ "$video_encoder_setted" = "false" ] && video_encoder="theora"
-        fi
+        [ "$audio_encoder_setted" = "false" ] && audio_encoder="vorbis"
+        [ "$video_encoder_setted" = "false" ] && video_encoder="theora"
         ;;
     *)
         message="'${format}' is not a valid container \
