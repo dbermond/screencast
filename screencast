@@ -97,7 +97,7 @@ watermark_position="0,0"
 pngoptimizer="none"      # truepng, pingo, optipng, opt-png, none
 useadvdef="false"        # true, false
 truepngsettings="-o max"
-pingosettings="-s4"
+pingosettings="-s7"
 optipngsettings="-o 7"
 advdefsettings="-z4i10"
 
