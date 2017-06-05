@@ -74,7 +74,7 @@ default: `0,0` (screen top left corner)
 
 Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use arrow keys to fine tune, right click or any other keystroke to cancel. The `-s` and `-p` options are ignored when using this option.
 
-The same video size requirements described in the `-s` option section applyes here. If the width and height of the selected region does not meet these requirements they will be automatically changed to the immediately higher number that comply with the criteria. Please see the [`-s`](#-s---sizenxn) option for details.
+The same video size requirements described in the `-s` option section applies here. If the width and height of the selected region does not meet these requirements they will be automatically changed to the immediately higher number that comply with the criteria. Please see the [`-s`](#-s---sizenxn) option for details.
 
 #### `-r, --fps=N`
 
