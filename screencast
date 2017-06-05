@@ -225,7 +225,7 @@ notify() {
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send xdpyinfo slop bc ffmpeg ffprobe convert \
+    for requirement in notify-send xdpyinfo slop ffmpeg ffprobe bc convert \
                        magick "$pngoptimizer" advdef
     do
         # skip disabled components (unnecessary checks)
