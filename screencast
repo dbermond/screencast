@@ -1560,9 +1560,8 @@ else
     esac
 fi
 
-notify "normal" "1700" "media-record" "recording..."
-
 # record screen to a lossless video
+notify "normal" "1700" "media-record" "recording..."
 if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -framerate $video_rate -video_size $video_size \
