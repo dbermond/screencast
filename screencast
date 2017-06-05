@@ -346,7 +346,7 @@ exit_program() {
 # remove_spaces function: a sed command pipe to remove two or more spaces
 # arguments: none
 remove_spaces() {
-    sed 's/[[:space:]][[:space:]]\+/ /'
+    sed 's/[[:space:]][[:space:]]\+/ /g'
 }
 
 # list_supported function: print a list of arguments supported by this program
