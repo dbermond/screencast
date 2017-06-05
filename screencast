@@ -1017,6 +1017,76 @@ videofade() {
     esac
 }
 
+# check_dimension function: check if a given dimension is divisible by a
+#                           specific number (example: if divisible by 8)
+# arguments:  $1 - the given dimension (the actual variable value)
+#             $2 - the divisor (example: 8)
+# return code: 0 - the dimension is divisible by the divisor
+#              1 - the dimension is not divisible by the divisor
+# special setted variables after function execution:
+#     $remainder - the remainder of the division
+check_dimension() {
+    # assign function arguments to variable names
+    dimension_value="$1"
+    divisor="$2"
+    
+    # check if $dimension is divisible by $divisor (remainder must be 0)
+    [ "$((dimension_value % divisor))"  = "0" ] || return 1
+}
+
+# adjust_dimension function: change a given dimension to the immediately higher
+#                            divisible/multiple number to allow the value to be
+#                            accepted by a video encoder requirement
+# arguments: $1 - a string denoting the given dimension (width/height)
+#            $2 - the divisor (2/8)
+adjust_dimension() {
+    # assign function arguments to variable names
+    dimension="$1"
+    divisor="$2"
+    
+    # get the dimension value denoted by the string in $dimension
+    case "$dimension" in
+        width)
+            dimension_value="$video_width"
+            ;;
+        height)
+            dimension_value="$video_height"
+            ;;
+    esac
+    
+    # obtain the next divisible number
+    remainder="$((dimension_value % divisor))"
+    to_reach="$((divisor - remainder))"
+    new_dimension_value="$((dimension_value + to_reach))"
+    
+    # print a warning message
+    case "$divisor" in
+        2)
+            msg="not divisible by 2"
+            ;;
+        8)
+            msg="not a multiple of 8"
+            ;;
+        *)
+            msg="not divisible by ${divisor}"
+            ;;
+    esac
+    warn="warning: video ${dimension} '${dimension_value}' is ${msg} \
+          (${video_encoder} requirement) and was changed to \
+          '$new_dimension_value'"
+    printf "%s\n" "$warn" | remove_spaces
+    
+    # change the given dimension to the new value
+    case "$dimension" in
+        width)
+            video_width="$new_dimension_value"
+            ;;
+        height)
+            video_height="$new_dimension_value"
+            ;;
+    esac
+}
+
 #########################################
 #            program start              #
 #########################################
@@ -1413,7 +1483,28 @@ then
     video_width="$(     printf "%s" "$screen_region" | cut -d ' ' -f3)"
     video_height="$(    printf "%s" "$screen_region" | cut -d ' ' -f4)"
     video_position="${video_position_x},${video_position_y}"
+    
+    # change width and height if not acceptable by the choosed video encoder
+    case "$video_encoder" in
+        # x264 requires video width and height divisible by 2
+        x264)
+           check_dimension "$video_width"  "2" || adjust_dimension "width"  "2"
+           check_dimension "$video_height" "2" || adjust_dimension "height" "2"
+           ;;
+        # h264_nvenc seems to have no such type of restriction
+        # (not sure about hevc_nvenc)
+        h264_nvenc|hevc_nvenc)
+           :
+           ;;
+        # these requires video width and height to be a multiple of 8
+        x265|kvazaar|theora|vp8|vp9)
+           check_dimension "$video_width"  "8" || adjust_dimension "width"  "8"
+           check_dimension "$video_height" "8" || adjust_dimension "height" "8"
+           ;;
+    esac
+    
     video_size="${video_width}x${video_height}"
+    
 # otherwise use settings from -s/--size and -p/--position (or the defaults)
 else
     # check for a valid video size format (NxN) (-s/--size)
@@ -1438,6 +1529,35 @@ else
     [ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
         exit_program \
           "video height + position Y is greater then the current screen height"
+    
+    # check if video width/height are acceptable by the choosed video encoder
+    case "$video_encoder" in
+        # x264 requires video width and height divisible by 2
+        x264)
+            common="is not divisible by 2"
+            msg="'${video_width}' ${common} (${video_encoder} requirement)"
+            check_dimension "$video_width" "2" ||
+                exit_program "$(printf "%s" "video width ${msg}")"
+            msg="'${video_height}' ${common} (${video_encoder} requirement)"
+            check_dimension "$video_height" "2" ||
+                exit_program "$(printf "%s" "video height ${msg}")"
+            ;;
+        # h264_nvenc seems to have no such type of restriction
+        # (not sure about hevc_nvenc)
+        h264_nvenc|hevc_nvenc)
+            :
+            ;;
+        # these requires video width and height to be a multiple of 8
+        x265|kvazaar|theora|vp8|vp9)
+            msg_common="is not a multiple of 8"
+            msg="'${video_width}' ${msg_common} (${video_encoder} requirement)"
+            check_dimension "$video_width" "8" ||
+                exit_program "$(printf "%s" "video width ${msg}")"
+            msg="'${video_height}' ${msg_common} (${video_encoder} requirement)"
+            check_dimension "$video_height" "8" ||
+                exit_program "$(printf "%s" "video height ${msg}")"
+            ;;
+    esac
 fi
 
 notify "normal" "1700" "media-record" "recording..."

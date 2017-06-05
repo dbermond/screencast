@@ -60,6 +60,8 @@ Long options can be used with spaces or an equal sign (`=`). For example, `--fad
 
 The video size. This is actually the video resolution. Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
+The specified video size must conform to some requirements of the choosed video encoder. `x264` requires both width and height to be divisible by 2. `x265`, `kvazaar`, `theora`, `vp8` and `vp9` requires both width and height to be a multiple of 8. `h264_nvenc` seems to have no such type of restriction.
+
 default: `640x480`
 
 #### `-p, --position=N,N`
@@ -71,6 +73,8 @@ default: `0,0` (screen top left corner)
 #### `-S, --select-region`
 
 Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use arrow keys to fine tune, right click or any other keystroke to cancel. The `-s` and `-p` options are ignored when using this option.
+
+The same video size requirements described in the `-s` option section applyes here. If the width and height of the selected region does not meet these requirements they will be automatically changed to the immediately higher number that comply with the criteria. Please see the [`-s`](#-s---sizenxn) option for details.
 
 #### `-r, --fps=N`
 
