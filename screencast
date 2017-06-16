@@ -339,7 +339,7 @@ exit_program() {
            "error: ${1}" \
            "       if you need help run 'screencast --help' " \
            "or 'man screencast'" >&2
-    notify "critical" "5000" "process-stop" "error: $1"
+    notify "critical" "5000" "process-stop" "error: ${1}"
     exit 1
 }
 
