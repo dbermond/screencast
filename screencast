@@ -38,8 +38,10 @@ volume_factor="1.0"          # volume increase effect factor (0.0/1.0 disable)
 notifications="true"         # desktop notifications
 audio_encoder="aac"          # audio encoder
 video_encoder="x264"         # video encoder
-audio_encoder_setted="false" # controls if audio encoder was setted by cmd line
-video_encoder_setted="false" # controls if video encoder was setted by cmd line
+audio_encoder_setted="false" # if audio encoder  was setted by cmd line
+video_encoder_setted="false" # if video encoder  was setted by cmd line
+video_size_setted="false"    # if video size     was setted by cmd line
+video_posi_setted="false"    # if video position was setted by cmd line
 select_region="false"        # user selects with mouse the screen region to rec
 format="mp4"                 # container format (file extension) for output
 
@@ -400,6 +402,7 @@ parse_cmd_line() {
                         command_error "--size (-s)"
                     else
                         video_size="$2"
+                        video_size_setted="true"
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 # errors out if no argument is found
@@ -424,6 +427,7 @@ parse_cmd_line() {
                         command_error "--position (-p)"
                     else
                         video_position="$2"
+                        video_posi_setted="true"
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -1463,6 +1467,12 @@ fi
 # select with mouse the screen region to record if choosed by user
 if [ "$select_region" = "true" ] 
 then
+    # do not allow to use -S/--select-region with -s/--size or -p/--position
+    [ "$video_size_setted" = "true" ] && exit_program \
+       "--select-region (-S) option cannot be used with --size (-s) option"
+    [ "$video_posi_setted" = "true" ] && exit_program \
+       "--select-region (-S) option cannot be used with --position (-p) option"
+    
     printf "%s\n" "please select with mouse a screen region to record..."
     printf "%s"   "info: single click to select a window, "
     printf "%s\n" "click and drag to select a region"
