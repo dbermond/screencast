@@ -387,7 +387,7 @@ parse_cmd_line() {
         # since this is a very long case statement only the first block will
         # be commented. almost all other blocks follows the same sequence/logic
         # and comments will be inserted only for what is different.
-        case $1 in
+        case "$1" in
             # short option and long option without '='
             -s|--size)
                 # search for an argument
