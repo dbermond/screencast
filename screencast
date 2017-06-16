@@ -1013,32 +1013,51 @@ videofade() {
     esac
 }
 
-# check_dimension function: check if a given dimension is divisible by a
-#                           specific number (example: if divisible by 8)
+# check_dimension function: check if a given dimension is a multiple of 8
 # arguments:  $1 - the given dimension (the actual variable value)
-#             $2 - the divisor (example: 8)
-# return code: 0 - the dimension is divisible by the divisor
-#              1 - the dimension is not divisible by the divisor
-# special setted variables after function execution:
-#     $remainder - the remainder of the division
+# return code (status): 0 - the dimension is a multiple of 8
+#                       1 - the dimension is not a multiple of 8
 check_dimension() {
-    # assign function arguments to variable names
     dimension_value="$1"
-    divisor="$2"
     
-    # check if $dimension is divisible by $divisor (remainder must be 0)
-    [ "$((dimension_value % divisor))"  = "0" ] || return 1
+    # the dimension will be a multiple of 8 if the remainder is 0
+    [ "$((dimension_value % 8))"  = "0" ] || return 1
+}
+
+# dimension_msg function: create an error/warning message to use with
+#                         a given inappropriate video dimension
+# arguments: $1 - a string denoting the given dimension (width/height)
+# return value: a string with the created message
+dimension_msg() {
+    case "$video_encoder" in
+        x264|h264_nvenc|hevc_nvenc)
+            msg='(this can lead to a speedloss)'
+            ;;
+        x265|kvazaar|theora|vp8|vp9)
+            msg="(${video_encoder} requirement)"
+            ;;
+    esac
+    msg="is not a multiple of 8 ${msg}"
+    case "$1" in
+        width)
+            msg="video width '${video_width}' ${msg}"
+            ;;
+        height)
+            msg="video height '${video_height}' ${msg}"
+            ;;
+        *)
+            # no need to exit since it's usually called from a subshell
+            msg="dimension_msg(): invalid \$1 '${1}'"
+            ;;
+    esac
+    printf "%s" "$msg"
 }
 
 # adjust_dimension function: change a given dimension to the immediately higher
-#                            divisible/multiple number to allow the value to be
-#                            accepted by a video encoder requirement
+#                            number that is a multiple of 8
 # arguments: $1 - a string denoting the given dimension (width/height)
-#            $2 - the divisor (2/8)
 adjust_dimension() {
-    # assign function arguments to variable names
     dimension="$1"
-    divisor="$2"
     
     # get the dimension value denoted by the string in $dimension
     case "$dimension" in
@@ -1048,29 +1067,18 @@ adjust_dimension() {
         height)
             dimension_value="$video_height"
             ;;
+        *)
+            exit_program "adjust_dimension(): invalid dimension '${dimension}'"
+            ;;
     esac
     
-    # obtain the next divisible number
-    remainder="$((dimension_value % divisor))"
-    to_reach="$((divisor - remainder))"
+    # obtain the next multiple of 8 number
+    remainder="$((dimension_value % 8))"
+    to_reach="$((8 - remainder))"
     new_dimension_value="$((dimension_value + to_reach))"
     
-    # print a warning message
-    case "$divisor" in
-        2)
-            msg="not divisible by 2"
-            ;;
-        8)
-            msg="not a multiple of 8"
-            ;;
-        *)
-            msg="not divisible by ${divisor}"
-            ;;
-    esac
-    warn="warning: video ${dimension} '${dimension_value}' is ${msg} \
-          (${video_encoder} requirement) and was changed to \
-          '$new_dimension_value'"
-    printf "%s\n" "$warn" | remove_spaces
+    printf "%s"   "warning: $(dimension_msg "$dimension") "
+    printf "%s\n" "and was changed to '${new_dimension_value}'"
     
     # change the given dimension to the new value
     case "$dimension" in
@@ -1462,34 +1470,20 @@ then
     printf "%s\n" "click and drag to select a region"
     printf "%s"   "info: use arrow keys to fine tune when dragging, "
     printf "%s\n" "right click or any other keystroke to cancel"
+    
     screen_region="$(slop -o -f '%x %y %w %h')"
     [ -z "$screen_region" ] && exit_program "screen region was not selected"
     video_position_x="$(printf "%s" "$screen_region" | cut -d ' ' -f1)"
     video_position_y="$(printf "%s" "$screen_region" | cut -d ' ' -f2)"
     video_width="$(     printf "%s" "$screen_region" | cut -d ' ' -f3)"
     video_height="$(    printf "%s" "$screen_region" | cut -d ' ' -f4)"
-    video_position="${video_position_x},${video_position_y}"
     
-    # change width and height if not acceptable by the choosed video encoder
-    case "$video_encoder" in
-        # x264 requires video width and height divisible by 2
-        x264)
-           check_dimension "$video_width"  "2" || adjust_dimension "width"  "2"
-           check_dimension "$video_height" "2" || adjust_dimension "height" "2"
-           ;;
-        # h264_nvenc seems to have no such type of restriction
-        # (not sure about hevc_nvenc)
-        h264_nvenc|hevc_nvenc)
-           :
-           ;;
-        # these requires video width and height to be a multiple of 8
-        x265|kvazaar|theora|vp8|vp9)
-           check_dimension "$video_width"  "8" || adjust_dimension "width"  "8"
-           check_dimension "$video_height" "8" || adjust_dimension "height" "8"
-           ;;
-    esac
+    # change video width and height if not a multiple of 8
+    check_dimension "$video_width"  || adjust_dimension 'width'
+    check_dimension "$video_height" || adjust_dimension 'height'
     
     video_size="${video_width}x${video_height}"
+    video_position="${video_position_x},${video_position_y}"
     
 # otherwise use settings from -s/--size and -p/--position (or the defaults)
 else
@@ -1501,50 +1495,26 @@ else
     printf "%s" "$video_position" |grep -Eq '^[0-9]+,[0-9]*$' || exit_program \
         "'${video_position}' is not a valid screen position format"
     
-    # check for valid video size and position in relation to the screen size
-    screen_size="$(xdpyinfo |grep 'dimensions'  |head -n1 |awk '{ print $2 }')"
-    screen_width="$( printf "%s" "$screen_size" | cut -d 'x' -f1)"
-    screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
     video_width="$(  printf "%s" "$video_size"  | cut -d 'x' -f1)"
     video_height="$( printf "%s" "$video_size"  | cut -d 'x' -f2)"
     video_position_x="$(printf "%s" "$video_position" | cut -d ',' -f1)"
     video_position_y="$(printf "%s" "$video_position" | cut -d ',' -f2)"
-    [ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
-        exit_program \
-          "video width + position X is greater then the current screen width"
-    [ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
-        exit_program \
-          "video height + position Y is greater then the current screen height"
     
-    # check if video width/height are acceptable by the choosed video encoder
-    case "$video_encoder" in
-        # x264 requires video width and height divisible by 2
-        x264)
-            common="is not divisible by 2"
-            msg="'${video_width}' ${common} (${video_encoder} requirement)"
-            check_dimension "$video_width" "2" ||
-                exit_program "$(printf "%s" "video width ${msg}")"
-            msg="'${video_height}' ${common} (${video_encoder} requirement)"
-            check_dimension "$video_height" "2" ||
-                exit_program "$(printf "%s" "video height ${msg}")"
-            ;;
-        # h264_nvenc seems to have no such type of restriction
-        # (not sure about hevc_nvenc)
-        h264_nvenc|hevc_nvenc)
-            :
-            ;;
-        # these requires video width and height to be a multiple of 8
-        x265|kvazaar|theora|vp8|vp9)
-            msg_common="is not a multiple of 8"
-            msg="'${video_width}' ${msg_common} (${video_encoder} requirement)"
-            check_dimension "$video_width" "8" ||
-                exit_program "$(printf "%s" "video width ${msg}")"
-            msg="'${video_height}' ${msg_common} (${video_encoder} requirement)"
-            check_dimension "$video_height" "8" ||
-                exit_program "$(printf "%s" "video height ${msg}")"
-            ;;
-    esac
+    # check if video width and height are a multiple of 8
+    check_dimension "$video_width"  || exit_program "$(dimension_msg 'width')"
+    check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
 fi
+
+# check for valid video size and position in relation to the screen size
+screen_size="$(xdpyinfo | grep 'dimensions'  | head -n1 | awk '{ print $2 }')"
+screen_width="$( printf "%s" "$screen_size" | cut -d 'x' -f1)"
+screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
+[ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
+    exit_program \
+        "video width + position X is greater then the current screen width"
+[ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
+    exit_program \
+        "video height + position Y is greater then the current screen height"
 
 # enable watermark effect if necessary (-w/--watermark)
 if [ "$watermark" = "true" ] 

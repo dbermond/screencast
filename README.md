@@ -58,9 +58,9 @@ Long options can be used with spaces or an equal sign (`=`). For example, `--fad
 
 #### `-s, --size=NxN`
 
-The video size. This is actually the video resolution. Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+The video size. This is actually the video resolution (width x height). Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
-The specified video size must conform to some requirements of the choosed video encoder. `x264` requires both width and height to be divisible by 2. `x265`, `kvazaar`, `theora`, `vp8` and `vp9` requires both width and height to be a multiple of 8. `h264_nvenc` seems to have no such type of restriction.
+Both the width and height specified in video size must a multiple of 8. This is a requirement for `x265`, `kvazaar`, `theora`, `vp8` and `vp9` video encoders. For `x264`, `h264_nvenc` and `hevc_nvenc` video encoders this is actually not required, but it will avoid speedloss with them.
 
 default: `640x480`
 
@@ -72,9 +72,9 @@ default: `0,0` (screen top left corner)
 
 #### `-S, --select-region`
 
-Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use arrow keys to fine tune, right click or any other keystroke to cancel. The `-s` and `-p` options are ignored when using this option.
+Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use the arrow keys to fine tune. Right click or any other keystroke to cancel. The `-s` and `-p` options are ignored when using this option.
 
-The same video size requirements described in the `-s` option section applies here. If the width and height of the selected region does not meet these requirements they will be automatically changed to the immediately higher number that comply with the criteria. Please see the [`-s`](#-s---sizenxn) option for details.
+The selected width and height must be a multiple of 8 (please see the [`-s`](#-s---sizenxn) option for details). It's hard to select a screen region that matches this need with the currently used tool. To overcome this, if the width and height of the selected region does not meet this requirement they will be automatically changed to the immediately higher number that comply with this criteria. Note that if these newly changed values are out of screen bounds **screencast** will not be able to record and will exit with error.
 
 #### `-r, --fps=N`
 
