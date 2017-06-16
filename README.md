@@ -92,8 +92,11 @@ supported types: `mp4`, `mkv`, `webm`, `ogg`
 
 #### `-i, --audio-input=NAME`
 
-ALSA audio input device. When setted to `none` the audio will be disabled (video without audio, only video stream will be present). To determine possible audio input device names please see the
-[FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
+ALSA audio input device. To determine possible audio input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA). 
+
+- Some special values that can be used:
+    - `none`: audio will be disabled (video without audio, only video stream will be present)
+    - `pulse`: the default device in PulseAudio will be used
 
 default: `pulse`
 

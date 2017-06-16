@@ -94,12 +94,20 @@ supported types: mp4, mkv, webm, ogg
 .TP
 \fB\-i\fR, \fB\-\-audio\-input\fR=\fINAME\fR
 .RS
-ALSA audio input device. When setted to \fInone\fR the audio will be disabled
-(video without audio, only video stream will be present). To determine possible
-audio input device names please see:
+ALSA audio input device. To determine possible audio input device names please
+see:
 .nf
 <https://trac.ffmpeg.org/wiki/Capture/ALSA>
 .fi
+.PP
+Some special values that can be used:
+.RS
+.PP
+\fInone\fR: audio will be disabled (video without audio, only video stream will
+be present)
+.PP
+\fIpulse\fR: the default device in PulseAudio will be used
+.RE
 .PP
 default: pulse
 .RE
