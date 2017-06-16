@@ -967,9 +967,9 @@ create_watermark() {
     # optimize PNG image file
     optimizepng "$wmark_image"
     
-    watermark_options="-r ${video_rate}
-                       -thread_queue_size ${queue_size}
-                       -i ${wmark_image}
+    watermark_options="-r ${video_rate} \
+                       -thread_queue_size ${queue_size} \
+                       -i ${wmark_image} \
                        -filter_complex overlay=${watermark_position}"
 }
 
