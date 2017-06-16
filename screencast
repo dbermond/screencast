@@ -936,6 +936,7 @@ optimizepng() {
 #                            to be passed to ffmpeg command
 # arguments: none
 create_watermark() {
+    randomstring_png="$(randomstr "20")" # random string for tmp png filename
     wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
     
     # get font pointsize
@@ -1531,12 +1532,8 @@ screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
     exit_program \
         "video height + position Y is greater then the current screen height"
 
-# enable watermark effect if necessary (-w/--watermark)
-if [ "$watermark" = "true" ] 
-then
-    randomstring_png="$(randomstr "20")" # random string for tmp png filename
-    create_watermark
-fi
+# enable watermark effect if choosed by user (-w/--watermark)
+[ "$watermark" = "true" ] && create_watermark
 
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
