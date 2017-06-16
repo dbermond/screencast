@@ -798,18 +798,15 @@ parse_cmd_line() {
                 ;;
             
             -?*=?*) # unknown option with '=', handle argument also with '='
-                printf "%s\n" "error: unknown option \"${1%%=*}\"" >&2
-                exit 1
+                exit_program "unknown option '${1%%=*}'"
                 ;;
             
             -?*=) # unknown option with '='
-                printf "%s\n" "error: unknown option \"${1%=*}\"" >&2
-                exit 1
+                exit_program "unknown option '${1%=*}'"
                 ;;
             
             -?*)
-                printf "%s\n" "error: unknown option \"${1}\"" >&2
-                exit 1
+                exit_program "unknown option '${1}'"
                 ;;
             
             *)    # no more options left
