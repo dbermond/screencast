@@ -1458,13 +1458,6 @@ else
         "'${watermark_position}' is not a valid watermark position format"
 fi
 
-# enable watermark effect if necessary (-w/--watermark)
-if [ "$watermark" = "true" ] 
-then
-    randomstring_png="$(randomstr "20")" # random string for tmp png filename
-    create_watermark
-fi
-
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
 
@@ -1558,6 +1551,13 @@ else
                 exit_program "$(printf "%s" "video height ${msg}")"
             ;;
     esac
+fi
+
+# enable watermark effect if necessary (-w/--watermark)
+if [ "$watermark" = "true" ] 
+then
+    randomstring_png="$(randomstr "20")" # random string for tmp png filename
+    create_watermark
 fi
 
 # record screen to a lossless video
