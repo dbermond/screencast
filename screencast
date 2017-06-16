@@ -921,7 +921,6 @@ optimizepng() {
         
         # use advdef if setted to be used (-w / --watermark)
         [ "$useadvdef" = "true" ] && advdef $advdefsettings "$1"
-    
     else
         printf "%s\n" "error: invalid image format (must be PNG)" >&2
         return 1
