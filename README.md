@@ -260,6 +260,10 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the `-n` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the `-n` option will result in error.
 
+- *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
+
+- **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from *pulseaudio*) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
+
 - Other requirements are needed according to additional options that may be specified by the user:
 
     - *slop* is needed for selecting the screen region with mouse (`-S` option).
@@ -286,10 +290,6 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
 
 - The default `pulse` audio input setting (`-i` option) will be suitable for most users as it will use the default recording device configured in pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
-
-- *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
-
-- **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from *pulseaudio*) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
 
 ## LIMITATIONS
 **screencast** currently records only display `0` and screen `0`
