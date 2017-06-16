@@ -1097,7 +1097,7 @@ trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
 if [ -n "$ZSH_VERSION" ] 
 then
     which setopt >/dev/null 2>&1 || exit_program \
-        "script appears to be running in zsh but setopt was not found";
+        "script appears to be running in zsh but setopt was not found"
     setopt SH_WORD_SPLIT  # enable variable word splitting
 fi
 
