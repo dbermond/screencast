@@ -84,7 +84,7 @@ default: `25`
 
 #### `-f, --format=TYPE`
 
-Container format of the output video. This is to be used with `-u` option (if you want to specify a container format when using automatic output filename choosing). When not using `-u` option you can specify the container format directly in the output filename.
+Container format of the output video. This is to be used with `-u` option (if you want to specify a container format when using automatic output filename choosing). When not using `-u` option the container format needs to be specified directly in the output filename. This option cannot be used when entering an output filename.
 
 default: `mp4`
 

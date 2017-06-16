@@ -42,8 +42,9 @@ audio_encoder_setted="false" # if audio encoder  was setted by cmd line
 video_encoder_setted="false" # if video encoder  was setted by cmd line
 video_size_setted="false"    # if video size     was setted by cmd line
 video_posi_setted="false"    # if video position was setted by cmd line
-select_region="false"        # user selects with mouse the screen region to rec
+format_setted="false"        # if video format   was setted by cmd line with -f
 format="mp4"                 # container format (file extension) for output
+select_region="false"        # user selects with mouse the screen region to rec
 
 # audio settings
 audio_input="pulse"
@@ -474,6 +475,7 @@ parse_cmd_line() {
                         command_error "--format (-f)"
                     else
                         format="$2"
+                        format_setted="true"
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -1159,6 +1161,11 @@ then
     # check if user have not entered an output filename after the options
     [ "$#" -eq "0" ] && exit_program \
         "you must enter an output filename with extension (or use '-u')"
+    
+    # do not allow to use -f/--format when specifying an output filename
+    msg='--format (-f) option is to be used only with --auto-filename (-u) option
+       (please set the container format directly in the output filename)'
+    [ "$format_setted" = "true" ] && exit_program "$msg"
     
     # if user specified a save directory directly with output filename that
     # is different than the current working directory, use it
