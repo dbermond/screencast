@@ -1458,9 +1458,6 @@ else
         "'${watermark_position}' is not a valid watermark position format"
 fi
 
-randomstring_rec="$(randomstr "20")" # random string for tmp video filename
-tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
-
 # select with mouse the screen region to record if choosed by user
 if [ "$select_region" = "true" ] 
 then
@@ -1560,8 +1557,11 @@ then
     create_watermark
 fi
 
-# record screen to a lossless video
+randomstring_rec="$(randomstr "20")" # random string for tmp video filename
+tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
 notify "normal" "1700" "media-record" "recording..."
+
+# record screen to a lossless video
 if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -framerate $video_rate -video_size $video_size \
