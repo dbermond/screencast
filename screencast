@@ -110,8 +110,7 @@ vfade_solid_length="0.1" # solid color length (in seconds) of video fade effect
 # supported arguments (for use with '--list' ('-l'))
 supported_fade="in, out, both, none"
 supported_formats="mp4, mkv, webm, ogg"
-supported_aencoders="aac, opus, vorbis, mp3/mp3lame, shine, \
-                     none"
+supported_aencoders="aac, opus, vorbis, mp3/mp3lame, shine, none"
 supported_vencoders="x264, h264_nvenc, x265, kvazaar, \
                      hevc_nvenc, theora, vp8, vp9"
 supported_pngopt="truepng, pingo, optipng, opt-png, none"
@@ -359,7 +358,7 @@ list_supported() {
     printf "%s"   "  -f, --format                "
     printf "%s\n" "$(printf "%s" "$supported_formats")"
     printf "%s"   "  -a, --audio-encoder         "
-    printf "%s\n" "$(printf "%s" "$supported_aencoders" | remove_spaces)"
+    printf "%s\n" "$(printf "%s" "$supported_aencoders")"
     printf "%s"   "  -v, --video-encoder         "
     printf "%s\n" "$(printf "%s" "$supported_vencoders" | remove_spaces)"
     printf "%s"   "  -e, --fade                  "
@@ -1259,9 +1258,8 @@ case "$format" in
         [ "$video_encoder_setted" = "false" ] && video_encoder="theora"
         ;;
     *)
-        msg="'${format}' is not a valid container \
-                 format for this program"
-        exit_program "$(printf "%s" "$msg" | remove_spaces)"
+        exit_program \
+            "'${format}' is not a valid container format for this program"
         ;;
 esac
 
@@ -1297,7 +1295,7 @@ if [ "$format" = "mp4" ] && [ "$video_encoder" = "vp9" ]
 then
     # special case for mp4 + vp9 (support is experimental and not enabled)
     msg="support for vp9 encoder in mp4 container format is \
-             currently experimental and not enabled"
+         currently experimental and not enabled"
     exit_program "$(printf "%s" "$msg" | remove_spaces)"
 fi
 if {
