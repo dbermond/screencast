@@ -411,7 +411,7 @@ parse_cmd_line() {
             --size=?*)
                 video_size="${1#*=}" # assign value after '='
                 ;;
-            # errors out if a long option with '=' has nothing following the '='
+            # errors out if a long option with '=' has nothing following '='
             --size=)
                 command_error "--size (-s)"
                 ;;
@@ -991,7 +991,7 @@ videofade() {
     vfadeoutstart="$(printf "%s\n" "${videolength} - ${total_vfadeout}" | bc)"
     
     # build ffmpeg fade in/out options
-    fadein="fade=type=in:start_time=${vfade_solid_length}"       # split large line
+    fadein="fade=type=in:start_time=${vfade_solid_length}" # split large line
     fadein="${fadein}:duration=${vfade_length}"
     fadein="${fadein}:color=${vfade_color}"
     fadeout="fade=type=out:start_time=${vfadeoutstart}" # split large line
