@@ -1561,7 +1561,7 @@ then
         in|out|both)
             videofade
             ;;
-        *)
+        none)
             :
             ;;
     esac
