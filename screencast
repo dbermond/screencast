@@ -65,7 +65,7 @@ rec_extension="mkv"           # container format (file extension) for recording
 video_position="0,0" #200,234 # X and Y screen coordinates to record video from
 video_size="640x480"          # video size (resolution)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} \
-                       -probesize 10M -show_region 1 -region_border 2"
+                       -probesize 20M -show_region 1 -region_border 2"
 video_record_codec="ffv1 -level 3 -slicecrc 1"
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 video_encode_codec_x264="libx264 -r ${video_rate} -crf 21 \
