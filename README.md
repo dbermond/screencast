@@ -138,7 +138,7 @@ default: disabled
 
 #### `-z, --wmark-size=NxN`
 
-Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image.
+Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image. Note that the generated image will be trimmed to remove the unneeded transparent areas. As a result, the actual PNG image that will be added to the video will have a slightly smaller size than the one specified here.
 
 default: `255x35`
 
