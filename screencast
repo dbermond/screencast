@@ -1438,10 +1438,10 @@ case "$fade" in
         ;;
 esac
 
-# check if entered fixed video length is a valid integer/float number (-x)
+# check if the entered fixed video length is a valid integer/float number (-x)
 if printf "%s" "$fixed_length" | grep -Eq '^[0-9]+\.?[0-9]*$'
 then
-    # check if user enabled fixed video duration (disabled by default)
+    # enable fixed video length if chosen by user (a value different than '0')
     printf "%s" "$fixed_length" | grep -Eq '^[0]+\.?[0]*$' ||
         fixed_length_options="-t ${fixed_length}"
 else
