@@ -1563,11 +1563,10 @@ notify "normal" "1700" "media-record" "recording..."
 # record screen to a lossless video
 if ffmpeg \
        $audio_general_options $audio_input \
-       $video_general_options \
-       -i :0.0+${video_position} \
+       $video_general_options -i :0.0+${video_position} \
        -vf "fps=${video_rate}" \
        $audio_record_codec \
-       -vcodec $video_record_codec -r $video_rate \
+       -vcodec $video_record_codec \
        $fixed_length_options \
        -y \
        "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
