@@ -29,16 +29,13 @@ queue_size="2048"            # ffmpeg thread queue size
 finish_sound="/usr/share/sounds/freedesktop/stereo/complete.oga"
 
 # control settings (controls various aspects)
+select_region="false"        # mouse screen region selection (true, false)
 auto_filename="false"        # auto choose output filename based on date/time
-keep_tmpvideo="false"        # keep the temporary video in $tmpdir
-fade="none"                  # fade effect
+keep_tmpvideo="false"        # keep temporary video in $tmpdir (true, false)
+fade="none"                  # fade effect (in, out, both, none)
 watermark="false"            # watermark effect (true, false)
 fixed_length="0"             # fixed length video in seconds (0 disable)
-volume_factor="1.0"          # volume increase effect factor (0.0/1.0 disable)
-notifications="true"         # desktop notifications
-audio_encoder="aac"          # audio encoder
-video_encoder="x264"         # video encoder
-pixel_format="yuv420p"       # pixel format
+notifications="true"         # desktop notifications (true, false)
 audio_encoder_setted="false" # if audio encoder  was setted by cmd line with -a
 video_encoder_setted="false" # if video encoder  was setted by cmd line with -v
 video_size_setted="false"    # if video size     was setted by cmd line with -s
@@ -48,11 +45,11 @@ wmark_size_setted="false"    # if wmark size     was setted by cmd line with -z
 wmark_posi_setted="false"    # if wmark position was setted by cmd line with -k
 wmark_font_setted="false"    # if wmark font     was setted by cmd line with -c
 pngoptimizer_setted="false"  # if png optimizer  was setted by cmd line with -g
-format="mp4"                 # container format (file extension) for output
-select_region="false"        # user selects with mouse the screen region to rec
 
 # audio settings
-audio_input="pulse"
+audio_input="pulse"          # default audio input
+audio_encoder="aac"          # default audio encoder
+volume_factor="1.0"          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout="-channel_layout stereo"
 audio_general_options="-f alsa -thread_queue_size ${queue_size} \
                        -sample_rate 48000 -channels 2 ${audio_channel_layout}"
@@ -65,12 +62,16 @@ audio_encode_codec_mp3lame="-acodec libmp3lame -ab 128k -ar 44100 -ac 2"
 audio_encode_codec_shine="-acodec libshine -b 128k -ar 44100 -ac 2"
 
 #video settings
-video_rate="25"               # video framerate (fps)
+video_encoder="x264"          # default video encoder
+pixel_format="yuv420p"        # pixel format
 rec_extension="mkv"           # container format (file extension) for recording
+format="mp4"                  # container format (file extension) for output
 video_position="0,0" #200,234 # X and Y screen coordinates to record video from
 video_size="640x480"          # video size (resolution)
+video_rate="25"               # video framerate (fps)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} \
-                       -probesize 20M -show_region 1 -region_border 2"
+                       -probesize 20M -show_region 1 -region_border 2 \
+                       -framerate ${video_rate} -video_size ${video_size}"
 video_record_codec="ffv1 -level 3 -slicecrc 1"
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 video_encode_codec_x264="libx264 -crf 21 -preset veryslow"
@@ -106,7 +107,7 @@ fade_color="black"      # color to be used by the video fade effect
 fade_length="0.6"       # length (in seconds) of video fade effect itself
 fade_solid_length="0.1" # solid color length (in seconds) of video fade effect
 
-# supported arguments (for use with '--list' ('-l'))
+# supported arguments (for use with -l/--list)
 supported_fade="in, out, both, none"
 supported_formats="mp4, mkv, webm, ogg"
 supported_aencoders="aac, opus, vorbis, mp3/mp3lame, shine, none"
@@ -998,7 +999,6 @@ videofade() {
                     -show_entries format="duration" \
                     -v quiet \
                     -of csv="p=0")"
-    video_length="$(printf "%s" "$video_length" | remove_spaces)"
     
     # set start time of fade-out in seconds
     total_fadeout="$(printf "%s\n" "${fade_length} + \
@@ -1394,6 +1394,8 @@ case "$video_encoder" in
         ;;
     h264_nvenc)
         check_ffmpeg_encoder h264 h264_nvenc || exit 1
+        video_encode_codec_h264_nvenc="$(printf "%s" \
+            "$video_encode_codec_h264_nvenc" | remove_spaces)"
         video_encode_codec="$video_encode_codec_h264_nvenc"
         ;;
     x265)
@@ -1551,14 +1553,17 @@ screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
     exit_program \
         "video height + position Y is greater then the current screen height"
 
+# some preparations before recording
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
+audio_general_options="$(printf "%s" "$audio_general_options" | remove_spaces)"
+video_general_options="$(printf "%s" "$video_general_options" | remove_spaces)"
 notify "normal" "1700" "media-record" "recording..."
 
 # record screen to a lossless video
 if ffmpeg \
        $audio_general_options $audio_input \
-       $video_general_options -framerate $video_rate -video_size $video_size \
+       $video_general_options \
        -i :0.0+${video_position} \
        -vf "fps=${video_rate}" \
        $audio_record_codec \
