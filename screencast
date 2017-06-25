@@ -106,9 +106,9 @@ optipngsettings="-o 7"
 advdefsettings="-z4i10"
 
 # video fade settings
-vfade_color="black"      # color to be used by the video fade effect
-vfade_length="0.6"       # length (in seconds) of video fade effect itself
-vfade_solid_length="0.1" # solid color length (in seconds) of video fade effect
+fade_color="black"      # color to be used by the video fade effect
+fade_length="0.6"       # length (in seconds) of video fade effect itself
+fade_solid_length="0.1" # solid color length (in seconds) of video fade effect
 
 # supported arguments (for use with '--list' ('-l'))
 supported_fade="in, out, both, none"
@@ -988,24 +988,25 @@ videofade() {
     # get recorded video length in seconds
     tmp_1stpart="screencast-tmpvideo-${$}-"  # split large line
     tmp_2ndpart="${randomstring_rec}.${rec_extension}"
-    videolength="$(ffprobe \
+    video_length="$(ffprobe \
                     -i "${tmpdir}/${tmp_1stpart}${tmp_2ndpart}" \
-                    -show_entries format=duration \
+                    -show_entries format="duration" \
                     -v quiet \
                     -of csv="p=0")"
+    video_length="$(printf "%s" "$video_length" | remove_spaces)"
     
     # set start time of fade-out in seconds
-    total_vfadeout="$(printf "%s\n" "${vfade_length} + \
-                                     ${vfade_solid_length}" | bc)"
-    vfadeoutstart="$(printf "%s\n" "${videolength} - ${total_vfadeout}" | bc)"
+    total_fadeout="$(printf "%s\n" "${fade_length} + \
+                                     ${fade_solid_length}" | bc)"
+    fadeout_start="$(printf "%s\n" "${video_length} - ${total_fadeout}" | bc)"
     
     # build ffmpeg fade in/out options
-    fadein="fade=type=in:start_time=${vfade_solid_length}" # split large line
-    fadein="${fadein}:duration=${vfade_length}"
-    fadein="${fadein}:color=${vfade_color}"
-    fadeout="fade=type=out:start_time=${vfadeoutstart}" # split large line
-    fadeout="${fadeout}:duration=${vfade_length}"
-    fadeout="${fadeout}:color=${vfade_color}"
+    fadein="fade=type=in:start_time=${fade_solid_length}" # split large line
+    fadein="${fadein}:duration=${fade_length}"
+    fadein="${fadein}:color=${fade_color}"
+    fadeout="fade=type=out:start_time=${fadeout_start}" # split large line
+    fadeout="${fadeout}:duration=${fade_length}"
+    fadeout="${fadeout}:color=${fade_color}"
     
     # check the choosed fade type and set ffmpeg fade options if necessary
     case "$fade" in
