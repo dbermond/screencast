@@ -298,8 +298,8 @@ check_requirements() {
                 ;;
         esac
         
-        which "$requirement" >/dev/null 2>&1 ||
-        {
+        if ! which "$requirement" >/dev/null 2>&1
+        then
             if [ "$requirement"  = "magick" ] 
             then
                 # in this case IM6 was found because 'convert' goes first
@@ -314,8 +314,8 @@ check_requirements() {
                 [ "$requirement" != "notify-send" ] &&
                     notify "critical" "5000" "process-stop" "$msg"
                 exit 1
-            fi ;
-        }
+            fi
+        fi
     done
 }
 
