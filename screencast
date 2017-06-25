@@ -1567,6 +1567,7 @@ if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -framerate $video_rate -video_size $video_size \
        -i :0.0+${video_position} \
+       -vf "fps=${video_rate}" \
        $audio_record_codec \
        -vcodec $video_record_codec -r $video_rate \
        $fixed_length_options \
