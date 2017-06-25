@@ -919,9 +919,6 @@ optimizepng() {
             opt-png)
                 opt-png "$1"
                 ;;
-            none)
-                :
-                ;;
         esac
         
         # use advdef if setted to be used (-w / --watermark)
@@ -971,8 +968,8 @@ create_watermark() {
         +repage \
         "$wmark_image"
         
-    # optimize PNG image file
-    optimizepng "$wmark_image"
+    # optimize PNG image file if choosed by user (-g/--png-optimizer)
+    [ "$pngoptimizer" != "none" ] && optimizepng "$wmark_image"
     
     # set ffmpeg watermark options
     watermark_input="-framerate ${video_rate} \
