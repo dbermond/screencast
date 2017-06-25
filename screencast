@@ -43,6 +43,10 @@ video_encoder_setted="false" # if video encoder  was setted by cmd line
 video_size_setted="false"    # if video size     was setted by cmd line
 video_posi_setted="false"    # if video position was setted by cmd line
 format_setted="false"        # if video format   was setted by cmd line with -f
+wmark_size_setted="false"    # if wmark size     was setted by cmd line with -z
+wmark_posi_setted="false"    # if wmark position was setted by cmd line with -k
+wmark_font_setted="false"    # if wmark font     was setted by cmd line with -c
+pngoptimizer_setted="false"  # if png optimizer  was setted by cmd line with -g
 format="mp4"                 # container format (file extension) for output
 select_region="false"        # user selects with mouse the screen region to rec
 
@@ -631,6 +635,7 @@ parse_cmd_line() {
                     then
                         command_error "--wmark-size (-z)"
                     else
+                        wmark_size_setted="true"
                         watermark_size="$2"
                         shift && shift_count="$((shift_count + 1))"
                     fi
@@ -639,6 +644,7 @@ parse_cmd_line() {
                 fi
                 ;;
             --wmark-size=?*)
+                wmark_size_setted="true"
                 watermark_size="${1#*=}"
                 ;;
             --wmark-size=)
@@ -652,6 +658,7 @@ parse_cmd_line() {
                     then
                         command_error "--wmark-position (-k)"
                     else
+                        wmark_posi_setted="true"
                         watermark_position="$2"
                         shift && shift_count="$((shift_count + 1))"
                     fi
@@ -660,6 +667,7 @@ parse_cmd_line() {
                 fi
                 ;;
             --wmark-position=?*)
+                wmark_posi_setted="true"
                 watermark_position="${1#*=}"
                 ;;
             --wmark-position=)
@@ -673,6 +681,7 @@ parse_cmd_line() {
                     then
                         command_error "--wmark-font (-c)"
                     else
+                        wmark_font_setted="true"
                         watermark_font="$2"
                         shift && shift_count="$((shift_count + 1))"
                     fi
@@ -681,6 +690,7 @@ parse_cmd_line() {
                 fi
                 ;;
             --wmark-font=?*)
+                wmark_font_setted="true"
                 watermark_font="${1#*=}"
                 ;;
             --wmark-font=)
@@ -719,6 +729,7 @@ parse_cmd_line() {
                     then
                         command_error "--png-optimizer (-g)"
                     else
+                        pngoptimizer_setted="true"
                         pngoptimizer="$2"
                         shift && shift_count="$((shift_count + 1))"
                     fi
@@ -727,6 +738,7 @@ parse_cmd_line() {
                 fi
                 ;;
             --png-optimizer=?*)
+                pngoptimizer_setted="true"
                 pngoptimizer="${1#*=}"
                 ;;
             --png-optimizer=)
@@ -1456,6 +1468,20 @@ then
 else
     exit_program \
         "'${volume_factor}' is not a valid number for volume increase effect"
+fi
+
+# do not allow to use -z, -k, -c or -g options without -w option
+if [ "$watermark" = "false" ] 
+then
+    msg='option is to be used only with --watermark (-w) option'
+    [ "$wmark_size_setted"   = "true" ] && exit_program \
+        "--wmark-size (-z) ${msg}"
+    [ "$wmark_posi_setted"   = "true" ] && exit_program \
+        "--wmark-position (-k) ${msg}"
+    [ "$wmark_font_setted"   = "true" ] && exit_program \
+        "--wmark-font (-c) ${msg}"
+    [ "$pngoptimizer_setted" = "true" ] && exit_program \
+        "--png-optimizer (-g) ${msg}"
 fi
 
 # check for a valid watermark size format (NxN) (-z/--wmark-size)
