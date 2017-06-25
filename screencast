@@ -974,10 +974,12 @@ create_watermark() {
     # optimize PNG image file
     optimizepng "$wmark_image"
     
-    watermark_options="-r ${video_rate} \
-                       -thread_queue_size ${queue_size} \
-                       -i ${wmark_image} \
-                       -filter_complex overlay=${watermark_position}"
+    # set ffmpeg watermark options
+    watermark_input="-framerate ${video_rate} \
+                     -thread_queue_size ${queue_size} \
+                     -i ${wmark_image}"
+    watermark_input="$(printf "%s" "$watermark_input" | remove_spaces)"
+    watermark_options="overlay=${watermark_position}"
 }
 
 # video_fade function: sets video fade options to be passed to ffmpeg command
@@ -1008,13 +1010,13 @@ videofade() {
     # check the choosed fade type and set ffmpeg fade options if necessary
     case "$fade" in
         in)
-            fade_options="-vf $fadein"
+            fade_options="$fadein"
             ;;
         out)
-            fade_options="-vf $fadeout"
+            fade_options="$fadeout"
             ;;
         both)
-            fade_options="-vf ${fadein},${fadeout}"
+            fade_options="${fadein},${fadeout}"
             ;;
     esac
 }
@@ -1532,9 +1534,6 @@ screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
     exit_program \
         "video height + position Y is greater then the current screen height"
 
-# enable watermark effect if choosed by user (-w/--watermark)
-[ "$watermark" = "true" ] && create_watermark
-
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
 notify "normal" "1700" "media-record" "recording..."
@@ -1544,7 +1543,6 @@ if ffmpeg \
        $audio_general_options $audio_input \
        $video_general_options -framerate $video_rate -video_size $video_size \
        -i :0.0+${video_position} \
-       $watermark_options \
        $audio_record_codec \
        -vcodec $video_record_codec -r $video_rate \
        $fixed_length_options \
@@ -1553,15 +1551,24 @@ if ffmpeg \
 then 
     notify "normal" "3000" "media-playback-stop" "encoding..."
     
-    # set fade effect if necessary (-e/--fade)
-    case "$fade" in
-        in|out|both)
-            videofade
-            ;;
-        none)
-            :
-            ;;
-    esac
+    # enable watermark effect if choosed by user (-w/--watermark)
+    if [ "$watermark" = "true" ] 
+    then
+        create_watermark
+        vfilter_option="-filter_complex"
+    fi
+    
+    # enable fade effect if choosed by user (-e/--fade)
+    if [ "$fade"  != "none" ] 
+    then
+        videofade
+        if [ "$watermark" = "true" ] 
+        then
+            fade_options=", ${fade_options}"
+        else
+            vfilter_option="-vf"
+        fi
+    fi
     
     # set output filename
     if [ "$auto_filename" = "true" ] 
@@ -1575,7 +1582,8 @@ then
     if ffmpeg \
            $audio_channel_layout \
            -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
-           $fade_options \
+           ${watermark_input} \
+           $vfilter_option "${watermark_options} ${fade_options}" \
            $volume_options \
            $audio_encode_codec \
            -vcodec $video_encode_codec -r $video_rate \
