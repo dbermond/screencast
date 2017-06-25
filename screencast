@@ -1202,55 +1202,6 @@ else
         "--auto-filename ('-u') does not allow to set an output filename"
 fi
 
-# check if user entered tilde ('~') as a starting character of $savedir
-# ('~' will not expand to $HOME in ffmpeg command line)
-case "$savedir" in
-    "~")
-        savedir="$HOME"
-        ;;
-    "~"*)
-        savedir="${HOME}${savedir#~}"
-        ;;
-    *)
-        :
-        ;;
-esac
-
-# check if user entered tilde ('~') as a starting character of $tmpdir
-# ('~' will not expand to $HOME in ffmpeg command line)
-case "$tmpdir" in
-    "~")
-        tmpdir="$HOME"
-        ;;
-    "~"*)
-        tmpdir="${HOME}${tmpdir#~}"
-        ;;
-    *)
-        :
-        ;;
-esac
-
-# check for valid output and tmp directories (-o/--output-dir and -t/--tmp-dir)
-for directory in "$savedir" "$tmpdir"
-do
-    # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    [ -e "$directory" ] ||
-    {
-        mkdir -p "$directory" 2>/dev/null || exit_program \
-            "failed to create directory '${directory}'" ;
-    }
-    
-    # check if the entered $savedir/$tmpdir is a directory
-    if [ -d "$directory" ] 
-    then
-        # check if the entered $savedir/$tmpdir has write permission
-        [ -w "$directory" ] || exit_program \
-            "no write permission for directory '${directory}'"
-    else
-        exit_program "'${directory}' is not a directory"
-    fi
-done
-
 # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
 printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' || exit_program \
     "'${video_rate}' is not a valid video framerate (fps) format"
@@ -1571,6 +1522,55 @@ screen_height="$(printf "%s" "$screen_size" | cut -d 'x' -f2)"
 [ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
     exit_program \
         "video height + position Y is greater then the current screen height"
+
+# check if user entered tilde ('~') as a starting character of $savedir
+# ('~' will not expand to $HOME in ffmpeg command line)
+case "$savedir" in
+    "~")
+        savedir="$HOME"
+        ;;
+    "~"*)
+        savedir="${HOME}${savedir#~}"
+        ;;
+    *)
+        :
+        ;;
+esac
+
+# check if user entered tilde ('~') as a starting character of $tmpdir
+# ('~' will not expand to $HOME in ffmpeg command line)
+case "$tmpdir" in
+    "~")
+        tmpdir="$HOME"
+        ;;
+    "~"*)
+        tmpdir="${HOME}${tmpdir#~}"
+        ;;
+    *)
+        :
+        ;;
+esac
+
+# check for valid output and tmp directories (-o/--output-dir and -t/--tmp-dir)
+for directory in "$savedir" "$tmpdir"
+do
+    # check if the entered $savedir/$tmpdir already exists and mkdir if not
+    [ -e "$directory" ] ||
+    {
+        mkdir -p "$directory" 2>/dev/null || exit_program \
+            "failed to create directory '${directory}'" ;
+    }
+    
+    # check if the entered $savedir/$tmpdir is a directory
+    if [ -d "$directory" ] 
+    then
+        # check if the entered $savedir/$tmpdir has write permission
+        [ -w "$directory" ] || exit_program \
+            "no write permission for directory '${directory}'"
+    else
+        exit_program "'${directory}' is not a directory"
+    fi
+done
 
 # some preparations before recording
 randomstring_rec="$(randomstr "20")" # random string for tmp video filename
