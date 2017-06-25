@@ -38,6 +38,7 @@ volume_factor="1.0"          # volume increase effect factor (0.0/1.0 disable)
 notifications="true"         # desktop notifications
 audio_encoder="aac"          # audio encoder
 video_encoder="x264"         # video encoder
+pixel_format="yuv420p"       # pixel format
 audio_encoder_setted="false" # if audio encoder  was setted by cmd line with -a
 video_encoder_setted="false" # if video encoder  was setted by cmd line with -v
 video_size_setted="false"    # if video size     was setted by cmd line with -s
@@ -72,23 +73,15 @@ video_general_options="-f x11grab -thread_queue_size ${queue_size} \
                        -probesize 20M -show_region 1 -region_border 2"
 video_record_codec="ffv1 -level 3 -slicecrc 1"
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
-video_encode_codec_x264="libx264 -r ${video_rate} -crf 21 \
-                         -preset veryslow -pix_fmt yuv420p"
+video_encode_codec_x264="libx264 -crf 21 -preset veryslow"
 video_encode_codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 \
-                               -preset slow -cq 10 -bf 2 -g 150 \
-                               -pix_fmt yuv420p"
-video_encode_codec_x265="libx265 -r ${video_rate} -crf 25 \
-                         -preset veryslow -pix_fmt yuv420p"
-video_encode_codec_kvazaar="libkvazaar -r ${video_rate} -kvazaar-params \
-                            preset=veryslow -pix_fmt yuv420p"
-video_encode_codec_hevc_nvenc="hevc_nvenc -r ${video_rate} \
-                               -preset slow -pix_fmt yuv420p"
-video_encode_codec_theora="libtheora -r ${video_rate} -qscale:v 5 \
-                           -pix_fmt yuv420p"
-video_encode_codec_vp8="libvpx -r ${video_rate} -crf 8 -vb 2M \
-                        -pix_fmt yuv420p"
-video_encode_codec_vp9="libvpx-vp9 -r ${video_rate} -crf 30 \
-                        -vb 0 -pix_fmt yuv420p -speed 0"
+                               -preset slow -cq 10 -bf 2 -g 150"
+video_encode_codec_x265="libx265 -crf 25 -preset veryslow"
+video_encode_codec_kvazaar="libkvazaar -kvazaar-params preset=veryslow"
+video_encode_codec_hevc_nvenc="hevc_nvenc -preset slow"
+video_encode_codec_theora="libtheora -qscale:v 5"
+video_encode_codec_vp8="libvpx -crf 8 -vb 2M"
+video_encode_codec_vp9="libvpx-vp9 -crf 30 -vb 0 -speed 0"
 
 # watermark settings
 watermark_font="Arial"
@@ -1581,6 +1574,7 @@ then
     then
         create_watermark
         vfilter_option="-filter_complex"
+        [ "$video_encoder" = "vp9" ] && pixel_format="yuva420p"
     fi
     
     # enable fade effect if choosed by user (-e/--fade)
@@ -1611,7 +1605,7 @@ then
            $vfilter_option ${watermark_options}${fade_options} \
            $volume_options \
            $audio_encode_codec \
-           -vcodec $video_encode_codec -r $video_rate \
+           -vcodec $video_encode_codec -pix_fmt $pixel_format \
            $faststart \
            -map 0 -y \
            "${savedir}/${output_file}"
