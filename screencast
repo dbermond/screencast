@@ -1449,15 +1449,14 @@ else
         "'${fixed_length}' is not a valid number for fixed video length"
 fi
 
-# check if entered volume factor is a valid integer/float number (-m)
+# check if the entered volume factor is a valid integer/float number (-m)
 if printf "%s" "$volume_factor" | grep -Eq '^[0-9]+\.?[0-9]*$'
 then
-    # check if volume increase effect is disabled (value '1.0' or '0.0')
-    if printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ||
-       printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$'
+    # enable volume increase effect if chosen by user
+    # (a value different than '1.0' or '0.0')
+    if ! { printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ||
+           printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$' ; }
     then
-        volume_options=""
-    else
         volume_options="-af volume=${volume_factor}"
     fi
 else
