@@ -99,7 +99,6 @@ watermark_position="0,0"
 
 # png (watermark) optimization settings
 pngoptimizer="none"      # truepng, pingo, optipng, opt-png, none
-useadvdef="false"        # true, false
 truepngsettings="-o max"
 pingosettings="-s8"
 optipngsettings="-o 7"
@@ -254,7 +253,7 @@ check_requirements() {
                [ "$pngoptimizer" = "none"          ] ;
            } ||
            {
-               [ "$requirement" = "advdef" ] && [ "$useadvdef" = "false" ] ;
+               [ "$requirement" = "advdef" ] && [ "$pngoptimizer" = "none" ] ;
            } ||
            {
                [ "$requirement"   = "notify-send" ] &&
@@ -921,8 +920,8 @@ optimizepng() {
                 ;;
         esac
         
-        # use advdef if setted to be used (-w / --watermark)
-        [ "$useadvdef" = "true" ] && advdef $advdefsettings "$1"
+        # use advdef to optimize PNG even more
+        advdef $advdefsettings "$1"
     else
         printf "%s\n" "error: invalid image format (must be PNG)" >&2
         return 1
@@ -1116,10 +1115,7 @@ shift "$shift_count" # destroy all arguments except a possible output filename
 
 # check for a valid png optimizer (-g/--png-optimizer)
 case "$pngoptimizer" in
-    truepng|pingo|optipng|opt-png)
-        useadvdef="true"
-        ;;
-    none)
+    truepng|pingo|optipng|opt-png|none)
         :
         ;;
     *)
