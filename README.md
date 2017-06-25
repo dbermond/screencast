@@ -110,7 +110,7 @@ supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
 
 #### `-v, --video-encoder=NAME`
 
-Video encoder to be used to encode the recorded video. If using a NVIDIA hardware accelerated encoder please make sure that you have a NVIDIA graphics card that supports the choosed encoder.
+Video encoder to be used to encode the recorded video. If using a NVIDIA hardware accelerated encoder please make sure that you have a NVIDIA graphics card that supports the chosen encoder.
 
 default: `x264`
 
@@ -161,7 +161,7 @@ Set text watermark font to *NAME*.
 
 default: `Arial`
 
-note: if the default or setted font is not installed it will be auto choosed
+note: if the default or setted font is not installed it will be auto chosen
 
 #### `-x, --fixed=N`
 
@@ -220,7 +220,7 @@ Show program version information.
 
     - `$ screencast myvideo.mp4`
 
-- Use default settings for a 1280x720 video from screen positon 200,234 with auto choosen output filename:
+- Use default settings for a 1280x720 video from screen positon 200,234 with auto chosen output filename:
 
     - `$ screencast -p 200,234 -s 1280x720 -u`
 
@@ -228,7 +228,7 @@ Show program version information.
 
     - `$ screencast /home/user/webmvideos/myvideo.webm`
 
-- Specifying save dir and container format, with auto choosen encoders and output filename. In this case, the `ogg` format will produce a video with vorbis (libvorbis) and theora encoders:
+- Specifying save dir and container format, with auto chosen encoders and output filename. In this case, the `ogg` format will produce a video with vorbis (libvorbis) and theora encoders:
 
     - `$ screencast -o /home/user/myvideos -f ogg -u`
 
@@ -283,7 +283,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - For vorbis and opus audio, FFmpeg has both an external library encoder (named '*libvorbis*' and '*libopus*' encoders) and a native built-in encoder (named '*vorbis*' and '*opus*' encoders). Although the `vorbis` and `opus` audio encoders are mentioned in the options, it is made this way just for simplicity as stated right above. When the user selects the `vorbis` or `opus` audio encoder **screencast** uses respectively the FFmpeg libvorbis or libopus encoder, which has a much superior quality than the FFmpeg native built-in vorbis and opus encoder.
 
-- The `mkv` container format is the only one that supports all audio and video encoders. All other container formats have restrictions. **screencast** will exit with error if an unsupported encoder is choosed for a given container format. For example, you cannot use the `opus` audio encoder with `mp4` container format.
+- The `mkv` container format is the only one that supports all audio and video encoders. All other container formats have restrictions. **screencast** will exit with error if an unsupported encoder is chosen for a given container format. For example, you cannot use the `opus` audio encoder with `mp4` container format.
 
 - When using the `mp4` container format, the moov atom will be automatically moved to the beginning of the output video file. This is the same as running *qt-faststart* in the output video and is useful for uploading it to streaming websites like [YouTube](https://www.youtube.com/).
 

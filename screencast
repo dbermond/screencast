@@ -977,7 +977,7 @@ create_watermark() {
         +repage \
         "$wmark_image"
         
-    # optimize PNG image file if choosed by user (-g/--png-optimizer)
+    # optimize PNG image file if chosen by user (-g/--png-optimizer)
     [ "$pngoptimizer" != "none" ] && optimizepng "$wmark_image"
     
     # set ffmpeg watermark options
@@ -1013,7 +1013,7 @@ videofade() {
     fadeout="${fadeout}:duration=${fade_length}"
     fadeout="${fadeout}:color=${fade_color}"
     
-    # check the choosed fade type and set ffmpeg fade options if necessary
+    # check the chosen fade type and set ffmpeg fade options if necessary
     case "$fade" in
         in)
             fade_options="$fadein"
@@ -1493,7 +1493,7 @@ else
         "'${watermark_position}' is not a valid watermark position format"
 fi
 
-# select with mouse the screen region to record if choosed by user
+# select with mouse the screen region to record if chosen by user
 if [ "$select_region" = "true" ] 
 then
     # do not allow to use -S/--select-region with -s/--size or -p/--position
@@ -1573,7 +1573,7 @@ if ffmpeg \
 then 
     notify "normal" "3000" "media-playback-stop" "encoding..."
     
-    # enable watermark effect if choosed by user (-w/--watermark)
+    # enable watermark effect if chosen by user (-w/--watermark)
     if [ "$watermark" = "true" ] 
     then
         create_watermark
@@ -1581,7 +1581,7 @@ then
         [ "$video_encoder" = "vp9" ] && pixel_format="yuva420p"
     fi
     
-    # enable fade effect if choosed by user (-e/--fade)
+    # enable fade effect if chosen by user (-e/--fade)
     if [ "$fade"  != "none" ] 
     then
         videofade

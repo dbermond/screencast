@@ -128,7 +128,7 @@ supported types: aac, opus, vorbis, mp3/mp3lame, shine, none
 .RS
 Video encoder to be used to encode the recorded video. If using a NVIDIA
 hardware accelerated encoder please make sure that you have a NVIDIA graphics
-card that supports the choosed encoder.
+card that supports the chosen encoder.
 .PP
 .nf
         default: x264
@@ -211,7 +211,7 @@ Set text watermark font to \fINAME\fR.
 .PP
 .nf
 default: Arial
-   NOTE: if the default or setted font is not installed it will be auto choosed
+   NOTE: if the default or setted font is not installed it will be auto chosen
 .fi
 .RE
 .TP
@@ -294,7 +294,7 @@ Use all default settings:
 .RE
 .PP
 Use default settings for a 1280x720 video from screen positon 200,234 with
-auto choosen output filename:
+auto chosen output filename:
 .RS
 .PP
 \fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-u\fR
@@ -308,7 +308,7 @@ opus and vp9 encoders:
 \fBscreencast\fR /home/user/webmvideos/myvideo.webm
 .RE
 .PP
-Specifying save dir and container format, with auto choosen encoders and 
+Specifying save dir and container format, with auto chosen encoders and 
 output filename. In this case, the 'ogg' format will produce a video with
 vorbis (libvorbis) and theora encoders:
 .PP
@@ -400,7 +400,7 @@ native built\-in vorbis and opus encoders.
 .PP
 The \fImkv\fR container format is the only one that supports all audio and 
 video encoders. All other container formats have restrictions. \fBscreencast\fR
-will exit with error if an unsupported encoder is choosed for a given container
+will exit with error if an unsupported encoder is chosen for a given container
 format. For example, you cannot use the \fIopus\fR audio encoder with \fImp4\fR
 container format.
 .PP
