@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/sh
 # shellcheck disable=SC2086
 
 # screencast - POSIX-compliant shell script to record a X11 desktop
