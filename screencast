@@ -284,6 +284,10 @@ check_requirements() {
                 request_string=" text watermark was requested but "
                 installname="ImageMagick (IM7 preferred)"
                 ;;
+            slop)
+                request_string=" screen region selection was requested but "
+                installname="$requirement"
+                ;;
             "$pngoptimizer")
                 request_string=" png optimization was requested but "
                 installname="$requirement"
