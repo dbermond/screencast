@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 # shellcheck disable=SC2086
 
 # screencast - POSIX-compliant shell script to record a X11 desktop
@@ -1169,8 +1169,8 @@ then
         "you must enter an output filename with extension (or use '-u')"
     
     # do not allow to use -f/--format when specifying an output filename
-    msg='--format (-f) option is to be used only with --auto-filename (-u) option
-       (please set the container format directly in the output filename)'
+    msg="--format (-f) option is to be used only with --auto-filename (-u)
+       (when not using '-u', set the container format in the output filename)"
     [ "$format_setted" = "true" ] && exit_program "$msg"
     
     # if user specified a save directory directly with output filename that
@@ -1303,17 +1303,30 @@ if {
        } ;
    }
 then
-    exit_program \
-        "container format ${format} does not support ${audio_encoder} encoder"
+    msg="container format '${format}' does not support \
+         '${audio_encoder}' encoder"
+    msg="$(printf "%s" "$msg" | remove_spaces)"
+    if [ "$auto_filename" = "true" ] && [ "$format_setted" = "false" ] 
+    then
+       msg="${msg}
+       (did you forget to select the container format?)"
+    fi
+    exit_program "$msg"
 fi
 
 # check for invalid combination of video encoder and container format
 if [ "$format" = "mp4" ] && [ "$video_encoder" = "vp9" ] 
 then
     # special case for mp4 + vp9 (support is experimental and not enabled)
-    msg="support for vp9 encoder in mp4 container format is \
+    msg="support for 'vp9' encoder in 'mp4' container format is \
          currently experimental and not enabled"
-    exit_program "$(printf "%s" "$msg" | remove_spaces)"
+    msg="$(printf "%s" "$msg" | remove_spaces)"
+    if [ "$auto_filename" = "true" ] && [ "$format_setted" = "false" ] 
+    then
+       msg="${msg}
+       (did you forget to select the container format?)"
+    fi
+    exit_program "$msg"
 fi
 if {
        [ "$format" = "mp4" ] && 
@@ -1344,8 +1357,15 @@ if {
        } ;
    }
 then
-    exit_program \
-        "container format ${format} does not support ${video_encoder} encoder"
+    msg="container format '${format}' does not support \
+         '${video_encoder}' encoder"
+    msg="$(printf "%s" "$msg" | remove_spaces)"
+    if [ "$auto_filename" = "true" ] && [ "$format_setted" = "false" ] 
+    then
+       msg="${msg}
+       (did you forget to select the container format?)"
+    fi
+    exit_program "$msg"
 fi
 
 # set recording and encoding options for the selected audio encoder
