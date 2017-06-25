@@ -1565,7 +1565,7 @@ then
         videofade
         if [ "$watermark" = "true" ] 
         then
-            fade_options=", ${fade_options}"
+            fade_options=",${fade_options}"
         else
             vfilter_option="-vf"
         fi
@@ -1584,7 +1584,7 @@ then
            $audio_channel_layout \
            -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
            ${watermark_input} \
-           $vfilter_option "${watermark_options} ${fade_options}" \
+           $vfilter_option ${watermark_options}${fade_options} \
            $volume_options \
            $audio_encode_codec \
            -vcodec $video_encode_codec -r $video_rate \
