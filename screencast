@@ -70,8 +70,7 @@ video_position="0,0" #200,234 # X and Y screen coordinates to record video from
 video_size="640x480"          # video size (resolution)
 video_rate="25"               # video framerate (fps)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} \
-                       -probesize 20M -show_region 1 -region_border 2 \
-                       -framerate ${video_rate} -video_size ${video_size}"
+                       -probesize 20M -show_region 1 -region_border 2"
 video_record_codec="ffv1 -level 3 -slicecrc 1"
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 video_encode_codec_x264="libx264 -crf 21 -preset veryslow"
@@ -1602,8 +1601,12 @@ notify "normal" "1700" "media-record" "recording..."
 
 # record screen to a lossless video
 if ffmpeg \
-       $audio_general_options $audio_input \
-       $video_general_options -i :0.0+${video_position} \
+       $audio_general_options \
+       $audio_input \
+       $video_general_options \
+       -framerate $video_rate \
+       -video_size $video_size \
+       -i :0.0+${video_position} \
        -vf "fps=${video_rate}" \
        $audio_record_codec \
        -vcodec $video_record_codec \
