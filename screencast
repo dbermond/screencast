@@ -845,7 +845,7 @@ parse_cmd_line() {
                 break
         esac
         shift && shift_count="$((shift_count + 1))"
-done            
+done
 }
 
 # check_ffmpeg_format function: check if detected ffmpeg build has support
@@ -859,13 +859,13 @@ done
 check_ffmpeg_format() {
     if ! printf "%s\n" "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
-            printf "%s"   "error: " >&2
-            printf "%s\n" "the detected ffmpeg build has no support for ${2}" >&2
-            printf "%s"   "       please install a ffmpeg build with " >&2
-            printf "%s\n" "support for ${2}" >&2
-            notify "critical" "5000" "process-stop" \
-                   "error: ${2} is not supported by your ffmpeg build"
-            return 1
+        printf "%s"   "error: " >&2
+        printf "%s\n" "the detected ffmpeg build has no support for ${2}" >&2
+        printf "%s"   "       please install a ffmpeg build with " >&2
+        printf "%s\n" "support for ${2}" >&2
+        notify "critical" "5000" "process-stop" \
+                "error: ${2} is not supported by your ffmpeg build"
+        return 1
     fi
 }
 
