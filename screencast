@@ -309,7 +309,7 @@ check_requirements() {
                 ;;
         esac
         
-        if ! which "$requirement" >/dev/null 2>&1
+        if ! command -v "$requirement" >/dev/null 2>&1
         then
             if [ "$requirement"  = "magick" ] 
             then
@@ -860,8 +860,7 @@ check_ffmpeg_format() {
     if ! printf "%s\n" "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
             printf "%s"   "error: " >&2
-            printf "%s"   "the detected ffmpeg build in $(which ffmpeg) " >&2
-            printf "%s\n" "has no support for ${2}" >&2
+            printf "%s\n" "the detected ffmpeg build has no support for ${2}" >&2
             printf "%s"   "       please install a ffmpeg build with " >&2
             printf "%s\n" "support for ${2}" >&2
             notify "critical" "5000" "process-stop" \
@@ -884,7 +883,7 @@ check_ffmpeg_encoder() {
         if [ "$2" != "libfdk_aac" ] 
         then
             printf "%s"   "error: " >&2
-            printf "%s"   "the detected ffmpeg build in $(which ffmpeg) " >&2
+            printf "%s"   "the detected ffmpeg build " >&2
             printf "%s\n" "has no support for ${2}" >&2
             printf "%s"   "       please install a ffmpeg build with " >&2
             printf "%s\n" "support for ${2}" >&2
@@ -903,17 +902,17 @@ randomstr() {
     if [ -c "/dev/urandom" ] 
     then
         rnd="$(LC_CTYPE=C tr -dc '[:alnum:]' < /dev/urandom | head -c"$1")"
-    elif which shuf >/dev/null 2>&1
+    elif command -v shuf >/dev/null 2>&1
     then
         alphanum="a b c d e f g h i j k l m n o p q r s t u v w x y z \
                   A B C D E F G H Y J K L M N O P Q R S T U V W X Y Z \
                   0 1 2 3 4 5 6 7 8 9"
         # redirect stderr to /dev/null to avoid a warning in some bash versions
         { rnd="$(printf "%s" "$(shuf -ez -n"$1" "$alphanum")")"; } 2>/dev/null
-    elif which pwgen >/dev/null 2>&1
+    elif command -v pwgen >/dev/null 2>&1
     then
         rnd="$(pwgen -cns "$1" 1)"
-    elif which openssl >/dev/null 2>&1
+    elif command -v openssl >/dev/null 2>&1
     then
         rnd="$(openssl rand -hex "$1" | cut -c-"$1")"
     else
@@ -1162,7 +1161,7 @@ trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
 then
-    which setopt >/dev/null 2>&1 || exit_program \
+    command -v setopt >/dev/null 2>&1 || exit_program \
         "script appears to be running in zsh but setopt was not found"
     setopt SH_WORD_SPLIT  # enable variable word splitting
 fi
@@ -1698,7 +1697,7 @@ then
         notify "normal" "3000" "mail-mark-notjunk" "finish"
         
         # play a sound after finish if requirements are present
-        if which paplay >/dev/null 2>&1
+        if command -v paplay >/dev/null 2>&1
         then
             [ -f "$finish_sound" ] && paplay "$finish_sound" 2>/dev/null
         fi
