@@ -903,17 +903,17 @@ randomstr() {
     if [ -c "/dev/urandom" ] 
     then
         rnd="$(LC_CTYPE=C tr -dc '[:alnum:]' < /dev/urandom | head -c"$1")"
-    elif [ -x "$(which shuf 2>/dev/null)" ] 
+    elif which shuf >/dev/null 2>&1
     then
         alphanum="a b c d e f g h i j k l m n o p q r s t u v w x y z \
                   A B C D E F G H Y J K L M N O P Q R S T U V W X Y Z \
                   0 1 2 3 4 5 6 7 8 9"
         # redirect stderr to /dev/null to avoid a warning in some bash versions
         { rnd="$(printf "%s" "$(shuf -ez -n"$1" "$alphanum")")"; } 2>/dev/null
-    elif [ -x "$(which pwgen 2>/dev/null)" ] 
+    elif which pwgen >/dev/null 2>&1
     then
         rnd="$(pwgen -cns "$1" 1)"
-    elif [ -x "$(which openssl 2>/dev/null)" ] 
+    elif which openssl >/dev/null 2>&1
     then
         rnd="$(openssl rand -hex "$1" | cut -c-"$1")"
     else
@@ -1698,8 +1698,10 @@ then
         notify "normal" "3000" "mail-mark-notjunk" "finish"
         
         # play a sound after finish if requirements are present
-        [ -x "$(which paplay 2>/dev/null)" ] && [ -f "$finish_sound" ] &&
-            paplay "$finish_sound" 2>/dev/null
+        if which paplay >/dev/null 2>&1
+        then
+            [ -f "$finish_sound" ] && paplay "$finish_sound" 2>/dev/null
+        fi
     else
         printf "%s\n" "screencast: encoding error!" >&2
         notify "critical" "5000" "process-stop" "encoding error!"
