@@ -120,6 +120,8 @@ supported_pngopt="truepng, pingo, optipng, opt-png, none"
 
 # cleanup function: delete unneeded files
 # arguments: none
+# return value: none
+# return code (status): not relevant
 cleanup() {
     # delete temporary files
     rm -f "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
@@ -136,6 +138,8 @@ cleanup() {
 
 # show_header function: show program header
 # arguments: none
+# return value: the program header
+# return code (status): not relevant
 show_header() {
     printf "%s"   "screencast ${screencast_version} - "
     printf "%s\n" "Command line interface to record a X11 desktop"
@@ -146,6 +150,8 @@ show_header() {
 
 # help function
 # arguments: none
+# return value: the program help screen
+# return code (status): not relevant
 show_help() {
     show_header
     printf "%s\n" ""
@@ -213,6 +219,8 @@ show_help() {
 #            $2 - duration in milliseconds
 #            $3 - icon name
 #            $4 - text message
+# return value: none
+# return code (status): not relevant
 notify() {
     notify_args="--urgency=${1} --expire-time=${2} --icon=${3}"
     [ "$notifications" = "true" ] && notify-send $notify_args screencast "$4"
@@ -220,6 +228,8 @@ notify() {
 
 # check_requirements function: check if required programs are installed
 # arguments: none
+# return value: not relevant
+# return code (status): not relevant
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
@@ -323,6 +333,8 @@ check_requirements() {
 # command_error function: print an error message regarding invalid command
 #                         line arguments, show notification and exit with error
 # arguments: $1 - command line option name (e.g.: "--fade (-e)")
+# return value: not relevant
+# return code (status): not relevant
 command_error() {
     msg="error: ${1} option requires an argument"
     printf "%s\n%s%s\n" \
@@ -336,6 +348,8 @@ command_error() {
 # exit_program: print an error message to stderr, a desktop notification
 #               (if it is enabled) and exit with error
 # arguments: $1 - error message to print/notificate
+# return value: not relevant
+# return code (status): not relevant
 exit_program() {
     printf "%s\n%s%s\n" \
            "error: ${1}" \
@@ -353,6 +367,8 @@ remove_spaces() {
 
 # list_supported function: print a list of arguments supported by this program
 # arguments: none
+# return value: the described list
+# return code (status): not relevant
 list_supported() {
     show_header
     printf "%s\n" ""
@@ -382,6 +398,9 @@ list_supported() {
 
 # parse_cmd_line function: parse command line arguments and adjust variables
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
+# return value: none
+# return code (status): not relevant
+# sets special variables: $shift_count - how many shifts were executed
 parse_cmd_line() {
     shift_count="0" # counts how many 'shift' commands were executed
     
@@ -833,8 +852,10 @@ done
 #                               for a given format
 # arguments: $1 - format generic name
 # arguments: $2 - format specific name
-# reutrn code: 0 - detected ffmpeg build has support for desired format
-#              1 - detected ffmpeg build has no support for desired format
+# return value: not relevant
+# reutrn code (status): 0 - ffmpeg build has support for desired format
+#                       1 - ffmpeg build has no support for desired format
+# note: needs $ffmpeg_formats - ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format() {
     if ! printf "%s\n" "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
@@ -853,8 +874,10 @@ check_ffmpeg_format() {
 #                                for a given encoder
 # arguments: $1 - encoder generic name
 # arguments: $2 - encoder specific name
-# reutrn code: 0 - detected ffmpeg build has support for desired encoder
-#              1 - detected ffmpeg build has no support for desired encoder
+# return value: not relevant
+# reutrn code (status): 0 - ffmpeg build has support for desired encoder
+#                       1 - ffmpeg build has no support for desired encoder
+# note: needs $ffmpeg_encoders - ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 check_ffmpeg_encoder() {
     if ! printf "%s\n" "$ffmpeg_encoders" | grep -q ".*${1}.*encoders:.*${2}.*"
     then
@@ -874,6 +897,8 @@ check_ffmpeg_encoder() {
 
 # randomstr function: generate a random string
 # arguments: $1 - desired string length
+# return value: a random string
+# return code (status): not relevant
 randomstr() {
     if [ -c "/dev/urandom" ] 
     then
@@ -907,8 +932,10 @@ randomstr() {
 # create_watermark function: create a text watermark and set watermark options
 #                            to be passed to ffmpeg command
 # arguments: none
+# return value: not relevant
 # return code (status): 0 - text watermark image was successfully created
 #                       1 - failed to create text watermark image
+# sets special variables: $watermark_options - ffmpeg watermark options
 create_watermark() {
     randomstring_png="$(randomstr "20")" # random string for tmp png filename
     wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
@@ -1004,6 +1031,9 @@ create_watermark() {
 
 # video_fade function: sets video fade options to be passed to ffmpeg command
 # arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variables: $fade_options - ffmpeg fade options
 videofade() {
     # get recorded video length in seconds
     tmp_1stpart="screencast-tmpvideo-${$}-"  # split large line
@@ -1043,6 +1073,7 @@ videofade() {
 
 # check_dimension function: check if a given dimension is a multiple of 8
 # arguments:  $1 - the given dimension (the actual variable value)
+# return value: none
 # return code (status): 0 - the dimension is a multiple of 8
 #                       1 - the dimension is not a multiple of 8
 check_dimension() {
@@ -1056,6 +1087,7 @@ check_dimension() {
 #                         a given inappropriate video dimension
 # arguments: $1 - a string denoting the given dimension (width/height)
 # return value: a string with the created message
+# return code (status): not relevant
 dimension_msg() {
     case "$video_encoder" in
         x264|h264_nvenc|hevc_nvenc)
@@ -1084,6 +1116,8 @@ dimension_msg() {
 # adjust_dimension function: change a given dimension to the immediately higher
 #                            number that is a multiple of 8
 # arguments: $1 - a string denoting the given dimension (width/height)
+# return value = not relevant
+# return code (status): not relevant
 adjust_dimension() {
     dimension="$1"
     
