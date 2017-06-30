@@ -1493,8 +1493,13 @@ then
     printf "%s"   "info: use arrow keys to fine tune when dragging, "
     printf "%s\n" "right click or any other keystroke to cancel"
     
-    screen_region="$(slop -o -f '%x %y %w %h')"
-    [ -z "$screen_region" ] && exit_program "screen region was not selected"
+    
+    if ! screen_region="$(slop -o -f '%x %y %w %h')" ||
+       ! printf "%s" "$screen_region" |
+             grep -Eq '^([0-9]+[[:space:]]){3}[0-9]+$'
+    then
+        exit_program "screen region was not selected"
+    fi
     video_position_x="$(printf "%s" "$screen_region" | cut -d ' ' -f1)"
     video_position_y="$(printf "%s" "$screen_region" | cut -d ' ' -f2)"
     video_width="$(     printf "%s" "$screen_region" | cut -d ' ' -f3)"
