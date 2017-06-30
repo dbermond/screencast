@@ -412,7 +412,7 @@ parse_cmd_line() {
             # short option and long option without '='
             -s|--size)
                 # search for an argument
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     # errors out if no argument was entered after the option
                     # (will check for a leading '-' in the next parameter,
@@ -440,7 +440,7 @@ parse_cmd_line() {
                 ;;
             
             -p|--position)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -466,7 +466,7 @@ parse_cmd_line() {
                 ;;
             
             -r|--fps)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -487,7 +487,7 @@ parse_cmd_line() {
                 ;;
             
             -f|--format)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -509,7 +509,7 @@ parse_cmd_line() {
                 ;;
             
             -i|--audio-input)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -530,7 +530,7 @@ parse_cmd_line() {
                 ;;
             
             -a|--audio-encoder)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -553,7 +553,7 @@ parse_cmd_line() {
                 ;;
             
             -v|--video-encoder)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -576,7 +576,7 @@ parse_cmd_line() {
                 ;;
             
             -e|--fade)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -597,7 +597,7 @@ parse_cmd_line() {
                 ;;
             
             -m|--volume-factor)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -618,7 +618,7 @@ parse_cmd_line() {
                 ;;
             
             -w|--watermark)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -641,7 +641,7 @@ parse_cmd_line() {
                 ;;
             
             -z|--wmark-size)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -664,7 +664,7 @@ parse_cmd_line() {
                 ;;
             
             -k|--wmark-position)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -687,7 +687,7 @@ parse_cmd_line() {
                 ;;
             
             -c|--wmark-font)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -710,7 +710,7 @@ parse_cmd_line() {
                 ;;
             
             -x|--fixed)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -735,7 +735,7 @@ parse_cmd_line() {
                 ;;
             
             -g|--png-optimizer)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
@@ -758,7 +758,7 @@ parse_cmd_line() {
                 ;;
             
             -o|--output-dir)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if { printf "%.1s\n" "$2" | grep -q '-' ; }
                     then
@@ -780,7 +780,7 @@ parse_cmd_line() {
                 ;;
             
             -t|--tmp-dir)
-                if [ "$2" ] 
+                if [ -n "$2" ] 
                 then
                     if printf "%.1s\n" "$2" | grep -q '-'
                     then
