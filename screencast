@@ -1654,9 +1654,11 @@ then
            $vfilter_option ${watermark_options}${fade_options} \
            $volume_options \
            $audio_encode_codec \
-           -vcodec $video_encode_codec -pix_fmt $pixel_format \
+           -vcodec $video_encode_codec \
+           -pix_fmt $pixel_format \
            $faststart \
-           -map 0 -y \
+           -map 0 \
+           -y \
            "${savedir}/${output_file}"
     then
         notify "normal" "3000" "mail-mark-notjunk" "finish"
