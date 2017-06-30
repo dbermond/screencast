@@ -1218,7 +1218,7 @@ else
 fi
 
 # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
-printf "%s" "$video_rate" | grep -Eq '^[0-9]+\.?[0-9]*$' || exit_program \
+printf "%s" "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program \
     "'${video_rate}' is not a valid video framerate (fps) format"
 
 # check if a valid container format was selected; auto choose audio/video
@@ -1425,10 +1425,10 @@ case "$fade" in
 esac
 
 # check if the entered fixed video length is a valid integer/float number (-x)
-if printf "%s" "$fixed_length" | grep -Eq '^[0-9]+\.?[0-9]*$'
+if printf "%s" "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
 then
     # enable fixed video length if chosen by user (a value different than '0')
-    printf "%s" "$fixed_length" | grep -Eq '^[0]+\.?[0]*$' ||
+    printf "%s" "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' ||
         fixed_length_options="-t ${fixed_length}"
 else
     exit_program \
@@ -1436,12 +1436,12 @@ else
 fi
 
 # check if the entered volume factor is a valid integer/float number (-m)
-if printf "%s" "$volume_factor" | grep -Eq '^[0-9]+\.?[0-9]*$'
+if printf "%s" "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
 then
     # enable volume increase effect if chosen by user
     # (a value different than '1.0' or '0.0')
-    if ! { printf "%s" "$volume_factor" | grep -Eq '^[0]+\.?[0]*$' ||
-           printf "%s" "$volume_factor" | grep -Eq '^[1]+\.?[0]*$' ; }
+    if ! { printf "%s" "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
+           printf "%s" "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
     then
         volume_options="-af volume=${volume_factor}"
     fi
@@ -1465,11 +1465,11 @@ then
 fi
 
 # check for a valid watermark size format (NxN) (-z/--wmark-size)
-printf "%s" "$watermark_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
+printf "%s" "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
     "'${watermark_size}' is not a valid watermark size format"
 
 # check for a valid watermark position format (N,N) (-k/--wmark-position)
-if printf "%s" "$watermark_position" | grep -Eq '^[0-9]+,[0-9]*$'
+if printf "%s" "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
 then
     # translate watermark position to what is really used in ffmpeg command
     watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
@@ -1515,12 +1515,13 @@ then
 # otherwise use settings from -s/--size and -p/--position (or the defaults)
 else
     # check for a valid video size format (NxN) (-s/--size)
-    printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]*$' || exit_program \
+    printf "%s" "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
         "'${video_size}' is not a valid video size format"
     
     # check for a valid screen position format to record (N,N) (-p/--position)
-    printf "%s" "$video_position" |grep -Eq '^[0-9]+,[0-9]*$' || exit_program \
-        "'${video_position}' is not a valid screen position format"
+    printf "%s" "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' ||
+        exit_program \
+            "'${video_position}' is not a valid screen position format"
     
     video_width="$(     printf "%s" "$video_size"     | cut -d 'x' -f1)"
     video_height="$(    printf "%s" "$video_size"     | cut -d 'x' -f2)"
