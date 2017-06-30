@@ -945,7 +945,7 @@ create_watermark() {
                                -font "$watermark_font" \
                                label:"$watermark_text" \
                                -format '%[label:pointsize]' \
-                               info: 2>/dev/null)"
+                               info:)"
     then
         # check if font pointsize was correctly obtained (integer/float number)
         if printf "%s" "$watermark_pointsize" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
@@ -1610,7 +1610,7 @@ do
     # check if the entered $savedir/$tmpdir already exists and mkdir if not
     [ -e "$directory" ] ||
     {
-        mkdir -p "$directory" 2>/dev/null || exit_program \
+        mkdir -p "$directory" || exit_program \
             "failed to create directory '${directory}'" ;
     }
     
@@ -1699,7 +1699,7 @@ then
         # play a sound after finish if requirements are present
         if command -v paplay >/dev/null 2>&1
         then
-            [ -f "$finish_sound" ] && paplay "$finish_sound" 2>/dev/null
+            [ -f "$finish_sound" ] && paplay "$finish_sound"
         fi
     else
         printf "%s\n" "screencast: encoding error!" >&2
