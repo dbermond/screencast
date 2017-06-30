@@ -905,87 +905,102 @@ randomstr() {
     printf "%s" "$rnd"
 }
 
-# optimizepng function: optimize a PNG image with predefined settings
-# arguments  : $1 - png image file
-# return code:  0 - predefined command was executed
-#               1 - not a PNG image, predefined command not executed
-#             note: it will not check if optimization command worked correctly
-# note: original image will be modified (make a backup if needed)
-optimizepng() {
-    # check if file is a PNG image
-    if file "$1" | grep -q 'PNG image data'
-    then
-        case "$pngoptimizer" in
-            truepng)
-                truepng $truepngsettings "$1"
-                ;;
-            pingo)
-                pingo $pingosettings "$1"
-                ;;
-            optipng)
-                optipng $optipngsettings "$1"
-                ;;
-            opt-png)
-                opt-png "$1"
-                ;;
-        esac
-        
-        # use advdef to optimize PNG even more
-        advdef $advdefsettings "$1"
-    else
-        printf "%s\n" "error: invalid image format (must be PNG)" >&2
-        return 1
-    fi
-}
-
-# create_watermark function: create a watermark and set watermark options
+# create_watermark function: create a text watermark and set watermark options
 #                            to be passed to ffmpeg command
 # arguments: none
+# return code (status): 0 - text watermark image was successfully created
+#                       1 - failed to create text watermark image
 create_watermark() {
     randomstring_png="$(randomstr "20")" # random string for tmp png filename
     wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
     
     # get font pointsize
-    watermark_pointsize="$(magick \
+    if watermark_pointsize="$(magick \
                                -size "$watermark_size" \
                                -font "$watermark_font" \
                                label:"$watermark_text" \
                                -format '%[label:pointsize]' \
                                info: 2>/dev/null)"
-    
-    # generate the watermark
-    magick \
-        -size "$watermark_size" \
-        -font "$watermark_font" \
-        -pointsize "$watermark_pointsize" \
-        -gravity center \
-        \( \
-            xc:grey30 \
-            -draw "fill gray70  text 0,0  '${watermark_text}'" \
-        \) \
-        \( \
-            xc:black \
-            -draw "fill white  text  1,1  '${watermark_text}'  \
-                               text  0,0  '${watermark_text}'  \
-                   fill black  text -1,-1 '${watermark_text}'" \
-            -alpha Off \
-        \) \
-        -alpha Off \
-        -compose copy-opacity \
-        -composite \
-        -trim \
-        +repage \
-        "$wmark_image"
-        
-    # optimize PNG image file if chosen by user (-g/--png-optimizer)
-    [ "$pngoptimizer" != "none" ] && optimizepng "$wmark_image"
-    
-    # set ffmpeg watermark options
-    watermark_input="-framerate ${video_rate} \
-                     -thread_queue_size ${queue_size} \
-                     -i ${wmark_image}"
-    watermark_input="$(printf "%s" "$watermark_input" | remove_spaces)"
-    watermark_options="overlay=${watermark_position}"
+    then
+        # check if font pointsize was correctly obtained (integer/float number)
+        if printf "%s" "$watermark_pointsize" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+        then
+            # generate the watermark
+            if magick \
+                -size "$watermark_size" \
+                -font "$watermark_font" \
+                -pointsize "$watermark_pointsize" \
+                -gravity center \
+                \( \
+                    xc:grey30 \
+                    -draw "fill gray70  text 0,0  '${watermark_text}'" \
+                \) \
+                \( \
+                    xc:black \
+                    -draw "fill white  text  1,1  '${watermark_text}'  \
+                                       text  0,0  '${watermark_text}'  \
+                           fill black  text -1,-1 '${watermark_text}'" \
+                    -alpha Off \
+                \) \
+                -alpha Off \
+                -compose copy-opacity \
+                -composite \
+                -trim \
+                +repage \
+                "$wmark_image"
+            then
+                # check if the generated watermark file is truly a PNG image
+                if file "$wmark_image" | grep -q 'PNG image data'
+                then
+                    # optimize PNG image if chosen by user (-g/--png-optimizer)
+                    if [ "$pngoptimizer" != "none" ] 
+                    then
+                        case "$pngoptimizer" in
+                            truepng)
+                                truepng $truepngsettings "$wmark_image"
+                                ;;
+                            pingo)
+                                pingo $pingosettings "$wmark_image"
+                                ;;
+                            optipng)
+                                optipng $optipngsettings "$wmark_image"
+                                ;;
+                            opt-png)
+                                opt-png "$wmark_image"
+                                ;;
+                        esac
+                        
+                        # use advdef to optimize PNG even more
+                        advdef $advdefsettings "$wmark_image"
+                    fi
+                    
+                    # set ffmpeg watermark options
+                    watermark_input="-framerate ${video_rate} \
+                                     -thread_queue_size ${queue_size} \
+                                     -i ${wmark_image}"
+                    watermark_input="$(printf "%s" "$watermark_input" |
+                                            remove_spaces)"
+                    watermark_options="overlay=${watermark_position}"
+                else
+                    msg="warning: the generated watermark is not a PNG file \
+                         (watermarking aborted)"
+                    printf "%s\n" "$(printf "%s" "$msg" | remove_spaces)" >&2
+                    return 1
+                fi # end: if file
+            else
+                printf "%s\n" "warning: failed to create watermark image" >&2
+                return 1
+            fi # end: if magick
+        else
+            msg="warning: the obtained watermark font pointsize is not a \
+                 valid integer/float number (watermarking aborted)"
+            printf "%s\n" "$(printf "%s" "$msg" | remove_spaces)" >&2
+            return 1
+        fi # end: if printf
+    else
+        printf "%s\n" "warning: failed to obtain watermark font pointsize" >&2
+        return 1
+    fi # end: if watermark_pointsize=
 }
 
 # video_fade function: sets video fade options to be passed to ffmpeg command
@@ -1595,9 +1610,11 @@ then
     # enable watermark effect if chosen by user (-w/--watermark)
     if [ "$watermark" = "true" ] 
     then
-        create_watermark
-        vfilter_option="-filter_complex"
-        [ "$video_encoder" = "vp9" ] && pixel_format="yuva420p"
+        if create_watermark
+        then
+            vfilter_option="-filter_complex"
+            [ "$video_encoder" = "vp9" ] && pixel_format="yuva420p"
+        fi
     fi
     
     # enable fade effect if chosen by user (-e/--fade)
