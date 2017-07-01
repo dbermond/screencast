@@ -136,6 +136,28 @@ cleanup() {
     fi
 }
 
+# print_good, print_info, print_warn and print_error functions:
+# print a formated message with colors if avaiable, otherwise it will fallback
+# to non-color output (note: print_error() prints to stderr by default)
+# arguments: $1 - message to print
+# return value: the message to print
+# return code (status): not relevant
+print_good() {
+    printf '%s\n' "${color_msg}${color_off:-} ${1}"
+}
+
+print_info() {
+    printf '%s\n' "${color_msg}${color_bold:-} info:${color_off:-} ${1}"
+}
+
+print_warn() {
+    printf '%s\n' "${color_msg}${color_yellow:-} warning:${color_off:-} ${1}"
+}
+
+print_error() {
+    printf '%s\n' "${color_msg}${color_red:-} error:${color_off:-} ${1}" >&2
+}
+
 # show_header function: show program header
 # arguments: none
 # return value: the program header
@@ -233,7 +255,7 @@ notify() {
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send xdpyinfo slop ffmpeg ffprobe bc convert \
+    for requirement in notify-send ffmpeg xdpyinfo slop ffprobe bc convert \
                        magick "$pngoptimizer" advdef
     do
         # skip disabled components (unnecessary checks)
@@ -272,39 +294,39 @@ check_requirements() {
         
         case "$requirement" in
             notify-send)
-                request_string=' '
+                request_string=''
                 installname="${requirement} (libnotify) (or use '-n')"
                 ;;
             ffmpeg)
-                request_string=' '
+                request_string=''
                 installname='ffmpeg (version git master preferred)'
                 ;;
             ffprobe)
-                request_string=' video fade effect was requested but '
+                request_string='video fade effect was requested but '
                 installname='ffprobe (ffmpeg) (version git master preferred)'
                 ;;
             bc)
-                request_string=' video fade effect was requested but '
+                request_string='video fade effect was requested but '
                 installname="$requirement"
                 ;;
             convert|magick)
-                request_string=' text watermark was requested but '
+                request_string='text watermark was requested but '
                 installname='ImageMagick (IM7 preferred)'
                 ;;
             slop)
-                request_string=' screen region selection was requested but '
+                request_string='screen region selection was requested but '
                 installname="$requirement"
                 ;;
             "$pngoptimizer")
-                request_string=' png optimization was requested but '
+                request_string='png optimization was requested but '
                 installname="$requirement"
                 ;;
             advdef)
-                request_string=' png optimization was requested but '
+                request_string='png optimization was requested but '
                 installname="${requirement} (advancecomp)"
                 ;;
             *)
-                request_string=' '
+                request_string=''
                 installname="$requirement"
                 ;;
         esac
@@ -319,9 +341,10 @@ check_requirements() {
                 }
                 continue
             else
-                msg="error:${request_string}'${requirement}' was not found"
-                printf "%s\n" "$msg" >&2
-                printf "%s\n" "       please install ${installname}" >&2
+                msg="${request_string:-}'${requirement}' was not found"
+                print_error "$msg"
+                printf '%s%s\n' '                      ' \
+                          "please install ${installname}" >&2
                 [ "$requirement" != 'notify-send' ] &&
                     notify 'critical' '5000' 'process-stop' "$msg"
                 exit 1
@@ -336,11 +359,10 @@ check_requirements() {
 # return value: not relevant
 # return code (status): not relevant
 command_error() {
-    msg="error: ${1} option requires an argument"
-    printf '%s\n%s%s\n' \
-           "$msg" \
-           "       if you need help run 'screencast --help' " \
-           "or 'man screencast'" >&2
+    print_error "${1} option requires an argument"
+    printf '%s%s%s\n' '                      ' \
+                      "if you need help run 'screencast --help' " \
+                      "or 'man screencast'" >&2
     notify 'critical' '5000' 'process-stop' "$msg"
     exit 1
 }
@@ -351,10 +373,10 @@ command_error() {
 # return value: not relevant
 # return code (status): not relevant
 exit_program() {
-    printf '%s\n%s%s\n' \
-           "error: ${1}" \
-           "       if you need help run 'screencast --help' " \
-           "or 'man screencast'" >&2
+    print_error "${1}"
+    printf '%s%s%s\n' '                      ' \
+                      "if you need help run 'screencast --help' " \
+                      "or 'man screencast'" >&2
     notify 'critical' '5000' 'process-stop' "error: ${1}"
     exit 1
 }
@@ -863,10 +885,10 @@ parse_cmd_line() {
 check_ffmpeg_format() {
     if ! printf '%s\n' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
-        printf '%s'   'error: ' >&2
-        printf '%s\n' "the detected ffmpeg build has no support for ${2}" >&2
-        printf '%s'   '       please install a ffmpeg build with ' >&2
-        printf '%s\n' "support for ${2}" >&2
+        print_error "the detected ffmpeg build has no support for '${2}'"
+        printf '%s%s%s\n' '                      ' \
+                          'please install a ffmpeg build ' \
+                          "with support for '${2}'" >&2
         notify 'critical' '5000' 'process-stop' \
                 "error: ${2} is not supported by your ffmpeg build"
         return 1
@@ -886,11 +908,10 @@ check_ffmpeg_encoder() {
     then
         if [ "$2" != 'libfdk_aac' ] 
         then
-            printf '%s'   'error: ' >&2
-            printf '%s'   'the detected ffmpeg build ' >&2
-            printf '%s\n' "has no support for ${2}" >&2
-            printf '%s'   '       please install a ffmpeg build with ' >&2
-            printf '%s\n' "support for ${2}" >&2
+            print_error "the detected ffmpeg build has no support for '${2}'"
+            printf '%s%s%s\n' '                      ' \
+                              'please install a ffmpeg build ' \
+                              "with support for '${2}'" >&2
             notify 'critical' '5000' 'process-stop' \
                    "error: ${2} is not supported by your ffmpeg build"
         fi
@@ -1011,23 +1032,23 @@ create_watermark() {
                                             remove_spaces)"
                     watermark_options="overlay=${watermark_position}"
                 else
-                    msg="warning: the generated watermark is not a PNG file \
+                    msg="the generated watermark is not a PNG file \
                          (watermarking aborted)"
-                    printf '%s\n' "$(printf '%s' "$msg" | remove_spaces)" >&2
+                    print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
                     return 1
                 fi # end: if file
             else
-                printf '%s\n' 'warning: failed to create watermark image' >&2
+                print_warn 'failed to create watermark image' >&2
                 return 1
             fi # end: if magick
         else
-            msg="warning: the obtained watermark font pointsize is not a \
+            msg="the obtained watermark font pointsize is not a \
                  valid integer/float number (watermarking aborted)"
-            printf '%s\n' "$(printf '%s' "$msg" | remove_spaces)" >&2
+            print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
             return 1
         fi # end: if printf
     else
-        printf '%s\n' 'warning: failed to obtain watermark font pointsize' >&2
+        print_warn 'failed to obtain watermark font pointsize' >&2
         return 1
     fi # end: if watermark_pointsize=
 }
@@ -1142,8 +1163,9 @@ adjust_dimension() {
     to_reach="$((8 - remainder))"
     new_dimension_value="$((dimension_value + to_reach))"
     
-    printf '%s'   "warning: $(dimension_msg "$dimension") "
-    printf '%s\n' "and was changed to '${new_dimension_value}'"
+    msg="$(dimension_msg "$dimension") and was changed \
+         to '${new_dimension_value}'"
+    print_warn "$(printf '%s' "$msg" | remove_spaces)"
     
     # change the given dimension to the new value
     case "$dimension" in
@@ -1161,6 +1183,19 @@ adjust_dimension() {
 #########################################
 
 trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
+
+# check for color output support
+if command -v tput >/dev/null 2>&1
+then
+    color_off="$(tput sgr0)"
+    color_bold="${color_off}$(tput bold)"
+    color_blue="${color_bold}$(tput setaf 4)"
+    color_yellow="${color_bold}$(tput setaf 3)"
+    color_red="${color_bold}$(tput setaf 1)"
+fi
+
+# message header (colored, will fallback to non-colored if no color support)
+color_msg="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
 
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
@@ -1221,7 +1256,7 @@ then
     
     # do not allow to use -f/--format when specifying an output filename
     msg="--format (-f) option is to be used only with --auto-filename (-u)
-       (when not using '-u', set the container format in the output filename)"
+                      (when not using '-u', set format in the output filename)"
     [ "$format_setted" = "true" ] && exit_program "$msg"
     
     # if user specified a save directory directly with output filename that
@@ -1311,7 +1346,7 @@ then
     if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
     then
        msg="${msg}
-       (did you forget to select the container format?)"
+                      (did you forget to select the container format?)"
     fi
     exit_program "$msg"
 fi
@@ -1326,7 +1361,7 @@ then
     if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
     then
        msg="${msg}
-       (did you forget to select the container format?)"
+                      (did you forget to select the container format?)"
     fi
     exit_program "$msg"
 fi
@@ -1365,7 +1400,7 @@ then
     if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
     then
        msg="${msg}
-       (did you forget to select the container format?)"
+                      (did you forget to select the container format?)"
     fi
     exit_program "$msg"
 fi
@@ -1524,11 +1559,13 @@ then
     [ "$video_posi_setted" = 'true' ] && exit_program \
        '--select-region (-S) option cannot be used with --position (-p) option'
     
-    printf '%s\n' 'please select with mouse a screen region to record...'
-    printf '%s'   'info: single click to select a window, '
-    printf '%s\n' 'click and drag to select a region'
-    printf '%s'   'info: use arrow keys to fine tune when dragging, '
-    printf '%s\n' 'right click or any other keystroke to cancel'
+    print_good 'please select with mouse a screen region to record...'
+    msg="single click to select a window, \
+         click and drag to select a region"
+    print_info "$(printf '%s' "$msg" | remove_spaces)"
+    msg="use arrow keys to fine tune when dragging, \
+         right click or any other keystroke to cancel"
+    print_info "$(printf '%s' "$msg" | remove_spaces)"
     
     
     if ! screen_region="$(slop -o -f '%x %y %w %h')" ||
@@ -1679,12 +1716,12 @@ then
             [ -f "$finish_sound" ] && paplay "$finish_sound"
         fi
     else
-        printf '%s\n' 'screencast: encoding error!' >&2
+        print_error 'encoding error!'
         notify 'critical' '5000' 'process-stop' 'encoding error!'
         exit 1
     fi
 else
-    printf '%s\n' 'screencast: recording error!' >&2
+    print_error 'recording error!'
     notify 'critical' '5000' 'process-stop' 'recording error!'
     exit 1
 fi
