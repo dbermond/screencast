@@ -360,9 +360,6 @@ check_requirements() {
 # return code (status): not relevant
 command_error() {
     print_error "${1} option requires an argument"
-    printf '%s%s%s\n' '                      ' \
-                      "if you need help run 'screencast --help' " \
-                      "or 'man screencast'" >&2
     notify 'critical' '5000' 'process-stop' "$msg"
     exit 1
 }
@@ -374,9 +371,6 @@ command_error() {
 # return code (status): not relevant
 exit_program() {
     print_error "${1}"
-    printf '%s%s%s\n' '                      ' \
-                      "if you need help run 'screencast --help' " \
-                      "or 'man screencast'" >&2
     notify 'critical' '5000' 'process-stop' "error: ${1}"
     exit 1
 }
