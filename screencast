@@ -106,6 +106,11 @@ fade_color='black'      # color to be used by the video fade effect
 fade_length='0.6'       # length (in seconds) of video fade effect itself
 fade_solid_length='0.1' # solid color length (in seconds) of video fade effect
 
+# default options for later comparison (to print informative messages)
+audio_encoder_default="$audio_encoder"
+video_encoder_default="$video_encoder"
+format_default="$format"
+
 # supported arguments (for use with -l/--list)
 supported_fade='in, out, both, none'
 supported_formats='mp4, mkv, webm, ogg'
@@ -955,6 +960,7 @@ randomstr() {
 #                       1 - failed to create text watermark image
 # sets special variables: $watermark_options - ffmpeg watermark options
 create_watermark() {
+    print_good 'generating watermark image'
     randomstring_png="$(randomstr '20')" # random string for tmp png filename
     wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
     
@@ -999,6 +1005,7 @@ create_watermark() {
                     # optimize PNG image if chosen by user (-g/--png-optimizer)
                     if [ "$pngoptimizer" != 'none' ] 
                     then
+                        print_good 'optimizing watermark image'
                         case "$pngoptimizer" in
                             truepng)
                                 truepng $truepngsettings "$wmark_image"
@@ -1032,7 +1039,8 @@ create_watermark() {
                     return 1
                 fi # end: if file
             else
-                print_warn 'failed to create watermark image' >&2
+                msg="failed to create watermark image (watermarking aborted)"
+                print_warn "$msg" >&2
                 return 1
             fi # end: if magick
         else
@@ -1042,7 +1050,9 @@ create_watermark() {
             return 1
         fi # end: if printf
     else
-        print_warn 'failed to obtain watermark font pointsize' >&2
+        msg="failed to obtain watermark font pointsize \
+             (watermarking aborted)"
+        print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
         return 1
     fi # end: if watermark_pointsize=
 }
@@ -1298,18 +1308,193 @@ case "$format" in
         :
         ;;
     webm)
-        [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus'
-        [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'
+        [ "$audio_encoder_setted" = 'false' ] && 
+            audio_encoder='opus' && audio_outstr='(auto chosen)'
+        [ "$video_encoder_setted" = 'false' ] &&
+            video_encoder='vp9' && video_outstr='(auto chosen)'
         ;;
     ogg)
-        [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis'
-        [ "$video_encoder_setted" = 'false' ] && video_encoder='theora'
+        [ "$audio_encoder_setted" = 'false' ] &&
+            audio_encoder='vorbis' && audio_outstr='(auto chosen)'
+        [ "$video_encoder_setted" = 'false' ] && 
+            video_encoder='theora' && video_outstr='(auto chosen)'
         ;;
     *)
         exit_program \
             "'${format}' is not a valid container format for this program"
         ;;
 esac
+
+# set recording and encoding options for the selected audio encoder
+case "$audio_encoder" in
+    aac)
+        if check_ffmpeg_encoder aac libfdk_aac
+        then
+            audio_encode_codec="$audio_encode_codec_fdkaac"
+        else
+            audio_encode_codec="$audio_encode_codec_aac"
+        fi
+        ;;
+    vorbis)
+        check_ffmpeg_encoder vorbis libvorbis || exit 1
+        audio_encode_codec="$audio_encode_codec_vorbis"
+        ;;
+    opus)
+        check_ffmpeg_encoder opus libopus || exit 1
+        audio_encode_codec="$audio_encode_codec_opus"
+        ;;
+    mp3|mp3lame)
+        check_ffmpeg_encoder mp3 libmp3lame || exit 1
+        audio_encode_codec="$audio_encode_codec_mp3lame"
+        ;;
+    shine)
+        check_ffmpeg_encoder mp3 libshine || exit 1
+        audio_encode_codec="$audio_encode_codec_shine"
+        ;;
+    # video without audio stream (audio will not be recorded)
+    none)
+        audio_input=''
+        audio_channel_layout=''
+        audio_general_options=''
+        audio_record_codec='-an'
+        audio_encode_codec='-an'
+        ;;
+    *)
+        msg="'${audio_encoder}' is not a valid audio encoder for this program"
+        exit_program "$msg"
+        ;;
+esac
+
+# set recording and encoding options for the selected video encoder
+case "$video_encoder" in
+    x264)
+        check_ffmpeg_encoder h264 libx264 || exit 1
+        video_encode_codec="$video_encode_codec_x264"
+        ;;
+    h264_nvenc)
+        check_ffmpeg_encoder h264 h264_nvenc || exit 1
+        video_encode_codec_h264_nvenc="$(printf '%s' \
+            "$video_encode_codec_h264_nvenc" | remove_spaces)"
+        video_encode_codec="$video_encode_codec_h264_nvenc"
+        ;;
+    x265)
+        check_ffmpeg_encoder hevc libx265 || exit 1
+        video_encode_codec="$video_encode_codec_x265"
+        ;;
+    kvazaar)
+        check_ffmpeg_encoder hevc libkvazaar || exit 1
+        video_encode_codec="$video_encode_codec_kvazaar"
+        ;;
+    hevc_nvenc)
+        check_ffmpeg_encoder hevc hevc_nvenc || exit 1
+        video_encode_codec="$video_encode_codec_hevc_nvenc"
+        ;;
+    theora)
+        check_ffmpeg_encoder theora libtheora || exit 1
+        video_encode_codec="$video_encode_codec_theora"
+        ;;
+    vp8)
+        check_ffmpeg_encoder vp8 libvpx || exit 1
+        video_record_codec="$video_record_codec_vp8"
+        video_encode_codec="$video_encode_codec_vp8"
+        ;;
+    vp9)
+        check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
+        video_encode_codec="$video_encode_codec_vp9"
+        ;;
+    *)
+        msg="'${video_encoder}' is not a valid video encoder for this program"
+        exit_program "$msg"
+        ;;
+esac
+
+# check if a valid fade effect was entered (-e/--fade)
+case "$fade" in
+    in|out|both|none)
+        :
+        ;;
+    *)
+        exit_program "'${fade}' is not a valid fade effect"
+        ;;
+esac
+
+# check if the entered fixed video length is a valid integer/float number (-x)
+if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+then
+    # enable fixed video length if chosen by user (a value different than '0')
+    printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' ||
+        fixed_length_options="-t ${fixed_length}"
+else
+    exit_program \
+        "'${fixed_length}' is not a valid number for fixed video length"
+fi
+
+# check if the entered volume factor is a valid integer/float number (-m)
+if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+then
+    # enable volume increase effect if chosen by user
+    # (a value different than '1.0' or '0.0')
+    if ! { printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
+           printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
+    then
+        volume_options="-af volume=${volume_factor}"
+    fi
+else
+    exit_program \
+        "'${volume_factor}' is not a valid number for volume increase effect"
+fi
+
+# do not allow to use -z, -k, -c or -g options without -w option
+if [ "$watermark" = 'false' ] 
+then
+    msg='option is to be used only with --watermark (-w) option'
+    [ "$wmark_size_setted"   = 'true' ] && exit_program \
+        "--wmark-size (-z) ${msg}"
+    [ "$wmark_posi_setted"   = 'true' ] && exit_program \
+        "--wmark-position (-k) ${msg}"
+    [ "$wmark_font_setted"   = 'true' ] && exit_program \
+        "--wmark-font (-c) ${msg}"
+    [ "$pngoptimizer_setted" = 'true' ] && exit_program \
+        "--png-optimizer (-g) ${msg}"
+fi
+
+# check for a valid watermark size format (NxN) (-z/--wmark-size)
+printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
+    "'${watermark_size}' is not a valid watermark size format"
+
+# check for a valid watermark position format (N,N) (-k/--wmark-position)
+if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
+then
+    # translate watermark position to what is really used in ffmpeg command
+    watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
+else
+    exit_program \
+        "'${watermark_position}' is not a valid watermark position format"
+fi
+
+# print information about some settings
+[ "$video_encoder" = "$video_encoder_default" ] && video_outstr='(default)'
+[ "$audio_encoder" = "$audio_encoder_default" ] && audio_outstr='(default)'
+[ "$format"        = "$format_default"        ] && format_outstr='(default)'
+[ "$fade" != 'none' ] && effects="fade-${fade}"
+if [ "$watermark" = 'true' ] 
+then
+    effects="${effects:+"${effects}, watermark"}"
+    effects="${effects:-watermark}"
+fi
+if [ -n "$volume_options" ]
+then
+    effects="${effects:+"${effects}, volume (${volume_factor})"}"
+    effects="${effects:-volume}"
+fi
+effects="${effects:-none}"
+msg="${video_encoder} ${video_outstr:-}"
+print_good "${color_bold:-}video encoder   :${color_off:-} ${msg}"
+msg="${audio_encoder} ${audio_outstr:-}"
+print_good "${color_bold:-}audio encoder   :${color_off:-} ${msg}"
+msg="${format} ${format_outstr:-}"
+print_good "${color_bold:-}container format:${color_off:-} ${msg}"
+print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
 
 # check for invalid combination of audio encoder and container format
 if {
@@ -1397,151 +1582,6 @@ then
                       (did you forget to select the container format?)"
     fi
     exit_program "$msg"
-fi
-
-# set recording and encoding options for the selected audio encoder
-case "$audio_encoder" in
-    aac)
-        if check_ffmpeg_encoder aac libfdk_aac
-        then
-            audio_encode_codec="$audio_encode_codec_fdkaac"
-        else
-            audio_encode_codec="$audio_encode_codec_aac"
-        fi
-        ;;
-    vorbis)
-        check_ffmpeg_encoder vorbis libvorbis || exit 1
-        audio_encode_codec="$audio_encode_codec_vorbis"
-        ;;
-    opus)
-        check_ffmpeg_encoder opus libopus || exit 1
-        audio_encode_codec="$audio_encode_codec_opus"
-        ;;
-    mp3|mp3lame)
-        check_ffmpeg_encoder mp3 libmp3lame || exit 1
-        audio_encode_codec="$audio_encode_codec_mp3lame"
-        ;;
-    shine)
-        check_ffmpeg_encoder mp3 libshine || exit 1
-        audio_encode_codec="$audio_encode_codec_shine"
-        ;;
-    # video without audio stream (audio will not be recorded)
-    none)
-        audio_input=''
-        audio_channel_layout=''
-        audio_general_options=''
-        audio_record_codec='-an'
-        audio_encode_codec='-an'
-        ;;
-    *)
-        exit_program "'${audio_encoder}' is not a valid audio encoder"
-        ;;
-esac
-
-# set recording and encoding options for the selected video encoder
-case "$video_encoder" in
-    x264)
-        check_ffmpeg_encoder h264 libx264 || exit 1
-        video_encode_codec="$video_encode_codec_x264"
-        ;;
-    h264_nvenc)
-        check_ffmpeg_encoder h264 h264_nvenc || exit 1
-        video_encode_codec_h264_nvenc="$(printf '%s' \
-            "$video_encode_codec_h264_nvenc" | remove_spaces)"
-        video_encode_codec="$video_encode_codec_h264_nvenc"
-        ;;
-    x265)
-        check_ffmpeg_encoder hevc libx265 || exit 1
-        video_encode_codec="$video_encode_codec_x265"
-        ;;
-    kvazaar)
-        check_ffmpeg_encoder hevc libkvazaar || exit 1
-        video_encode_codec="$video_encode_codec_kvazaar"
-        ;;
-    hevc_nvenc)
-        check_ffmpeg_encoder hevc hevc_nvenc || exit 1
-        video_encode_codec="$video_encode_codec_hevc_nvenc"
-        ;;
-    theora)
-        check_ffmpeg_encoder theora libtheora || exit 1
-        video_encode_codec="$video_encode_codec_theora"
-        ;;
-    vp8)
-        check_ffmpeg_encoder vp8 libvpx || exit 1
-        video_record_codec="$video_record_codec_vp8"
-        video_encode_codec="$video_encode_codec_vp8"
-        ;;
-    vp9)
-        check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
-        video_encode_codec="$video_encode_codec_vp9"
-        ;;
-    *)
-        exit_program "'${video_encoder}' is not a valid video encoder"
-        ;;
-esac
-
-# check if a valid fade effect was entered (-e/--fade)
-case "$fade" in
-    in|out|both|none)
-        :
-        ;;
-    *)
-        exit_program "'${fade}' is not a valid fade effect"
-        ;;
-esac
-
-# check if the entered fixed video length is a valid integer/float number (-x)
-if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
-then
-    # enable fixed video length if chosen by user (a value different than '0')
-    printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' ||
-        fixed_length_options="-t ${fixed_length}"
-else
-    exit_program \
-        "'${fixed_length}' is not a valid number for fixed video length"
-fi
-
-# check if the entered volume factor is a valid integer/float number (-m)
-if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
-then
-    # enable volume increase effect if chosen by user
-    # (a value different than '1.0' or '0.0')
-    if ! { printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
-           printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
-    then
-        volume_options="-af volume=${volume_factor}"
-    fi
-else
-    exit_program \
-        "'${volume_factor}' is not a valid number for volume increase effect"
-fi
-
-# do not allow to use -z, -k, -c or -g options without -w option
-if [ "$watermark" = 'false' ] 
-then
-    msg='option is to be used only with --watermark (-w) option'
-    [ "$wmark_size_setted"   = 'true' ] && exit_program \
-        "--wmark-size (-z) ${msg}"
-    [ "$wmark_posi_setted"   = 'true' ] && exit_program \
-        "--wmark-position (-k) ${msg}"
-    [ "$wmark_font_setted"   = 'true' ] && exit_program \
-        "--wmark-font (-c) ${msg}"
-    [ "$pngoptimizer_setted" = 'true' ] && exit_program \
-        "--png-optimizer (-g) ${msg}"
-fi
-
-# check for a valid watermark size format (NxN) (-z/--wmark-size)
-printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
-    "'${watermark_size}' is not a valid watermark size format"
-
-# check for a valid watermark position format (N,N) (-k/--wmark-position)
-if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
-then
-    # translate watermark position to what is really used in ffmpeg command
-    watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
-else
-    exit_program \
-        "'${watermark_position}' is not a valid watermark position format"
 fi
 
 # select with mouse the screen region to record if chosen by user
@@ -1638,6 +1678,7 @@ randomstring_rec="$(randomstr '20')" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
 audio_general_options="$(printf '%s' "$audio_general_options" | remove_spaces)"
 video_general_options="$(printf '%s' "$video_general_options" | remove_spaces)"
+print_good 'recording'
 notify 'normal' '1700' 'media-record' 'recording...'
 
 # record screen to a lossless video
@@ -1655,8 +1696,6 @@ if ffmpeg \
        -y \
        "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
 then 
-    notify 'normal' '3000' 'media-playback-stop' 'encoding...'
-    
     # enable watermark effect if chosen by user (-w/--watermark)
     if [ "$watermark" = 'true' ] 
     then
@@ -1687,6 +1726,9 @@ then
         output_file="$(basename "$1")"
     fi
     
+    print_good 'encoding'
+    notify 'normal' '3000' 'media-playback-stop' 'encoding...'
+    
     # encode the recorded lossless video file
     if ffmpeg \
            $audio_channel_layout \
@@ -1702,6 +1744,7 @@ then
            -y \
            "${savedir}/${output_file}"
     then
+        print_good 'finish'
         notify 'normal' '3000' 'mail-mark-notjunk' 'finish'
         
         # play a sound after finish if requirements are present
