@@ -1260,12 +1260,12 @@ printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program \
 # check if a valid container format was selected; auto choose audio/video
 # encoder if user specified only the format without the encoders
 case "$format" in
+    # no need to adjust encoders (default settings are for mp4)
     mp4)
-        # no need to adjust encoders (default settings are for mp4)
         faststart='-movflags +faststart'
         ;;
+    # no action needed (mkv accepts a combination of all encoders)
     mkv)
-        # no action needed (mkv accepts a combination of all encoders)
         :
         ;;
     webm)
@@ -1396,7 +1396,8 @@ case "$audio_encoder" in
         check_ffmpeg_encoder mp3 libshine || exit 1
         audio_encode_codec="$audio_encode_codec_shine"
         ;;
-    none)  # video without audio stream (audio will not be recorded)
+    # video without audio stream (audio will not be recorded)
+    none)
         audio_input=''
         audio_channel_layout=''
         audio_general_options=''
