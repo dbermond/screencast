@@ -433,6 +433,7 @@ parse_cmd_line() {
             # long option with '='
             --size=?*)
                 video_size="${1#*=}" # assign value after '='
+                video_size_setted='true'
                 ;;
             # errors out if a long option with '=' has nothing following '='
             --size=)
@@ -456,6 +457,7 @@ parse_cmd_line() {
                 ;;
             --position=?*)
                 video_position="${1#*=}"
+                video_posi_setted='true'
                 ;;
             --position=)
                 command_error '--position (-p)'
@@ -503,6 +505,7 @@ parse_cmd_line() {
                 ;;
             --format=?*)
                 format="${1#*=}"
+                format_setted='true'
                 ;;
             --format=)
                 command_error '--format (-f)'
