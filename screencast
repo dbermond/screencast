@@ -1260,6 +1260,10 @@ then
     [ "$#" -eq '0' ] && exit_program \
         "you must enter an output filename with extension (or use '-u')"
     
+    # do not allow to enter anything after the output filename
+    [ "$#" -gt '1' ] && exit_program \
+        'please do not enter anything after the output filename'
+    
     # do not allow to use -f/--format when specifying an output filename
     msg="--format (-f) option is to be used only with --auto-filename (-u)
                       (when not using '-u', set format in the output filename)"
