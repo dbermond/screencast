@@ -1284,10 +1284,8 @@ then
         savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
     
     # get output filename extension and assign to container format
-    tmpstr="$(basename "$1")"
-    tmpstr="${tmpstr##*/}"
-    output_extension="${tmpstr##*.}"
-    format="$output_extension"
+    format="$(basename "$1")"
+    format="${format##*.}"
 # if '-u' is set, don't allow to set an output filename in command line
 else
     [ "$#" -gt '0' ] && exit_program \
