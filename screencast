@@ -873,6 +873,21 @@ parse_cmd_line() {
     done
 }
 
+# ffmpeg_msg function: print an error message and show an error notification
+#                      about a not found ffmpeg component (to be used with 
+#                      check_ffmpeg_format() and check_ffmpeg_encoder())
+# arguments: $1 - string with the not found ffmpeg component
+# return value: not relevant
+# return code (status): not relevant
+ffmpeg_msg() {
+    print_error "the detected ffmpeg build has no support for '${1}'"
+    printf '%s%s%s\n' '                      ' \
+                      'please install a ffmpeg build ' \
+                      "with support for '${1}'" >&2
+    notify 'critical' '5000' 'process-stop' \
+           "error: ${1} is not supported by your ffmpeg build"
+}
+
 # check_ffmpeg_format function: check if detected ffmpeg build has support
 #                               for a given format
 # arguments: $1 - format generic name
@@ -882,14 +897,9 @@ parse_cmd_line() {
 #                       1 - ffmpeg build has no support for desired format
 # note: needs $ffmpeg_formats - ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format() {
-    if ! printf '%s\n' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
+    if ! printf '%s' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
-        print_error "the detected ffmpeg build has no support for '${2}'"
-        printf '%s%s%s\n' '                      ' \
-                          'please install a ffmpeg build ' \
-                          "with support for '${2}'" >&2
-        notify 'critical' '5000' 'process-stop' \
-                "error: ${2} is not supported by your ffmpeg build"
+        ffmpeg_msg "$1"
         return 1
     fi
 }
@@ -903,17 +913,9 @@ check_ffmpeg_format() {
 #                       1 - ffmpeg build has no support for desired encoder
 # note: needs $ffmpeg_encoders - ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 check_ffmpeg_encoder() {
-    if ! printf '%s\n' "$ffmpeg_encoders" | grep -q ".*${1}.*encoders:.*${2}.*"
+    if ! printf '%s' "$ffmpeg_encoders" | grep -q ".*${1}.*encoders:.*${2}.*"
     then
-        if [ "$2" != 'libfdk_aac' ] 
-        then
-            print_error "the detected ffmpeg build has no support for '${2}'"
-            printf '%s%s%s\n' '                      ' \
-                              'please install a ffmpeg build ' \
-                              "with support for '${2}'" >&2
-            notify 'critical' '5000' 'process-stop' \
-                   "error: ${2} is not supported by your ffmpeg build"
-        fi
+        [ "$2" != 'libfdk_aac' ] && ffmpeg_msg "$2"
         return 1
     fi
 }
