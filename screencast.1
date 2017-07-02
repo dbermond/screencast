@@ -308,7 +308,7 @@ opus and vp9 encoders:
 \fBscreencast\fR /home/user/webmvideos/myvideo.webm
 .RE
 .PP
-Specifying save dir and container format, with auto chosen encoders and 
+Specifying save dir and container format, with auto chosen encoders and
 output filename. In this case, the 'ogg' format will produce a video with
 vorbis (libvorbis) and theora encoders:
 .PP
@@ -380,7 +380,7 @@ saying 'encoding...'. This two step mechanism allows a better video and avoids
 problems.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
-\fBscreencast\fR will check if the detected FFmpeg build has support for 
+\fBscreencast\fR will check if the detected FFmpeg build has support for
 libfdk_aac and use it if present, otherwise it will use the FFmpeg built\-in
 AAC audio encoder. Make sure to have a recent FFmpeg version as older versions
 do not support the built\-in AAC audio encoder without being experimental, or
@@ -398,7 +398,7 @@ simplicity as stated right above. When the user selects the \fIvorbis\fR or
 libvorbis or libopus encoder, which has a much superior quality than the FFmpeg
 native built\-in vorbis and opus encoders.
 .PP
-The \fImkv\fR container format is the only one that supports all audio and 
+The \fImkv\fR container format is the only one that supports all audio and
 video encoders. All other container formats have restrictions. \fBscreencast\fR
 will exit with error if an unsupported encoder is chosen for a given container
 format. For example, you cannot use the \fIopus\fR audio encoder with \fImp4\fR

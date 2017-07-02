@@ -92,7 +92,7 @@ supported types: `mp4`, `mkv`, `webm`, `ogg`
 
 #### `-i, --audio-input=NAME`
 
-ALSA audio input device. To determine possible audio input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA). 
+ALSA audio input device. To determine possible audio input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
 
 - Some special values that can be used:
     - `none`: audio will be disabled (video without audio, only video stream will be present)
@@ -165,7 +165,7 @@ note: if the default or setted font is not installed it will be auto chosen
 
 #### `-x, --fixed=N`
 
-Set the video to have a fixed length of *N* seconds. When setted to `0` this is disabled, meaning a indefinite video length that will be  recorded until the user stops it by presing the **q** key in the terminal window.
+Set the video to have a fixed length of *N* seconds. When setted to `0` this is disabled, meaning a indefinite video length that will be recorded until the user stops it by presing the **q** key in the terminal window.
 
 default: `0`
 
@@ -240,7 +240,7 @@ Show program version information.
 When not using the `-x` option press the **q** key in terminal window to end the recording.
 
 ## INSTALLATION
-Make the  **screencast** file executable and copy it to a directory that is in your *PATH*.
+Make the **screencast** file executable and copy it to a directory that is in your *PATH*.
 
 Copy the *screencast.1* man page file to your user commands man page directory, usually at `/usr/share/man/man1`. For convenience, firstly compress the man page with *gzip*.
 
@@ -277,7 +277,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REMARKS
 - **screencast** uses a two step recording process. Firstly the audio and video are recorded to a lossless format and at a second stage it is encoded to produce the output video. That’s why you see a desktop notification saying ’*encoding...*’. This mechanism allows a better video and avoids problems.
 
-- When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older  versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
+- When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
 
 - FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example, libx264 is called `x264` in this program.
 

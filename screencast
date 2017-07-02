@@ -1108,7 +1108,7 @@ check_dimension() {
     dimension_value="$1"
     
     # the dimension will be a multiple of 8 if the remainder is 0
-    [ "$((dimension_value % 8))"  = '0' ] || return 1
+    [ "$((dimension_value % 8))" = '0' ] || return 1
 }
 
 # dimension_msg function: create an error/warning message to use with
@@ -1206,7 +1206,7 @@ if [ -n "$ZSH_VERSION" ]
 then
     command -v setopt >/dev/null 2>&1 || exit_program \
         'script appears to be running in zsh but setopt was not found'
-    setopt SH_WORD_SPLIT  # enable variable word splitting
+    setopt SH_WORD_SPLIT # enable variable word splitting
 fi
 
 parse_cmd_line "$@"  # parse command line arguments
@@ -1226,13 +1226,13 @@ esac
 # check if a X session is running
 [ -z "$DISPLAY" ] && exit_program 'it seems that a X session is not running'
 
-check_requirements  # check if binary requirements are installed
+check_requirements # check if binary requirements are installed
 
 ffmpeg_formats="$(ffmpeg -formats -v quiet)" # store ffmpeg formats/encoders
 ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 
 # check if the detected ffmpeg build has support for basic recording formats
-check_ffmpeg_format 'x11grab' 'X11'  || exit 1
+check_ffmpeg_format 'x11grab' 'X11' || exit 1
 if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
 then
     check_ffmpeg_format 'alsa' 'ALSA audio' || exit 1
@@ -1278,7 +1278,7 @@ then
     # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
     # to make the program output more clear ('-o' setting will be discarded if
     # it was also specified in command line)
-    printf '%s' "$1" | grep -q '^\.\./.*' && 
+    printf '%s' "$1" | grep -q '^\.\./.*' &&
         savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
     
     # get output filename extension and assign to container format
@@ -1308,7 +1308,7 @@ case "$format" in
         :
         ;;
     webm)
-        [ "$audio_encoder_setted" = 'false' ] && 
+        [ "$audio_encoder_setted" = 'false' ] &&
             audio_encoder='opus' && audio_outstr='(auto chosen)'
         [ "$video_encoder_setted" = 'false' ] &&
             video_encoder='vp9' && video_outstr='(auto chosen)'
@@ -1316,7 +1316,7 @@ case "$format" in
     ogg)
         [ "$audio_encoder_setted" = 'false' ] &&
             audio_encoder='vorbis' && audio_outstr='(auto chosen)'
-        [ "$video_encoder_setted" = 'false' ] && 
+        [ "$video_encoder_setted" = 'false' ] &&
             video_encoder='theora' && video_outstr='(auto chosen)'
         ;;
     *)
@@ -1501,7 +1501,7 @@ if {
        [ "$format" = 'mp4' ] && [ "$audio_encoder" = 'opus' ] ;
    } ||
    {
-       [ "$format" = 'webm' ] && 
+       [ "$format" = 'webm' ] &&
        {
            [ "$audio_encoder" = 'aac'     ] ||
            [ "$audio_encoder" = 'mp3'     ] ||
@@ -1510,7 +1510,7 @@ if {
        } ;
    } ||
    {
-       [ "$format" = 'ogg' ] && 
+       [ "$format" = 'ogg' ] &&
        {
            [ "$audio_encoder" = 'aac'     ] ||
            [ "$audio_encoder" = 'mp3'     ] ||
@@ -1545,13 +1545,13 @@ then
     exit_program "$msg"
 fi
 if {
-       [ "$format" = 'mp4' ] && 
+       [ "$format" = 'mp4' ] &&
        {
            [ "$video_encoder" = 'theora' ] || [ "$video_encoder" = 'vp8' ] ;
        } ;
    } ||
    {
-       [ "$format" = 'webm' ] && 
+       [ "$format" = 'webm' ] &&
        {
            [ "$video_encoder" = 'x264'       ] ||
            [ "$video_encoder" = 'h264_nvenc' ] ||
@@ -1562,7 +1562,7 @@ if {
        } ;
    } ||
    {
-       [ "$format" = 'ogg' ] && 
+       [ "$format" = 'ogg' ] &&
        {
            [ "$video_encoder" = 'x264'       ] ||
            [ "$video_encoder" = 'h264_nvenc' ] ||
@@ -1707,7 +1707,7 @@ then
     fi
     
     # enable fade effect if chosen by user (-e/--fade)
-    if [ "$fade"  != 'none' ] 
+    if [ "$fade" != 'none' ] 
     then
         videofade
         if [ "$watermark" = 'true' ] 
