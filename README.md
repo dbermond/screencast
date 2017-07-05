@@ -183,7 +183,7 @@ supported ones: `truepng`, `pingo`, `optipng`, `opt-png`, `none`
 
 #### `-o, --output-dir=DIR`
 
-Set the output video to be saved in *DIR*. This is to be used with `-u` option (if you want to specify a save directory when using automatic output filename choosing). When not using `-u` option you can specify the output directory directly in the output filename.
+Set the output video to be saved in *DIR*. This is to be used with `-u` option (if you want to specify a save directory when using automatic output filename choosing). When not using `-u` option the output directory needs to be specified directly in the output filename. This option cannot be used when entering an output filename.
 
 default: the local directory
 

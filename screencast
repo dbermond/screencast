@@ -45,6 +45,7 @@ wmark_size_setted='false'    # if wmark size     was setted by cmd line with -z
 wmark_posi_setted='false'    # if wmark position was setted by cmd line with -k
 wmark_font_setted='false'    # if wmark font     was setted by cmd line with -c
 pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
+outputdir_setted='false'     # if output dir     was setted by cmd line with -o
 
 # audio settings
 audio_input='pulse'          # default audio input
@@ -790,6 +791,7 @@ parse_cmd_line() {
                         command_error '--output-dir (-o)'
                     else
                         savedir="${2%/}" # remove ending '/' if present
+                        outputdir_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -799,6 +801,7 @@ parse_cmd_line() {
             --output-dir=?*)
                 savedir="${1#*=}"
                 savedir="${savedir%/}" # remove ending '/' if present
+                outputdir_setted='true'
                 ;;
             --output-dir=)
                 command_error '--output-dir (-o)'
@@ -1269,21 +1272,24 @@ then
                       (when not using '-u', set format in the output filename)"
     [ "$format_setted" = "true" ] && exit_program "$msg"
     
+    # do not allow to use -o/--output-dir when specifying an output filename
+    msg="(when not using '-u', set output directory with the output filename)"
+    msg="--output-dir (-o) option is to be used only with --auto-filename (-u)
+                      ${msg}"
+    [ "$outputdir_setted" = "true" ] && exit_program "$msg"
+    
     # if user specified a save directory directly with output filename that
     # is different than the current working directory, use it
-    # ('-o' setting will be discarded if it was also specified in command line)
     [ "$(dirname "$1")" != '.' ] && savedir="$(dirname "$1")"
     
     # if user specified './' as a save directory directly with output
     # filename, use it ('pwd' makes the program output more clear)
-    # ('-o' setting will be discarded if it was also specified in command line)
     printf '%s' "$1" | grep -q '^\./.*' && savedir="$(pwd)"
     
     # the case that user specifies '../' as a save directory directly with
     # output filename is already covered above in
     # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
-    # to make the program output more clear ('-o' setting will be discarded if
-    # it was also specified in command line)
+    # to make the program output more clear
     printf '%s' "$1" | grep -q '^\.\./.*' &&
         savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
     
