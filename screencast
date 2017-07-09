@@ -149,19 +149,19 @@ cleanup() {
 # return value: the message to print
 # return code (status): not relevant
 print_good() {
-    printf '%s\n' "${color_msg}${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_off:-} ${1}"
 }
 
 print_info() {
-    printf '%s\n' "${color_msg}${color_bold:-} info:${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_bold:-} info:${color_off:-} ${1}"
 }
 
 print_warn() {
-    printf '%s\n' "${color_msg}${color_yellow:-} warning:${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_yellow:-} warning:${color_off:-} ${1}"
 }
 
 print_error() {
-    printf '%s\n' "${color_msg}${color_red:-} error:${color_off:-} ${1}" >&2
+    printf '%s\n' "${msg_header}${color_red:-} error:${color_off:-} ${1}" >&2
 }
 
 # show_header function: show program header
@@ -1696,7 +1696,7 @@ then
 fi
 
 # message header (colored, will fallback to non-colored if no color support)
-color_msg="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
+msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
 
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
