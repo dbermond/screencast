@@ -365,8 +365,9 @@ check_requirements() {
 # return value: not relevant
 # return code (status): not relevant
 command_error() {
-    print_error "${1} option requires an argument"
-    notify 'critical' '5000' 'process-stop' "$msg"
+    msg='option requires an argument'
+    print_error "${1} ${msg}"
+    notify 'critical' '5000' 'process-stop' "error: ${1} ${msg}"
     exit 1
 }
 
