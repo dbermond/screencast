@@ -419,12 +419,12 @@ list_supported() {
     printf '%s\n' 'formats.'
 }
 
-# parse_cmd_line function: parse command line arguments and adjust variables
+# get_cmd_line function: get command line arguments and adjust related variables
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: none
 # return code (status): not relevant
 # sets special variables: $shift_count - how many shifts were executed
-parse_cmd_line() {
+get_cmd_line() {
     shift_count='0' # counts how many 'shift' commands were executed
     
     while :
@@ -877,6 +877,35 @@ parse_cmd_line() {
     done
 }
 
+# show_settings function: show information about some program settings
+# arguments: none
+# return value: program settings information
+# return code (status): not relevant
+show_settings() {
+    # print information about some settings
+    [ "$video_encoder" = "$video_encoder_default" ] && video_outstr='(default)'
+    [ "$audio_encoder" = "$audio_encoder_default" ] && audio_outstr='(default)'
+    [ "$format"        = "$format_default"        ] && format_outstr='(default)'
+    
+    [ "$fade" != 'none' ] && effects="fade-${fade}"
+    if [ "$watermark" = 'true' ] 
+    then
+        effects="${effects:+"${effects}, watermark"}"
+        effects="${effects:-watermark}"
+    fi
+    if [ -n "$volume_options" ] 
+    then
+        effects="${effects:+"${effects}, volume (${volume_factor})"}"
+        effects="${effects:-"volume (${volume_factor})"}"
+    fi
+    
+    effects="${effects:-none}"
+    print_good "${color_bold:-}video encoder   :${color_off:-} ${video_encoder} ${video_outstr:-}"
+    print_good "${color_bold:-}audio encoder   :${color_off:-} ${audio_encoder} ${audio_outstr:-}"
+    print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
+    print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
+}
+
 # ffmpeg_msg function: print an error message and show an error notification
 #                      about a not found ffmpeg component (to be used with 
 #                      check_ffmpeg_format() and check_ffmpeg_encoder())
@@ -922,6 +951,551 @@ check_ffmpeg_encoder() {
         [ "$2" != 'libfdk_aac' ] && ffmpeg_msg "$2"
         return 1
     fi
+}
+
+# dimension_msg function: create an error/warning message to use with
+#                         a given inappropriate video dimension
+# arguments: $1 - a string denoting the given dimension (width/height)
+# return value: a string with the created message
+# return code (status): not relevant
+dimension_msg() {
+    case "$video_encoder" in
+        x264|h264_nvenc|hevc_nvenc)
+            msg='(this can lead to a speedloss)'
+            ;;
+        x265|kvazaar|theora|vp8|vp9)
+            msg="(${video_encoder} requirement)"
+            ;;
+    esac
+    msg="is not a multiple of 8 ${msg}"
+    case "$1" in
+        width)
+            msg="video width '${video_width}' ${msg}"
+            ;;
+        height)
+            msg="video height '${video_height}' ${msg}"
+            ;;
+        *)
+            # no need to exit since it's usually called from a subshell
+            msg="dimension_msg(): invalid \$1 '${1}'"
+            ;;
+    esac
+    printf '%s' "$msg"
+}
+
+# check_dimension function: check if a given dimension is a multiple of 8
+# arguments:  $1 - the given dimension (the actual variable value)
+# return value: none
+# return code (status): 0 - the dimension is a multiple of 8
+#                       1 - the dimension is not a multiple of 8
+check_dimension() {
+    dimension_value="$1"
+    
+    # the dimension will be a multiple of 8 if the remainder is 0
+    [ "$((dimension_value % 8))" = '0' ] || return 1
+}
+
+# adjust_dimension function: change a given dimension to the immediately higher
+#                            number that is a multiple of 8
+# arguments: $1 - a string denoting the given dimension (width/height)
+# return value = not relevant
+# return code (status): not relevant
+adjust_dimension() {
+    dimension="$1"
+    
+    # get the dimension value denoted by the string in $dimension
+    case "$dimension" in
+        width)
+            dimension_value="$video_width"
+            ;;
+        height)
+            dimension_value="$video_height"
+            ;;
+        *)
+            exit_program "adjust_dimension(): invalid dimension '${dimension}'"
+            ;;
+    esac
+    
+    # obtain the next multiple of 8 number
+    remainder="$((dimension_value % 8))"
+    to_reach="$((8 - remainder))"
+    new_dimension_value="$((dimension_value + to_reach))"
+    
+    msg="$(dimension_msg "$dimension") and was changed \
+         to '${new_dimension_value}'"
+    print_warn "$(printf '%s' "$msg" | remove_spaces)"
+    
+    # change the given dimension to the new value
+    case "$dimension" in
+        width)
+            video_width="$new_dimension_value"
+            ;;
+        height)
+            video_height="$new_dimension_value"
+            ;;
+    esac
+}
+
+# check_screen function: check for valid video size and position in relation to the current screen size
+#                        (will exit with error if any problem is encountered)
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+# note: needs $video_width, $video_position_x, $video_height and $video_position_y
+check_screen() {
+    screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
+    screen_width="$( printf '%s' "$screen_size" | cut -d 'x' -f1)"
+    screen_height="$(printf '%s' "$screen_size" | cut -d 'x' -f2)"
+    
+    if [ "$((video_width + video_position_x))" -gt "$screen_width"  ] 
+    then
+        msg='recording area is out of screen bounds'
+        msg="${msg}
+                      (video width + position X is greater than the current screen width)"
+        exit_program "$msg"
+    fi
+    
+    if [ "$((video_height + video_position_y))" -gt "$screen_height" ] 
+    then
+        msg='recording area is out of screen bounds'
+        msg="${msg}
+                      (video height + position Y is greater than the current screen height)"
+        exit_program "$msg"
+    fi
+}
+
+# check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
+#                              (will exit with error if an invalid png optimizer is chosen)
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+# note: this png optimizer check should be on check_cmd_line(), but it is implemented
+#       as a separate function to allow it to be executed before check_requirements()
+check_pngoptimizer() {
+    case "$pngoptimizer" in
+        truepng|pingo|optipng|opt-png|none)
+            :
+            ;;
+        *)
+            exit_program "'$pngoptimizer' is not a valid PNG optimizer for this program"
+            ;;
+    esac
+}
+
+# check_cmd_line function: check validity of command line options and arguments (aslo set some variables)
+#                          (will exit with error if any inconsistency is found)
+# arguments: the remainder positional parameters passed with double quotes ("$@")
+# return value: none
+# return code (status): not relevant
+check_cmd_line() {
+    if [ "$select_region" = 'true' ] 
+    then
+        # do not allow to use -S/--select-region with -s/--size or -p/--position
+        [ "$video_size_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --size (-s) option'
+        [ "$video_posi_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --position (-p) option'
+    else
+        # check for a valid video size format (NxN) (-s/--size)
+        printf '%s' "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${video_size}' is not a valid video size format"
+        
+        # check for a valid screen position format to record (N,N) (-p/--position)
+        printf '%s' "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' || exit_program "'${video_position}' is not a valid screen position format"
+        
+        # preparations for check_dimension() and check_screen()
+        video_position_x="$(printf '%s' "$video_position" | cut -d ',' -f1)"
+        video_position_y="$(printf '%s' "$video_position" | cut -d ',' -f2)"
+        video_width="$(     printf '%s' "$video_size"     | cut -d 'x' -f1)"
+        video_height="$(    printf '%s' "$video_size"     | cut -d 'x' -f2)"
+        
+        # check if video width and height are a multiple of 8
+        check_dimension "$video_width"  || exit_program "$(dimension_msg 'width')"
+        check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
+        
+        check_screen
+    fi
+    
+    # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
+    printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+    
+    # if '-u' is not set, make some needed checks and settings
+    if [ "$auto_filename" = 'false' ] 
+    then
+        # check if user have not entered an output filename after the options
+        [ "$#" -eq '0' ] && exit_program "you must enter an output filename with extension (or use '-u')"
+        
+        # do not allow to enter anything after the output filename
+        [ "$#" -gt '1' ] && exit_program 'please do not enter anything after the output filename'
+        
+        # do not allow to use -f/--format when specifying an output filename
+        if [ "$format_setted" = "true" ] 
+        then
+            msg="--format (-f) option is to be used only with --auto-filename (-u)
+                      (when not using '-u', set format in the output filename)"
+            exit_program "$msg"
+        fi
+        
+        # do not allow to use -o/--output-dir when specifying an output filename
+        if [ "$outputdir_setted" = "true" ] 
+        then
+            msg="--output-dir (-o) option is to be used only with --auto-filename (-u)
+                      (when not using '-u', set output directory with the output filename)"
+            exit_program "$msg"
+        fi
+        
+        # if user specified a save directory directly with output filename that
+        # is different than the current working directory, use it
+        [ "$(dirname "$1")" != '.' ] && savedir="$(dirname "$1")"
+        
+        # if user specified './' as a save directory directly with output
+        # filename, use it ('pwd' makes the program output more clear)
+        printf '%s' "$1" | grep -q '^\./.*' && savedir="$(pwd)"
+        
+        # the case that user specifies '../' as a save directory directly with
+        # output filename is already covered above in
+        # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
+        # to make the program output more clear
+        printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
+        
+        # get output filename extension and assign to container format
+        format="$(basename "$1")"
+        format="${format##*.}"
+    # if '-u' is set, don't allow to set an output filename in command line
+    else
+        [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
+    fi
+    
+    # check if a valid container format was selected; auto choose audio/video
+    # encoder if user specified only the format without the encoders
+    case "$format" in
+        # no need to adjust encoders (default settings are for mp4)
+        mp4)
+            faststart='-movflags +faststart'
+            ;;
+        # no action needed (mkv accepts a combination of all encoders)
+        mkv)
+            :
+            ;;
+        webm)
+            [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
+            [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
+            ;;
+        ogg)
+            [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
+            [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
+            ;;
+        *)
+            exit_program "'${format}' is not a valid container format for this program"
+            ;;
+    esac
+    
+    ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
+    
+    # check for a valid audio encoder and set recording and encoding options accordingly
+    case "$audio_encoder" in
+        aac)
+            if check_ffmpeg_encoder aac libfdk_aac
+            then
+                audio_encode_codec="$audio_encode_codec_fdkaac"
+            else
+                audio_encode_codec="$audio_encode_codec_aac"
+            fi
+            ;;
+        vorbis)
+            check_ffmpeg_encoder vorbis libvorbis || exit 1
+            audio_encode_codec="$audio_encode_codec_vorbis"
+            ;;
+        opus)
+            check_ffmpeg_encoder opus libopus || exit 1
+            audio_encode_codec="$audio_encode_codec_opus"
+            ;;
+        mp3|mp3lame)
+            check_ffmpeg_encoder mp3 libmp3lame || exit 1
+            audio_encode_codec="$audio_encode_codec_mp3lame"
+            ;;
+        shine)
+            check_ffmpeg_encoder mp3 libshine || exit 1
+            audio_encode_codec="$audio_encode_codec_shine"
+            ;;
+        # video without audio stream (audio will not be recorded)
+        none)
+            audio_input=''
+            audio_channel_layout=''
+            audio_general_options=''
+            audio_record_codec='-an'
+            audio_encode_codec='-an'
+            ;;
+        *)
+            msg="'${audio_encoder}' is not a valid audio encoder for this program"
+            exit_program "$msg"
+            ;;
+    esac
+    
+    # check for a video encoder and set recording and encoding options accordingly
+    case "$video_encoder" in
+        x264)
+            check_ffmpeg_encoder h264 libx264 || exit 1
+            video_encode_codec="$video_encode_codec_x264"
+            ;;
+        h264_nvenc)
+            check_ffmpeg_encoder h264 h264_nvenc || exit 1
+            video_encode_codec_h264_nvenc="$(printf '%s' "$video_encode_codec_h264_nvenc" | remove_spaces)"
+            video_encode_codec="$video_encode_codec_h264_nvenc"
+            ;;
+        x265)
+            check_ffmpeg_encoder hevc libx265 || exit 1
+            video_encode_codec="$video_encode_codec_x265"
+            ;;
+        kvazaar)
+            check_ffmpeg_encoder hevc libkvazaar || exit 1
+            video_encode_codec="$video_encode_codec_kvazaar"
+            ;;
+        hevc_nvenc)
+            check_ffmpeg_encoder hevc hevc_nvenc || exit 1
+            video_encode_codec="$video_encode_codec_hevc_nvenc"
+            ;;
+        theora)
+            check_ffmpeg_encoder theora libtheora || exit 1
+            video_encode_codec="$video_encode_codec_theora"
+            ;;
+        vp8)
+            check_ffmpeg_encoder vp8 libvpx || exit 1
+            video_record_codec="$video_record_codec_vp8"
+            video_encode_codec="$video_encode_codec_vp8"
+            ;;
+        vp9)
+            check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
+            video_encode_codec="$video_encode_codec_vp9"
+            ;;
+        *)
+            msg="'${video_encoder}' is not a valid video encoder for this program"
+            exit_program "$msg"
+            ;;
+    esac
+    
+    # check if a valid fade effect was entered (-e/--fade)
+    case "$fade" in
+        in|out|both|none)
+            :
+            ;;
+        *)
+            exit_program "'${fade}' is not a valid fade effect"
+            ;;
+    esac
+    
+    # check if the entered volume factor is a valid integer/float number (-m)
+    if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+    then
+        # enable volume increase effect if chosen by user
+        # (a value different than '1.0' or '0.0')
+        if ! { printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
+               printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
+        then
+            volume_options="-af volume=${volume_factor}"
+        fi
+    else
+        exit_program "'${volume_factor}' is not a valid number for volume increase effect"
+    fi
+    
+    # do not allow to use -z, -k, -c or -g options without -w option
+    if [ "$watermark" = 'false' ] 
+    then
+        msg='option is to be used only with --watermark (-w) option'
+        [ "$wmark_size_setted"   = 'true' ] && exit_program "--wmark-size (-z) ${msg}"
+        [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
+        [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-c) ${msg}"
+        [ "$pngoptimizer_setted" = 'true' ] && exit_program "--png-optimizer (-g) ${msg}"
+        msg=''
+    fi
+    
+    # check for a valid watermark size format (NxN) (-z/--wmark-size)
+    printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${watermark_size}' is not a valid watermark size format"
+    
+    # check for a valid watermark position format (N,N) (-k/--wmark-position)
+    if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
+    then
+        # translate watermark position to what is really used in ffmpeg command
+        watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
+    else
+        exit_program "'${watermark_position}' is not a valid watermark position format"
+    fi
+    
+    # check if the entered fixed video length is a valid integer/float number (-x)
+    if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+    then
+        # enable fixed video length if chosen by user (a value different than '0')
+        printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || fixed_length_options="-t ${fixed_length}"
+    else
+        exit_program "'${fixed_length}' is not a valid number for fixed video length"
+    fi
+    
+    # check for invalid combination of audio encoder and container format
+    if {
+           [ "$format" = 'mp4' ] && [ "$audio_encoder" = 'opus' ] ;
+       } ||
+       {
+           [ "$format" = 'webm' ] &&
+           {
+               [ "$audio_encoder" = 'aac'     ] ||
+               [ "$audio_encoder" = 'mp3'     ] ||
+               [ "$audio_encoder" = 'mp3lame' ] ||
+               [ "$audio_encoder" = 'shine'   ] ;
+           } ;
+       } ||
+       {
+           [ "$format" = 'ogg' ] &&
+           {
+               [ "$audio_encoder" = 'aac'     ] ||
+               [ "$audio_encoder" = 'mp3'     ] ||
+               [ "$audio_encoder" = 'mp3lame' ] ||
+               [ "$audio_encoder" = 'shine'   ] ;
+           } ;
+       }
+    then
+        msg="container format '${format}' does not support '${audio_encoder}' encoder"
+        
+        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+        then
+           msg="${msg}
+                      (did you forget to select the container format?)"
+        fi
+        
+        show_settings
+        exit_program "$msg"
+    fi
+    
+    # check for invalid combination of video encoder and container format
+    if {
+           [ "$format" = 'mp4' ] &&
+           {
+               [ "$video_encoder" = 'theora' ] || [ "$video_encoder" = 'vp8' ] ;
+           } ;
+       } ||
+       {
+           [ "$format" = 'webm' ] &&
+           {
+               [ "$video_encoder" = 'x264'       ] ||
+               [ "$video_encoder" = 'h264_nvenc' ] ||
+               [ "$video_encoder" = 'x265'       ] ||
+               [ "$video_encoder" = 'kvazaar'    ] ||
+               [ "$video_encoder" = 'hevc_nvenc' ] ||
+               [ "$video_encoder" = 'theora'     ] ;
+           } ;
+       } ||
+       {
+           [ "$format" = 'ogg' ] &&
+           {
+               [ "$video_encoder" = 'x264'       ] ||
+               [ "$video_encoder" = 'h264_nvenc' ] ||
+               [ "$video_encoder" = 'x265'       ] ||
+               [ "$video_encoder" = 'kvazaar'    ] ||
+               [ "$video_encoder" = 'hevc_nvenc' ] ||
+               [ "$video_encoder" = 'vp9'        ] ;
+           } ;
+       }
+    then
+        msg="container format '${format}' does not support '${video_encoder}' encoder"
+        
+        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+        then
+           msg="${msg}
+                      (did you forget to select the container format?)"
+        fi
+        
+        show_settings
+        exit_program "$msg"
+    fi
+    
+    # special condition check: mp4 + vp9 (support is experimental and not enabled)
+    if [ "$format" = 'mp4' ] && [ "$video_encoder" = 'vp9' ] 
+    then
+        msg="support for 'vp9' encoder in 'mp4' container format is currently experimental and not enabled"
+        
+        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+        then
+           msg="${msg}
+                      (did you forget to select the container format?)"
+        fi
+        
+        show_settings
+        exit_program "$msg"
+    fi
+}
+
+# check_dirs function: check for valid output and tmp directories (-o and -t)
+#                      (will exit with error if any problem is encountered)
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+check_dirs() {
+    for directory in "$savedir" "$tmpdir"
+    do
+        # check if the entered $savedir/$tmpdir already exists and mkdir if not
+        if ! [ -e "$directory" ] 
+        then
+            if ! mkdir -p "$directory"
+            then
+                case "$directory" in
+                    "$savedir")
+                        msg='output'
+                        ;;
+                    "$tmpdir")
+                        msg='temporary files'
+                        ;;
+                esac
+                exit_program "failed to create ${msg} directory '${directory}'"
+            fi
+        fi
+        
+        # check if the entered $savedir/$tmpdir is a directory
+        if [ -d "$directory" ] 
+        then
+            # check if the entered $savedir/$tmpdir has write permission
+            if ! [ -w "$directory" ] 
+            then
+                case "$directory" in
+                    "$savedir")
+                        msg='output'
+                        ;;
+                    "$tmpdir")
+                        msg='temporary files'
+                        ;;
+                esac
+                exit_program "no write permission for ${msg} directory '${directory}'"
+            fi
+        else
+            exit_program "'${directory}' is not a directory"
+        fi
+    done
+}
+
+# get_region function: select with mouse the screen region to record
+#                      (will exit with error if region selection is canceled)
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+# note: sets $video_size and $video_position
+get_region() {
+    print_good 'please select with mouse a screen region to record...'
+    print_info 'single click to select a window, click and drag to select a region'
+    print_info 'use arrow keys to fine tune when dragging, right click or any other keystroke to cancel'
+    
+    screen_region="$(slop -o -f '%x %y %w %h')" || exit_program 'screen region was not selected'
+    
+    if ! printf '%s' "$screen_region" | grep -Eq '^([0-9]+[[:space:]]){3}[0-9]+$'
+    then
+        exit_program 'slop returned wrong values'
+    fi
+    
+    video_position_x="$(printf '%s' "$screen_region" | cut -d ' ' -f1)"
+    video_position_y="$(printf '%s' "$screen_region" | cut -d ' ' -f2)"
+    video_width="$(     printf '%s' "$screen_region" | cut -d ' ' -f3)"
+    video_height="$(    printf '%s' "$screen_region" | cut -d ' ' -f4)"
+    
+    # change video width and height if not a multiple of 8
+    check_dimension "$video_width"  || adjust_dimension 'width'
+    check_dimension "$video_height" || adjust_dimension 'height'
+    
+    video_size="${video_width}x${video_height}"
+    video_position="${video_position_x},${video_position_y}"
 }
 
 # randomstr function: generate a random string
@@ -1105,89 +1679,6 @@ videofade() {
     esac
 }
 
-# check_dimension function: check if a given dimension is a multiple of 8
-# arguments:  $1 - the given dimension (the actual variable value)
-# return value: none
-# return code (status): 0 - the dimension is a multiple of 8
-#                       1 - the dimension is not a multiple of 8
-check_dimension() {
-    dimension_value="$1"
-    
-    # the dimension will be a multiple of 8 if the remainder is 0
-    [ "$((dimension_value % 8))" = '0' ] || return 1
-}
-
-# dimension_msg function: create an error/warning message to use with
-#                         a given inappropriate video dimension
-# arguments: $1 - a string denoting the given dimension (width/height)
-# return value: a string with the created message
-# return code (status): not relevant
-dimension_msg() {
-    case "$video_encoder" in
-        x264|h264_nvenc|hevc_nvenc)
-            msg='(this can lead to a speedloss)'
-            ;;
-        x265|kvazaar|theora|vp8|vp9)
-            msg="(${video_encoder} requirement)"
-            ;;
-    esac
-    msg="is not a multiple of 8 ${msg}"
-    case "$1" in
-        width)
-            msg="video width '${video_width}' ${msg}"
-            ;;
-        height)
-            msg="video height '${video_height}' ${msg}"
-            ;;
-        *)
-            # no need to exit since it's usually called from a subshell
-            msg="dimension_msg(): invalid \$1 '${1}'"
-            ;;
-    esac
-    printf '%s' "$msg"
-}
-
-# adjust_dimension function: change a given dimension to the immediately higher
-#                            number that is a multiple of 8
-# arguments: $1 - a string denoting the given dimension (width/height)
-# return value = not relevant
-# return code (status): not relevant
-adjust_dimension() {
-    dimension="$1"
-    
-    # get the dimension value denoted by the string in $dimension
-    case "$dimension" in
-        width)
-            dimension_value="$video_width"
-            ;;
-        height)
-            dimension_value="$video_height"
-            ;;
-        *)
-            exit_program "adjust_dimension(): invalid dimension '${dimension}'"
-            ;;
-    esac
-    
-    # obtain the next multiple of 8 number
-    remainder="$((dimension_value % 8))"
-    to_reach="$((8 - remainder))"
-    new_dimension_value="$((dimension_value + to_reach))"
-    
-    msg="$(dimension_msg "$dimension") and was changed \
-         to '${new_dimension_value}'"
-    print_warn "$(printf '%s' "$msg" | remove_spaces)"
-    
-    # change the given dimension to the new value
-    case "$dimension" in
-        width)
-            video_width="$new_dimension_value"
-            ;;
-        height)
-            video_height="$new_dimension_value"
-            ;;
-    esac
-}
-
 #########################################
 #            program start              #
 #########################################
@@ -1215,29 +1706,17 @@ then
     setopt SH_WORD_SPLIT # enable variable word splitting
 fi
 
-parse_cmd_line "$@"  # parse command line arguments
+get_cmd_line "$@"
 shift "$shift_count" # destroy all arguments except a possible output filename
-
-# check for a valid png optimizer (-g/--png-optimizer)
-case "$pngoptimizer" in
-    truepng|pingo|optipng|opt-png|none)
-        :
-        ;;
-    *)
-        exit_program \
-            "'$pngoptimizer' is not a valid PNG optimizer for this program"
-        ;;
-esac
 
 # check if a X session is running
 [ -z "$DISPLAY" ] && exit_program 'it seems that a X session is not running'
 
-check_requirements # check if binary requirements are installed
-
-ffmpeg_formats="$(ffmpeg -formats -v quiet)" # store ffmpeg formats/encoders
-ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
+check_pngoptimizer
+check_requirements
 
 # check if the detected ffmpeg build has support for basic recording formats
+ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format 'x11grab' 'X11' || exit 1
 if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
 then
@@ -1257,432 +1736,12 @@ else
     audio_input="-i ${audio_input}" # add ffmpeg '-i' option
 fi
 
-# if '-u' is not set, make some needed checks and settings
-if [ "$auto_filename" = 'false' ] 
-then
-    # check if user have not entered an output filename after the options
-    [ "$#" -eq '0' ] && exit_program \
-        "you must enter an output filename with extension (or use '-u')"
-    
-    # do not allow to enter anything after the output filename
-    [ "$#" -gt '1' ] && exit_program \
-        'please do not enter anything after the output filename'
-    
-    # do not allow to use -f/--format when specifying an output filename
-    msg="--format (-f) option is to be used only with --auto-filename (-u)
-                      (when not using '-u', set format in the output filename)"
-    [ "$format_setted" = "true" ] && exit_program "$msg"
-    
-    # do not allow to use -o/--output-dir when specifying an output filename
-    msg="(when not using '-u', set output directory with the output filename)"
-    msg="--output-dir (-o) option is to be used only with --auto-filename (-u)
-                      ${msg}"
-    [ "$outputdir_setted" = "true" ] && exit_program "$msg"
-    
-    # if user specified a save directory directly with output filename that
-    # is different than the current working directory, use it
-    [ "$(dirname "$1")" != '.' ] && savedir="$(dirname "$1")"
-    
-    # if user specified './' as a save directory directly with output
-    # filename, use it ('pwd' makes the program output more clear)
-    printf '%s' "$1" | grep -q '^\./.*' && savedir="$(pwd)"
-    
-    # the case that user specifies '../' as a save directory directly with
-    # output filename is already covered above in
-    # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
-    # to make the program output more clear
-    printf '%s' "$1" | grep -q '^\.\./.*' &&
-        savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
-    
-    # get output filename extension and assign to container format
-    format="$(basename "$1")"
-    format="${format##*.}"
-# if '-u' is set, don't allow to set an output filename in command line
-else
-    [ "$#" -gt '0' ] && exit_program \
-        '--auto-filename (-u) does not allow to set an output filename'
-fi
-
-# check if entered framerate (fps) is a valid integer/float number (-r/--fps)
-printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program \
-    "'${video_rate}' is not a valid video framerate (fps) format"
-
-# check if a valid container format was selected; auto choose audio/video
-# encoder if user specified only the format without the encoders
-case "$format" in
-    # no need to adjust encoders (default settings are for mp4)
-    mp4)
-        faststart='-movflags +faststart'
-        ;;
-    # no action needed (mkv accepts a combination of all encoders)
-    mkv)
-        :
-        ;;
-    webm)
-        [ "$audio_encoder_setted" = 'false' ] &&
-            audio_encoder='opus' && audio_outstr='(auto chosen)'
-        [ "$video_encoder_setted" = 'false' ] &&
-            video_encoder='vp9' && video_outstr='(auto chosen)'
-        ;;
-    ogg)
-        [ "$audio_encoder_setted" = 'false' ] &&
-            audio_encoder='vorbis' && audio_outstr='(auto chosen)'
-        [ "$video_encoder_setted" = 'false' ] &&
-            video_encoder='theora' && video_outstr='(auto chosen)'
-        ;;
-    *)
-        exit_program \
-            "'${format}' is not a valid container format for this program"
-        ;;
-esac
-
-# set recording and encoding options for the selected audio encoder
-case "$audio_encoder" in
-    aac)
-        if check_ffmpeg_encoder aac libfdk_aac
-        then
-            audio_encode_codec="$audio_encode_codec_fdkaac"
-        else
-            audio_encode_codec="$audio_encode_codec_aac"
-        fi
-        ;;
-    vorbis)
-        check_ffmpeg_encoder vorbis libvorbis || exit 1
-        audio_encode_codec="$audio_encode_codec_vorbis"
-        ;;
-    opus)
-        check_ffmpeg_encoder opus libopus || exit 1
-        audio_encode_codec="$audio_encode_codec_opus"
-        ;;
-    mp3|mp3lame)
-        check_ffmpeg_encoder mp3 libmp3lame || exit 1
-        audio_encode_codec="$audio_encode_codec_mp3lame"
-        ;;
-    shine)
-        check_ffmpeg_encoder mp3 libshine || exit 1
-        audio_encode_codec="$audio_encode_codec_shine"
-        ;;
-    # video without audio stream (audio will not be recorded)
-    none)
-        audio_input=''
-        audio_channel_layout=''
-        audio_general_options=''
-        audio_record_codec='-an'
-        audio_encode_codec='-an'
-        ;;
-    *)
-        msg="'${audio_encoder}' is not a valid audio encoder for this program"
-        exit_program "$msg"
-        ;;
-esac
-
-# set recording and encoding options for the selected video encoder
-case "$video_encoder" in
-    x264)
-        check_ffmpeg_encoder h264 libx264 || exit 1
-        video_encode_codec="$video_encode_codec_x264"
-        ;;
-    h264_nvenc)
-        check_ffmpeg_encoder h264 h264_nvenc || exit 1
-        video_encode_codec_h264_nvenc="$(printf '%s' \
-            "$video_encode_codec_h264_nvenc" | remove_spaces)"
-        video_encode_codec="$video_encode_codec_h264_nvenc"
-        ;;
-    x265)
-        check_ffmpeg_encoder hevc libx265 || exit 1
-        video_encode_codec="$video_encode_codec_x265"
-        ;;
-    kvazaar)
-        check_ffmpeg_encoder hevc libkvazaar || exit 1
-        video_encode_codec="$video_encode_codec_kvazaar"
-        ;;
-    hevc_nvenc)
-        check_ffmpeg_encoder hevc hevc_nvenc || exit 1
-        video_encode_codec="$video_encode_codec_hevc_nvenc"
-        ;;
-    theora)
-        check_ffmpeg_encoder theora libtheora || exit 1
-        video_encode_codec="$video_encode_codec_theora"
-        ;;
-    vp8)
-        check_ffmpeg_encoder vp8 libvpx || exit 1
-        video_record_codec="$video_record_codec_vp8"
-        video_encode_codec="$video_encode_codec_vp8"
-        ;;
-    vp9)
-        check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
-        video_encode_codec="$video_encode_codec_vp9"
-        ;;
-    *)
-        msg="'${video_encoder}' is not a valid video encoder for this program"
-        exit_program "$msg"
-        ;;
-esac
-
-# check if a valid fade effect was entered (-e/--fade)
-case "$fade" in
-    in|out|both|none)
-        :
-        ;;
-    *)
-        exit_program "'${fade}' is not a valid fade effect"
-        ;;
-esac
-
-# check if the entered fixed video length is a valid integer/float number (-x)
-if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
-then
-    # enable fixed video length if chosen by user (a value different than '0')
-    printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' ||
-        fixed_length_options="-t ${fixed_length}"
-else
-    exit_program \
-        "'${fixed_length}' is not a valid number for fixed video length"
-fi
-
-# check if the entered volume factor is a valid integer/float number (-m)
-if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
-then
-    # enable volume increase effect if chosen by user
-    # (a value different than '1.0' or '0.0')
-    if ! { printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
-           printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
-    then
-        volume_options="-af volume=${volume_factor}"
-    fi
-else
-    exit_program \
-        "'${volume_factor}' is not a valid number for volume increase effect"
-fi
-
-# do not allow to use -z, -k, -c or -g options without -w option
-if [ "$watermark" = 'false' ] 
-then
-    msg='option is to be used only with --watermark (-w) option'
-    [ "$wmark_size_setted"   = 'true' ] && exit_program \
-        "--wmark-size (-z) ${msg}"
-    [ "$wmark_posi_setted"   = 'true' ] && exit_program \
-        "--wmark-position (-k) ${msg}"
-    [ "$wmark_font_setted"   = 'true' ] && exit_program \
-        "--wmark-font (-c) ${msg}"
-    [ "$pngoptimizer_setted" = 'true' ] && exit_program \
-        "--png-optimizer (-g) ${msg}"
-fi
-
-# check for a valid watermark size format (NxN) (-z/--wmark-size)
-printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
-    "'${watermark_size}' is not a valid watermark size format"
-
-# check for a valid watermark position format (N,N) (-k/--wmark-position)
-if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
-then
-    # translate watermark position to what is really used in ffmpeg command
-    watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
-else
-    exit_program \
-        "'${watermark_position}' is not a valid watermark position format"
-fi
-
-# print information about some settings
-[ "$video_encoder" = "$video_encoder_default" ] && video_outstr='(default)'
-[ "$audio_encoder" = "$audio_encoder_default" ] && audio_outstr='(default)'
-[ "$format"        = "$format_default"        ] && format_outstr='(default)'
-[ "$fade" != 'none' ] && effects="fade-${fade}"
-if [ "$watermark" = 'true' ] 
-then
-    effects="${effects:+"${effects}, watermark"}"
-    effects="${effects:-watermark}"
-fi
-if [ -n "$volume_options" ]
-then
-    effects="${effects:+"${effects}, volume (${volume_factor})"}"
-    effects="${effects:-volume}"
-fi
-effects="${effects:-none}"
-msg="${video_encoder} ${video_outstr:-}"
-print_good "${color_bold:-}video encoder   :${color_off:-} ${msg}"
-msg="${audio_encoder} ${audio_outstr:-}"
-print_good "${color_bold:-}audio encoder   :${color_off:-} ${msg}"
-msg="${format} ${format_outstr:-}"
-print_good "${color_bold:-}container format:${color_off:-} ${msg}"
-print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
-
-# check for invalid combination of audio encoder and container format
-if {
-       [ "$format" = 'mp4' ] && [ "$audio_encoder" = 'opus' ] ;
-   } ||
-   {
-       [ "$format" = 'webm' ] &&
-       {
-           [ "$audio_encoder" = 'aac'     ] ||
-           [ "$audio_encoder" = 'mp3'     ] ||
-           [ "$audio_encoder" = 'mp3lame' ] ||
-           [ "$audio_encoder" = 'shine'   ] ;
-       } ;
-   } ||
-   {
-       [ "$format" = 'ogg' ] &&
-       {
-           [ "$audio_encoder" = 'aac'     ] ||
-           [ "$audio_encoder" = 'mp3'     ] ||
-           [ "$audio_encoder" = 'mp3lame' ] ||
-           [ "$audio_encoder" = 'shine'   ] ;
-       } ;
-   }
-then
-    msg="container format '${format}' does not support \
-         '${audio_encoder}' encoder"
-    msg="$(printf '%s' "$msg" | remove_spaces)"
-    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-    then
-       msg="${msg}
-                      (did you forget to select the container format?)"
-    fi
-    exit_program "$msg"
-fi
-
-# check for invalid combination of video encoder and container format
-if [ "$format" = 'mp4' ] && [ "$video_encoder" = 'vp9' ] 
-then
-    # special case for mp4 + vp9 (support is experimental and not enabled)
-    msg="support for 'vp9' encoder in 'mp4' container format is \
-         currently experimental and not enabled"
-    msg="$(printf '%s' "$msg" | remove_spaces)"
-    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-    then
-       msg="${msg}
-                      (did you forget to select the container format?)"
-    fi
-    exit_program "$msg"
-fi
-if {
-       [ "$format" = 'mp4' ] &&
-       {
-           [ "$video_encoder" = 'theora' ] || [ "$video_encoder" = 'vp8' ] ;
-       } ;
-   } ||
-   {
-       [ "$format" = 'webm' ] &&
-       {
-           [ "$video_encoder" = 'x264'       ] ||
-           [ "$video_encoder" = 'h264_nvenc' ] ||
-           [ "$video_encoder" = 'x265'       ] ||
-           [ "$video_encoder" = 'kvazaar'    ] ||
-           [ "$video_encoder" = 'hevc_nvenc' ] ||
-           [ "$video_encoder" = 'theora'     ] ;
-       } ;
-   } ||
-   {
-       [ "$format" = 'ogg' ] &&
-       {
-           [ "$video_encoder" = 'x264'       ] ||
-           [ "$video_encoder" = 'h264_nvenc' ] ||
-           [ "$video_encoder" = 'x265'       ] ||
-           [ "$video_encoder" = 'kvazaar'    ] ||
-           [ "$video_encoder" = 'hevc_nvenc' ] ||
-           [ "$video_encoder" = 'vp9'        ] ;
-       } ;
-   }
-then
-    msg="container format '${format}' does not support \
-         '${video_encoder}' encoder"
-    msg="$(printf '%s' "$msg" | remove_spaces)"
-    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-    then
-       msg="${msg}
-                      (did you forget to select the container format?)"
-    fi
-    exit_program "$msg"
-fi
+check_cmd_line "$@"
+check_dirs
+show_settings
 
 # select with mouse the screen region to record if chosen by user
-if [ "$select_region" = 'true' ] 
-then
-    # do not allow to use -S/--select-region with -s/--size or -p/--position
-    [ "$video_size_setted" = 'true' ] && exit_program \
-       '--select-region (-S) option cannot be used with --size (-s) option'
-    [ "$video_posi_setted" = 'true' ] && exit_program \
-       '--select-region (-S) option cannot be used with --position (-p) option'
-    
-    print_good 'please select with mouse a screen region to record...'
-    msg="single click to select a window, \
-         click and drag to select a region"
-    print_info "$(printf '%s' "$msg" | remove_spaces)"
-    msg="use arrow keys to fine tune when dragging, \
-         right click or any other keystroke to cancel"
-    print_info "$(printf '%s' "$msg" | remove_spaces)"
-    
-    
-    if ! screen_region="$(slop -o -f '%x %y %w %h')" ||
-       ! printf '%s' "$screen_region" |
-             grep -Eq '^([0-9]+[[:space:]]){3}[0-9]+$'
-    then
-        exit_program 'screen region was not selected'
-    fi
-    video_position_x="$(printf '%s' "$screen_region" | cut -d ' ' -f1)"
-    video_position_y="$(printf '%s' "$screen_region" | cut -d ' ' -f2)"
-    video_width="$(     printf '%s' "$screen_region" | cut -d ' ' -f3)"
-    video_height="$(    printf '%s' "$screen_region" | cut -d ' ' -f4)"
-    
-    # change video width and height if not a multiple of 8
-    check_dimension "$video_width"  || adjust_dimension 'width'
-    check_dimension "$video_height" || adjust_dimension 'height'
-    
-    video_size="${video_width}x${video_height}"
-    video_position="${video_position_x},${video_position_y}"
-    
-# otherwise use settings from -s/--size and -p/--position (or the defaults)
-else
-    # check for a valid video size format (NxN) (-s/--size)
-    printf '%s' "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program \
-        "'${video_size}' is not a valid video size format"
-    
-    # check for a valid screen position format to record (N,N) (-p/--position)
-    printf '%s' "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' ||
-        exit_program \
-            "'${video_position}' is not a valid screen position format"
-    
-    video_width="$(     printf '%s' "$video_size"     | cut -d 'x' -f1)"
-    video_height="$(    printf '%s' "$video_size"     | cut -d 'x' -f2)"
-    video_position_x="$(printf '%s' "$video_position" | cut -d ',' -f1)"
-    video_position_y="$(printf '%s' "$video_position" | cut -d ',' -f2)"
-    
-    # check if video width and height are a multiple of 8
-    check_dimension "$video_width"  || exit_program "$(dimension_msg 'width')"
-    check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
-fi
-
-# check for valid video size and position in relation to the screen size
-screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
-screen_width="$( printf '%s' "$screen_size" | cut -d 'x' -f1)"
-screen_height="$(printf '%s' "$screen_size" | cut -d 'x' -f2)"
-[ "$((video_width + video_position_x))" -gt "$screen_width"  ] &&
-    exit_program \
-        'video width + position X is greater then the current screen width'
-[ "$((video_height + video_position_y))" -gt "$screen_height" ] &&
-    exit_program \
-        'video height + position Y is greater then the current screen height'
-
-# check for valid output and tmp directories (-o/--output-dir and -t/--tmp-dir)
-for directory in "$savedir" "$tmpdir"
-do
-    # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    [ -e "$directory" ] ||
-    {
-        mkdir -p "$directory" || exit_program \
-            "failed to create directory '${directory}'" ;
-    }
-    
-    # check if the entered $savedir/$tmpdir is a directory
-    if [ -d "$directory" ] 
-    then
-        # check if the entered $savedir/$tmpdir has write permission
-        [ -w "$directory" ] || exit_program \
-            "no write permission for directory '${directory}'"
-    else
-        exit_program "'${directory}' is not a directory"
-    fi
-done
+[ "$select_region" = 'true' ] && get_region && check_screen
 
 # some preparations before recording
 randomstring_rec="$(randomstr '20')" # random string for tmp video filename
