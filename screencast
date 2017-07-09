@@ -52,8 +52,7 @@ audio_input='pulse'          # default audio input
 audio_encoder='aac'          # default audio encoder
 volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
-audio_general_options="-f alsa -thread_queue_size ${queue_size} \
-                       -sample_rate 48000 -channels 2 ${audio_channel_layout}"
+audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
 audio_record_codec='-acodec pcm_s16le -ar 48000 -ac 2'
 audio_encode_codec_fdkaac='-acodec libfdk_aac -ab 128k -ar 44100 -ac 2'
 audio_encode_codec_aac='-acodec aac -ab 128k -ar 44100 -ac 2'
@@ -70,13 +69,11 @@ format='mp4'                  # container format (file extension) for output
 video_position='0,0' #200,234 # X and Y screen coordinates to record video from
 video_size='640x480'          # video size (resolution)
 video_rate='25'               # video framerate (fps)
-video_general_options="-f x11grab -thread_queue_size ${queue_size} \
-                       -probesize 20M -show_region 1 -region_border 2"
+video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 video_encode_codec_x264='libx264 -crf 21 -preset veryslow'
-video_encode_codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 \
-                               -preset slow -cq 10 -bf 2 -g 150"
+video_encode_codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150"
 video_encode_codec_x265='libx265 -crf 25 -preset veryslow'
 video_encode_codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
 video_encode_codec_hevc_nvenc='hevc_nvenc -preset slow'
@@ -116,8 +113,7 @@ format_default="$format"
 supported_fade='in, out, both, none'
 supported_formats='mp4, mkv, webm, ogg'
 supported_aencoders='aac, opus, vorbis, mp3/mp3lame, shine, none'
-supported_vencoders="x264, h264_nvenc, x265, kvazaar, \
-                     hevc_nvenc, theora, vp8, vp9"
+supported_vencoders="x264, h264_nvenc, x265, kvazaar, hevc_nvenc, theora, vp8, vp9"
 supported_pngopt='truepng, pingo, optipng, opt-png, none'
 
 #########################################
@@ -131,8 +127,7 @@ supported_pngopt='truepng, pingo, optipng, opt-png, none'
 cleanup() {
     # delete temporary files
     rm -f "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
-    [ "$keep_tmpvideo" = 'false' ] &&
-        rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+    [ "$keep_tmpvideo" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
@@ -169,10 +164,8 @@ print_error() {
 # return value: the program header
 # return code (status): not relevant
 show_header() {
-    printf '%s'   "screencast ${screencast_version} - "
-    printf '%s\n' 'Command line interface to record a X11 desktop'
-    printf '%s'   "Copyright (c) 2015-$(date +%Y) "
-    printf '%s\n' 'Daniel Bermond'
+    printf '%s\n' "screencast ${screencast_version} - Command line interface to record a X11 desktop"
+    printf '%s\n' "Copyright (c) 2015-$(date +%Y) Daniel Bermond"
     printf '%s\n' "$screencast_website"
 }
 
@@ -182,63 +175,35 @@ show_header() {
 # return code (status): not relevant
 show_help() {
     show_header
-    printf '%s\n' ''
+    printf '\n'
     printf '%s\n' 'Usage: screencast [options] <output>'
     printf '%s\n' '                  [options] -u'
-    printf '%s\n' ''
-    printf '%s'   '  -s, --size=NxN           '
-    printf '%s\n' "video size (resolution) [${video_size}]"
-    printf '%s'   '  -p, --position=N,N       '
-    printf '%s'  'recording position (screen XY top left offsets) '
-    printf '%s\n' "[${video_position}]"
-    printf '%s'   '  -S, --select-region      '
-    printf '%s\n' 'select with mouse the screen region to record'
-    printf '%s'   '  -r, --fps=N              '
-    printf '%s\n' "video framerate (fps) [${video_rate}]"
-    printf '%s'   '  -f, --format=TYPE        '
-    printf '%s\n' "container format (to use with -u) [${format}]"
-    printf '%s'   '  -i, --audio-input=NAME   '
-    printf '%s\n' "audio input device [${audio_input#* }]"
-    printf '%s'   '  -a, --audio-encoder=NAME '
-    printf '%s\n' "audio encoder [${audio_encoder}]"
-    printf '%s'   '  -v, --video-encoder=NAME '
-    printf '%s\n' "video encoder [${video_encoder}]"
-    printf '%s'   '  -e, --fade=TYPE          '
-    printf '%s\n' "video fade effect [${fade}]"
-    printf '%s'   '  -m, --volume-factor=N    '
-    printf '%s'   'volume increase effect factor (1.0 disable) '
-    printf '%s\n' "[${volume_factor}]"
-    printf '%s'   '  -w, --watermark=TEXT     '
-    printf '%s\n' 'enable and set text watermark [disabled]'
-    printf '%s'   '  -z, --wmark-size=NxN     '
-    printf '%s\n' "watermark image size [${watermark_size}]"
-    printf '%s'   '  -k, --wmark-position=N,N '
-    printf '%s'   'watermark position (video XY top left offsets) '
-    printf '%s\n' "[${watermark_position}]"
-    printf '%s'   '  -c, --wmark-font=NAME    '
-    printf '%s\n' "watermark font [${watermark_font}]"
-    printf '%s'   '  -x, --fixed=N            '
-    printf '%s'   'fixed video length for N seconds (0 disable) '
-    printf '%s\n' "[${fixed_length}]"
-    printf '%s'   '  -n, --no-notifications   '
-    printf '%s\n' 'disable desktop notifications'
-    printf '%s'   '  -g, --png-optimizer=NAME '
-    printf '%s\n' "use png (watermark) optimizer and advdef [${pngoptimizer}]"
-    printf '%s'   '  -o, --output-dir=DIR     '
-    printf '%s\n' 'save videos to DIR (to use with -u) [local directory]'
-    printf '%s'   '  -t, --tmp-dir=DIR        '
-    printf '%s\n' "use DIR for temporary files [${tmpdir}]"
-    printf '%s'   '  -K, --keep-tmpvideo      '
-    printf '%s\n' "keep (don't delete) the temporary video"
-    printf '%s'   '  -u, --auto-filename      '
-    printf '%s\n' 'auto choose output filename based on date/time'
-    printf '%s'   '  -l, --list               '
-    printf '%s\n' 'list arguments supported by these options'
-    printf '%s'   '  -h, --help               '
-    printf '%s\n' 'this help screen'
-    printf '%s'   '  -V, --version            '
-    printf '%s\n' 'version information'
-    printf '%s\n' ''
+    printf '\n'
+    printf '%s\n' "  -s, --size=NxN           video size (resolution) [${video_size}]"
+    printf '%s\n' "  -p, --position=N,N       recording position (screen XY top left offsets) [${video_position}]"
+    printf '%s\n' '  -S, --select-region      select with mouse the screen region to record'
+    printf '%s\n' "  -r, --fps=N              video framerate (fps) [${video_rate}]"
+    printf '%s\n' "  -f, --format=TYPE        container format (to use with -u) [${format}]"
+    printf '%s\n' "  -i, --audio-input=NAME   audio input device [${audio_input#* }]"
+    printf '%s\n' "  -a, --audio-encoder=NAME audio encoder [${audio_encoder}]"
+    printf '%s\n' "  -v, --video-encoder=NAME video encoder [${video_encoder}]"
+    printf '%s\n' "  -e, --fade=TYPE          video fade effect [${fade}]"
+    printf '%s\n' "  -m, --volume-factor=N    volume increase effect factor (1.0 disable) [${volume_factor}]"
+    printf '%s\n' '  -w, --watermark=TEXT     enable and set text watermark [disabled]'
+    printf '%s\n' "  -z, --wmark-size=NxN     watermark image size [${watermark_size}]"
+    printf '%s\n' "  -k, --wmark-position=N,N watermark position (video XY top left offsets) [${watermark_position}]"
+    printf '%s\n' "  -c, --wmark-font=NAME    watermark font [${watermark_font}]"
+    printf '%s\n' "  -x, --fixed=N            fixed video length for N seconds (0 disable) [${fixed_length}]"
+    printf '%s\n' '  -n, --no-notifications   disable desktop notifications'
+    printf '%s\n' "  -g, --png-optimizer=NAME use png (watermark) optimizer and advdef [${pngoptimizer}]"
+    printf '%s\n' '  -o, --output-dir=DIR     save videos to DIR (to use with -u) [local directory]'
+    printf '%s\n' "  -t, --tmp-dir=DIR        use DIR for temporary files [${tmpdir}]"
+    printf '%s\n' "  -K, --keep-tmpvideo      keep (don't delete) the temporary video"
+    printf '%s\n' '  -u, --auto-filename      auto choose output filename based on date/time'
+    printf '%s\n' '  -l, --list               list arguments supported by these options'
+    printf '%s\n' '  -h, --help               this help screen'
+    printf '%s\n' '  -V, --version            version information'
+    printf '\n'
     printf '%s\n' "For further help run 'man screencast'"
 }
 
@@ -261,8 +226,8 @@ notify() {
 check_requirements() {
     # note: although bc is defined by POSIX, some GNU/Linux distributions
     #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send ffmpeg xdpyinfo slop ffprobe bc convert \
-                       magick "$pngoptimizer" advdef
+    for requirement in notify-send  ffmpeg   xdpyinfo  slop             ffprobe \
+                       bc           convert  magick    "$pngoptimizer"  advdef
     do
         # skip disabled components (unnecessary checks)
         if {
@@ -271,15 +236,15 @@ check_requirements() {
            } ||
            {
                {
-                   [ "$requirement"  = 'ffprobe' ] ||
-                   [ "$requirement"  = 'bc'      ] ;
+                   [ "$requirement" = 'ffprobe' ] ||
+                   [ "$requirement" = 'bc'      ] ;
                } &&
                [ "$fade" = 'none'  ] ;
            } ||
            {
                {
-                   [ "$requirement"  = 'convert' ] ||
-                   [ "$requirement"  = 'magick'  ] ;
+                   [ "$requirement" = 'convert' ] ||
+                   [ "$requirement" = 'magick'  ] ;
                } &&
                [ "$watermark" = 'false'  ] ;
            } ||
@@ -288,7 +253,8 @@ check_requirements() {
                [ "$pngoptimizer" = 'none'          ] ;
            } ||
            {
-               [ "$requirement" = 'advdef' ] && [ "$pngoptimizer" = "none" ] ;
+               [ "$requirement"  = 'advdef' ] &&
+               [ "$pngoptimizer" = "none"   ] ;
            } ||
            {
                [ "$requirement"   = 'notify-send' ] &&
@@ -394,30 +360,21 @@ remove_spaces() {
 # return code (status): not relevant
 list_supported() {
     show_header
-    printf '%s\n' ''
+    printf '\n'
     printf '%s\n' ' Supported arguments:'
-    printf '%s\n' ''
-    printf '%s'   '  -f, --format                '
-    printf '%s\n' "$(printf "%s" "$supported_formats")"
-    printf '%s'   '  -a, --audio-encoder         '
-    printf '%s\n' "$(printf "%s" "$supported_aencoders")"
-    printf '%s'   '  -v, --video-encoder         '
-    printf '%s\n' "$(printf "%s" "$supported_vencoders" | remove_spaces)"
-    printf '%s'   '  -e, --fade                  '
-    printf '%s\n' "$(printf "%s" "$supported_fade")"
-    printf '%s'   '  -g, --png-optimizer         '
-    printf '%s\n' "$(printf "%s" "$supported_pngopt")"
-    printf '%s\n' ''
-    printf '%s'   '  NOTE: selecting vorbis or opus audio encoders actually '
-    printf '%s\n' 'uses the higher '
-    printf '%s'   '        quality libvorbis and libopus encoders '
-    printf '%s\n' 'respectively.'
-    printf '%s\n' ''
-    printf '%s'   '  NOTE: mkv is the only container format that supports '
-    printf '%s\n' 'all audio and video '
-    printf '%s'   '        encoders. Restrictions apply to other container '
-    printf '%s\n' 'formats.'
-}
+    printf '\n'
+    printf '%s\n' "  -f, --format             $(printf '%s' "$supported_formats")"
+    printf '%s\n' "  -a, --audio-encoder      $(printf '%s' "$supported_aencoders")"
+    printf '%s\n' "  -v, --video-encoder      $(printf '%s' "$supported_vencoders")"
+    printf '%s\n' "  -e, --fade               $(printf '%s' "$supported_fade")"
+    printf '%s\n' "  -g, --png-optimizer      $(printf '%s' "$supported_pngopt")"
+    printf '\n'
+    printf '%s\n' '  NOTE: selecting vorbis or opus audio encoders actually uses the higher'
+    printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
+    printf '\n'
+    printf '%s\n' '  NOTE: mkv is the only container format that supports all audio and video'
+    printf '%s\n' '        encoders. Restrictions apply to other container formats.'
+    }
 
 # get_cmd_line function: get command line arguments and adjust related variables
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
@@ -914,11 +871,9 @@ show_settings() {
 # return code (status): not relevant
 ffmpeg_msg() {
     print_error "the detected ffmpeg build has no support for '${1}'"
-    printf '%s%s%s\n' '                      ' \
-                      'please install a ffmpeg build ' \
-                      "with support for '${1}'" >&2
-    notify 'critical' '5000' 'process-stop' \
-           "error: ${1} is not supported by your ffmpeg build"
+    printf '%s%s\n'   '                      ' \
+                      "please install a ffmpeg build with support for '${1}'" >&2
+    notify 'critical' '5000' 'process-stop' "error: ${1} is not supported by your ffmpeg build"
 }
 
 # check_ffmpeg_format function: check if detected ffmpeg build has support
@@ -967,20 +922,19 @@ dimension_msg() {
             msg="(${video_encoder} requirement)"
             ;;
     esac
-    msg="is not a multiple of 8 ${msg}"
+    
     case "$1" in
         width)
-            msg="video width '${video_width}' ${msg}"
+            printf '%s' "video width '${video_width}' is not a multiple of 8 ${msg}"
             ;;
         height)
-            msg="video height '${video_height}' ${msg}"
+            printf '%s' "video height '${video_height}' is not a multiple of 8 ${msg}"
             ;;
+        # no need to exit since it's usually called from a subshell
         *)
-            # no need to exit since it's usually called from a subshell
-            msg="dimension_msg(): invalid \$1 '${1}'"
+            printf '%s' "dimension_msg(): invalid \$1 '${1}'"
             ;;
     esac
-    printf '%s' "$msg"
 }
 
 # check_dimension function: check if a given dimension is a multiple of 8
@@ -1021,9 +975,7 @@ adjust_dimension() {
     to_reach="$((8 - remainder))"
     new_dimension_value="$((dimension_value + to_reach))"
     
-    msg="$(dimension_msg "$dimension") and was changed \
-         to '${new_dimension_value}'"
-    print_warn "$(printf '%s' "$msg" | remove_spaces)"
+    print_warn "$(dimension_msg "$dimension") and was changed to '${new_dimension_value}'"
     
     # change the given dimension to the new value
     case "$dimension" in
@@ -1237,7 +1189,7 @@ check_cmd_line() {
             ;;
         h264_nvenc)
             check_ffmpeg_encoder h264 h264_nvenc || exit 1
-            video_encode_codec_h264_nvenc="$(printf '%s' "$video_encode_codec_h264_nvenc" | remove_spaces)"
+            video_encode_codec_h264_nvenc="$video_encode_codec_h264_nvenc"
             video_encode_codec="$video_encode_codec_h264_nvenc"
             ;;
         x265)
@@ -1546,38 +1498,38 @@ create_watermark() {
     
     # get font pointsize
     if watermark_pointsize="$(magick \
-                               -size "$watermark_size" \
-                               -font "$watermark_font" \
-                               label:"$watermark_text" \
-                               -format '%[label:pointsize]' \
-                               info:)"
+                                  -size "$watermark_size" \
+                                  -font "$watermark_font" \
+                                  label:"$watermark_text" \
+                                  -format '%[label:pointsize]' \
+                                  info:)"
     then
         # check if font pointsize was correctly obtained (integer/float number)
         if printf '%s' "$watermark_pointsize" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
         then
             # generate the watermark
             if magick \
-                -size "$watermark_size" \
-                -font "$watermark_font" \
-                -pointsize "$watermark_pointsize" \
-                -gravity center \
-                \( \
-                    xc:grey30 \
-                    -draw "fill gray70  text 0,0  '${watermark_text}'" \
-                \) \
-                \( \
-                    xc:black \
-                    -draw "fill white  text  1,1  '${watermark_text}'  \
-                                       text  0,0  '${watermark_text}'  \
-                           fill black  text -1,-1 '${watermark_text}'" \
-                    -alpha Off \
-                \) \
-                -alpha Off \
-                -compose copy-opacity \
-                -composite \
-                -trim \
-                +repage \
-                "$wmark_image"
+                   -size "$watermark_size" \
+                   -font "$watermark_font" \
+                   -pointsize "$watermark_pointsize" \
+                   -gravity center \
+                   \( \
+                       xc:grey30 \
+                       -draw "fill gray70  text 0,0  '${watermark_text}'" \
+                   \) \
+                   \( \
+                       xc:black \
+                       -draw "fill white  text  1,1  '${watermark_text}'  \
+                                          text  0,0  '${watermark_text}'  \
+                              fill black  text -1,-1 '${watermark_text}'" \
+                       -alpha Off \
+                   \) \
+                   -alpha Off \
+                   -compose copy-opacity \
+                   -composite \
+                   -trim \
+                   +repage \
+                   "$wmark_image"
             then
                 # check if the generated watermark file is truly a PNG image
                 if file "$wmark_image" | grep -q 'PNG image data'
@@ -1609,30 +1561,22 @@ create_watermark() {
                     watermark_input="-framerate ${video_rate} \
                                      -thread_queue_size ${queue_size} \
                                      -i ${wmark_image}"
-                    watermark_input="$(printf '%s' "$watermark_input" |
-                                            remove_spaces)"
+                    watermark_input="$(printf '%s' "$watermark_input" | remove_spaces)"
                     watermark_options="overlay=${watermark_position}"
                 else
-                    msg="the generated watermark is not a PNG file \
-                         (watermarking aborted)"
-                    print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
+                    print_warn 'the generated watermark is not a PNG file (watermarking aborted)' >&2
                     return 1
                 fi # end: if file
             else
-                msg="failed to create watermark image (watermarking aborted)"
-                print_warn "$msg" >&2
+                print_warn 'failed to create watermark image (watermarking aborted)' >&2
                 return 1
             fi # end: if magick
         else
-            msg="the obtained watermark font pointsize is not a \
-                 valid integer/float number (watermarking aborted)"
-            print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
+            print_warn 'the obtained watermark font pointsize is not a valid integer/float number (watermarking aborted)' >&2
             return 1
         fi # end: if printf
     else
-        msg="failed to obtain watermark font pointsize \
-             (watermarking aborted)"
-        print_warn "$(printf '%s' "$msg" | remove_spaces)" >&2
+        print_warn 'failed to obtain watermark font pointsize (watermarking aborted)' >&2
         return 1
     fi # end: if watermark_pointsize=
 }
@@ -1647,23 +1591,18 @@ videofade() {
     tmp_1stpart="screencast-tmpvideo-${$}-"  # split large line
     tmp_2ndpart="${randomstring_rec}.${rec_extension}"
     video_length="$(ffprobe \
-                    -i "${tmpdir}/${tmp_1stpart}${tmp_2ndpart}" \
-                    -show_entries format='duration' \
-                    -v quiet \
-                    -of csv='p=0')"
+                        -i "${tmpdir}/${tmp_1stpart}${tmp_2ndpart}" \
+                        -show_entries format='duration' \
+                        -v quiet \
+                        -of csv='p=0')"
     
     # set start time of fade-out in seconds
-    total_fadeout="$(printf '%s\n' "${fade_length} + \
-                                     ${fade_solid_length}" | bc)"
-    fadeout_start="$(printf '%s\n' "${video_length} - ${total_fadeout}" | bc)"
+    total_fadeout="$(printf '%s\n' "${fade_length}  + ${fade_solid_length}" | bc)"
+    fadeout_start="$(printf '%s\n' "${video_length} - ${total_fadeout}"     | bc)"
     
     # build ffmpeg fade in/out options
-    fadein="fade=type=in:start_time=${fade_solid_length}" # split large line
-    fadein="${fadein}:duration=${fade_length}"
-    fadein="${fadein}:color=${fade_color}"
-    fadeout="fade=type=out:start_time=${fadeout_start}" # split large line
-    fadeout="${fadeout}:duration=${fade_length}"
-    fadeout="${fadeout}:color=${fade_color}"
+    fadein="fade=type=in:start_time=${fade_solid_length}:duration=${fade_length}:color=${fade_color}"
+    fadeout="fade=type=out:start_time=${fadeout_start}:duration=${fade_length}:color=${fade_color}"
     
     # check the chosen fade type and set ffmpeg fade options if necessary
     case "$fade" in
@@ -1701,8 +1640,7 @@ msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
 then
-    command -v setopt >/dev/null 2>&1 || exit_program \
-        'script appears to be running in zsh but setopt was not found'
+    command -v setopt >/dev/null 2>&1 || exit_program 'script appears to be running in zsh but setopt was not found'
     setopt SH_WORD_SPLIT # enable variable word splitting
 fi
 
@@ -1746,8 +1684,6 @@ show_settings
 # some preparations before recording
 randomstring_rec="$(randomstr '20')" # random string for tmp video filename
 tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
-audio_general_options="$(printf '%s' "$audio_general_options" | remove_spaces)"
-video_general_options="$(printf '%s' "$video_general_options" | remove_spaces)"
 print_good 'recording'
 notify 'normal' '1700' 'media-record' 'recording...'
 
@@ -1803,7 +1739,7 @@ then
     if ffmpeg \
            $audio_channel_layout \
            -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
-           ${watermark_input} \
+           $watermark_input \
            $vfilter_option ${watermark_options}${fade_options} \
            $volume_options \
            $audio_encode_codec \
