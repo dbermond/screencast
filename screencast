@@ -216,7 +216,7 @@ show_help() {
 # return code (status): not relevant
 notify() {
     notify_args="--urgency=${1} --expire-time=${2} --icon=${3}"
-    [ "$notifications" = 'true' ] && notify-send $notify_args screencast "$4"
+    [ "$notifications" = 'true' ] && notify-send $notify_args screencast "$(remove_spaces "$4")"
 }
 
 # check_requirements function: check if required programs are installed
@@ -348,10 +348,13 @@ exit_program() {
     exit 1
 }
 
-# remove_spaces function: a sed command pipe to remove two or more spaces
-# arguments: none
+# remove_spaces function: remove two or more consecutive spaces from a string,
+#                         making them to be a single space
+# arguments: $1 - the string to modify
+# return value: a modified string
+# return code (status): not relevant
 remove_spaces() {
-    sed 's/[[:space:]][[:space:]]\+/ /g'
+    printf '%s' "$1" | sed 's/[[:space:]][[:space:]]\+/ /g'
 }
 
 # list_supported function: print a list of arguments supported by this program
@@ -1561,7 +1564,7 @@ create_watermark() {
                     watermark_input="-framerate ${video_rate} \
                                      -thread_queue_size ${queue_size} \
                                      -i ${wmark_image}"
-                    watermark_input="$(printf '%s' "$watermark_input" | remove_spaces)"
+                    watermark_input="$(remove_spaces "$watermark_input")"
                     watermark_options="overlay=${watermark_position}"
                 else
                     print_warn 'the generated watermark is not a PNG file (watermarking aborted)' >&2
