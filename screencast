@@ -1108,7 +1108,7 @@ check_cmd_line() {
         # output filename is already covered above in
         # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
         # to make the program output more clear
-        printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd) ") ")"
+        printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd)")")"
         
         # get output filename extension and assign to container format
         format="$(basename "$1")"
