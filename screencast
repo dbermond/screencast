@@ -1359,19 +1359,37 @@ check_cmd_line() {
         exit_program "$msg"
     fi
     
-    # special condition check: mp4 + vp9 (support is experimental and not enabled)
+    # special condition check: mp4 + vp9
+    # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
     if [ "$format" = 'mp4' ] && [ "$video_encoder" = 'vp9' ] 
     then
-        msg="support for 'vp9' encoder in 'mp4' container format is currently experimental and not enabled"
+        ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
         
-        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+        if {
+               printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*$' &&
+               ! {
+                     [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
+                     [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                 } ;
+           } ||
+           {
+               printf '%s' "$ffmpeg_version" | grep -Eq '^N-.*$' &&
+               ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+           }
         then
-           msg="${msg}
+            msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental"
+            msg="${msg}
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+            
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+            then
+                msg="${msg}
                       (did you forget to select the container format?)"
+            fi
+            
+            show_settings
+            exit_program "$msg"
         fi
-        
-        show_settings
-        exit_program "$msg"
     fi
 }
 
