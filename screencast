@@ -842,10 +842,10 @@ get_cmd_line() {
 # return value: program settings information
 # return code (status): not relevant
 show_settings() {
-    # print information about some settings
-    [ "$video_encoder" = "$video_encoder_default" ] && video_outstr='(default)'
-    [ "$audio_encoder" = "$audio_encoder_default" ] && audio_outstr='(default)'
-    [ "$format"        = "$format_default"        ] && format_outstr='(default)'
+    [ "$video_encoder" = "$video_encoder_default" ] && [ "$video_encoder_setted" = 'false' ] && video_outstr='(default)'
+    [ "$audio_encoder" = "$audio_encoder_default" ] && [ "$audio_encoder_setted" = 'false' ] && audio_outstr='(default)'
+    [ "$format"        = "$format_default"        ] && [ "$format_setted"        = 'false' ] &&
+        [ "$auto_filename" = 'true'  ] && format_outstr='(default)'
     
     [ "$fade" != 'none' ] && effects="fade-${fade}"
     if [ "$watermark" = 'true' ] 
