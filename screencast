@@ -1366,14 +1366,14 @@ check_cmd_line() {
         ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
         
         if {
-               printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*$' &&
+               printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
                ! {
                      [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
                      [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
                  } ;
            } ||
            {
-               printf '%s' "$ffmpeg_version" | grep -Eq '^N-.*$' &&
+               printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
                ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
            }
         then
