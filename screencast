@@ -184,7 +184,7 @@ show_help() {
     printf '%s\n' '  -S, --select-region      select with mouse the screen region to record'
     printf '%s\n' "  -r, --fps=N              video framerate (fps) [${video_rate}]"
     printf '%s\n' "  -f, --format=TYPE        container format (to use with -u) [${format}]"
-    printf '%s\n' "  -i, --audio-input=NAME   audio input device [${audio_input#* }]"
+    printf '%s\n' "  -i, --audio-input=NAME   audio input device [${audio_input}]"
     printf '%s\n' "  -a, --audio-encoder=NAME audio encoder [${audio_encoder}]"
     printf '%s\n' "  -v, --video-encoder=NAME video encoder [${video_encoder}]"
     printf '%s\n' "  -e, --fade=TYPE          video fade effect [${fade}]"
