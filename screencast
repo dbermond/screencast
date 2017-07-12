@@ -54,12 +54,12 @@ volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
 audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
 audio_record_codec='-acodec pcm_s16le -ar 48000 -ac 2'
-audio_encode_codec_fdkaac='-acodec libfdk_aac -ab 128k -ar 44100 -ac 2'
-audio_encode_codec_aac='-acodec aac -ab 128k -ar 44100 -ac 2'
-audio_encode_codec_vorbis='-acodec libvorbis -qscale:a 4 -ar 44100 -ac 2'
-audio_encode_codec_opus='-acodec libopus -ab 128k -ar 48000 -ac 2'
-audio_encode_codec_mp3lame='-acodec libmp3lame -ab 128k -ar 44100 -ac 2'
-audio_encode_codec_shine='-acodec libshine -b 128k -ar 44100 -ac 2'
+codec_fdkaac='-acodec libfdk_aac -ab 128k -ar 44100 -ac 2'
+codec_aac='-acodec aac -ab 128k -ar 44100 -ac 2'
+codec_vorbis='-acodec libvorbis -qscale:a 4 -ar 44100 -ac 2'
+codec_opus='-acodec libopus -ab 128k -ar 48000 -ac 2'
+codec_mp3lame='-acodec libmp3lame -ab 128k -ar 44100 -ac 2'
+codec_shine='-acodec libshine -b 128k -ar 44100 -ac 2'
 
 #video settings
 video_encoder='x264'          # default video encoder
@@ -72,14 +72,14 @@ video_rate='25'               # video framerate (fps)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
-video_encode_codec_x264='libx264 -crf 21 -preset veryslow'
-video_encode_codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150"
-video_encode_codec_x265='libx265 -crf 25 -preset veryslow'
-video_encode_codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
-video_encode_codec_hevc_nvenc='hevc_nvenc -preset slow'
-video_encode_codec_theora='libtheora -qscale:v 5'
-video_encode_codec_vp8='libvpx -crf 8 -vb 2M'
-video_encode_codec_vp9='libvpx-vp9 -crf 30 -vb 0 -speed 0'
+codec_x264='libx264 -crf 21 -preset veryslow'
+codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150"
+codec_x265='libx265 -crf 25 -preset veryslow'
+codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
+codec_hevc_nvenc='hevc_nvenc -preset slow'
+codec_theora='libtheora -qscale:v 5'
+codec_vp8='libvpx -crf 8 -vb 2M'
+codec_vp9='libvpx-vp9 -crf 30 -vb 0 -speed 0'
 
 # watermark settings
 watermark_font='Arial'
@@ -1145,26 +1145,26 @@ check_cmd_line() {
         aac)
             if check_ffmpeg_encoder aac libfdk_aac
             then
-                audio_encode_codec="$audio_encode_codec_fdkaac"
+                audio_encode_codec="$codec_fdkaac"
             else
-                audio_encode_codec="$audio_encode_codec_aac"
+                audio_encode_codec="$codec_aac"
             fi
             ;;
         vorbis)
             check_ffmpeg_encoder vorbis libvorbis || exit 1
-            audio_encode_codec="$audio_encode_codec_vorbis"
+            audio_encode_codec="$codec_vorbis"
             ;;
         opus)
             check_ffmpeg_encoder opus libopus || exit 1
-            audio_encode_codec="$audio_encode_codec_opus"
+            audio_encode_codec="$codec_opus"
             ;;
         mp3|mp3lame)
             check_ffmpeg_encoder mp3 libmp3lame || exit 1
-            audio_encode_codec="$audio_encode_codec_mp3lame"
+            audio_encode_codec="$codec_mp3lame"
             ;;
         shine)
             check_ffmpeg_encoder mp3 libshine || exit 1
-            audio_encode_codec="$audio_encode_codec_shine"
+            audio_encode_codec="$codec_shine"
             ;;
         # video without audio stream (audio will not be recorded)
         none)
@@ -1183,36 +1183,36 @@ check_cmd_line() {
     case "$video_encoder" in
         x264)
             check_ffmpeg_encoder h264 libx264 || exit 1
-            video_encode_codec="$video_encode_codec_x264"
+            video_encode_codec="$codec_x264"
             ;;
         h264_nvenc)
             check_ffmpeg_encoder h264 h264_nvenc || exit 1
-            video_encode_codec="$video_encode_codec_h264_nvenc"
+            video_encode_codec="$codec_h264_nvenc"
             ;;
         x265)
             check_ffmpeg_encoder hevc libx265 || exit 1
-            video_encode_codec="$video_encode_codec_x265"
+            video_encode_codec="$codec_x265"
             ;;
         kvazaar)
             check_ffmpeg_encoder hevc libkvazaar || exit 1
-            video_encode_codec="$video_encode_codec_kvazaar"
+            video_encode_codec="$codec_kvazaar"
             ;;
         hevc_nvenc)
             check_ffmpeg_encoder hevc hevc_nvenc || exit 1
-            video_encode_codec="$video_encode_codec_hevc_nvenc"
+            video_encode_codec="$codec_hevc_nvenc"
             ;;
         theora)
             check_ffmpeg_encoder theora libtheora || exit 1
-            video_encode_codec="$video_encode_codec_theora"
+            video_encode_codec="$codec_theora"
             ;;
         vp8)
             check_ffmpeg_encoder vp8 libvpx || exit 1
             video_record_codec="$video_record_codec_vp8"
-            video_encode_codec="$video_encode_codec_vp8"
+            video_encode_codec="$codec_vp8"
             ;;
         vp9)
             check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
-            video_encode_codec="$video_encode_codec_vp9"
+            video_encode_codec="$codec_vp9"
             ;;
         *)
             exit_program "'${video_encoder}' is not a valid video encoder for this program"
