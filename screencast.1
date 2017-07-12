@@ -150,13 +150,16 @@ supported types: in, out, both, none
 \fB\-m\fR, \fB\-\-volume\-factor\fR=\fIN\fR
 .RS
 Volume increase effect factor. This will increase the volume of the recorded
-audio. Normally, audio volume is low with default settings, even if you
+audio. Usually, audio volume is low with default settings, even if you
 increse your microphone capture volume. Use this to give your videos a better
 hearing experience, letting your viewers fell more confortable to watch it
 whithout needing to rise their sound volume. It works as a percentage factor.
 For example, a value of \fI1.5\fR will increase volume by 50% and a value of
-\fI2.0\fR will double volume. When setted to \fI1.0\fR or \fI0.0\fR this effect
-is disabled.
+\fI2.0\fR will double volume. It is also possible to set a volume decrease
+effect, although this is not recommended since for this you can simply decrease
+your microphone recording volume (for example, a value of \fI0.5\fR will
+decrease volume by 50%). When setted to \fI1.0\fR or \fI0.0\fR this effect is
+disabled.
 .PP
 default: 1.0
 .RE
