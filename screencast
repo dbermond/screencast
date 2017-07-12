@@ -354,7 +354,7 @@ exit_program() {
 # return value: a modified string
 # return code (status): not relevant
 remove_spaces() {
-    printf '%s' "$1" | sed 's/[[:space:]][[:space:]]\+/ /g'
+    printf '%s' "$1" | sed 's/[[:space:]]\+/ /g'
 }
 
 # list_supported function: print a list of arguments supported by this program
