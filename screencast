@@ -1006,18 +1006,14 @@ check_screen() {
     
     if [ "$((video_width + video_position_x))" -gt "$screen_width"  ] 
     then
-        msg='recording area is out of screen bounds'
-        msg="${msg}
-                      (video width + position X is greater than the current screen width)"
-        exit_program "$msg"
+        exit_program 'recording area is out of screen bounds
+                      (video width + position X is greater than the current screen width)'
     fi
     
     if [ "$((video_height + video_position_y))" -gt "$screen_height" ] 
     then
-        msg='recording area is out of screen bounds'
-        msg="${msg}
-                      (video height + position Y is greater than the current screen height)"
-        exit_program "$msg"
+        exit_program 'recording area is out of screen bounds
+                      (video height + position Y is greater than the current screen height)'
     fi
 }
 
@@ -1085,17 +1081,15 @@ check_cmd_line() {
         # do not allow to use -f/--format when specifying an output filename
         if [ "$format_setted" = "true" ] 
         then
-            msg="--format (-f) option is to be used only with --auto-filename (-u)
+            exit_program "--format (-f) option is to be used only with --auto-filename (-u)
                       (when not using '-u', set format in the output filename)"
-            exit_program "$msg"
         fi
         
         # do not allow to use -o/--output-dir when specifying an output filename
         if [ "$outputdir_setted" = "true" ] 
         then
-            msg="--output-dir (-o) option is to be used only with --auto-filename (-u)
+            exit_program "--output-dir (-o) option is to be used only with --auto-filename (-u)
                       (when not using '-u', set output directory with the output filename)"
-            exit_program "$msg"
         fi
         
         # if user specified a save directory directly with output filename that
@@ -1181,8 +1175,7 @@ check_cmd_line() {
             audio_encode_codec='-an'
             ;;
         *)
-            msg="'${audio_encoder}' is not a valid audio encoder for this program"
-            exit_program "$msg"
+            exit_program "'${audio_encoder}' is not a valid audio encoder for this program"
             ;;
     esac
     
@@ -1194,7 +1187,6 @@ check_cmd_line() {
             ;;
         h264_nvenc)
             check_ffmpeg_encoder h264 h264_nvenc || exit 1
-            video_encode_codec_h264_nvenc="$video_encode_codec_h264_nvenc"
             video_encode_codec="$video_encode_codec_h264_nvenc"
             ;;
         x265)
@@ -1223,8 +1215,7 @@ check_cmd_line() {
             video_encode_codec="$video_encode_codec_vp9"
             ;;
         *)
-            msg="'${video_encoder}' is not a valid video encoder for this program"
-            exit_program "$msg"
+            exit_program "'${video_encoder}' is not a valid video encoder for this program"
             ;;
     esac
     
@@ -1379,8 +1370,7 @@ check_cmd_line() {
                ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
            }
         then
-            msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental"
-            msg="${msg}
+            msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
                       it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
             
             if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
