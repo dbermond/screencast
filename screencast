@@ -78,8 +78,8 @@ codec_x265='libx265 -crf 25 -preset veryslow'
 codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
 codec_hevc_nvenc='hevc_nvenc -preset slow'
 codec_theora='libtheora -qscale:v 5'
-codec_vp8='libvpx -crf 8 -vb 2M'
-codec_vp9='libvpx-vp9 -crf 30 -vb 0 -speed 0'
+codec_vp8='libvpx -crf 8 -b:v 2M'
+codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 
 # watermark settings
 watermark_font='Arial'
