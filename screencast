@@ -1079,14 +1079,14 @@ check_cmd_line() {
         [ "$#" -gt '1' ] && exit_program 'please do not enter anything after the output filename'
         
         # do not allow to use -f/--format when specifying an output filename
-        if [ "$format_setted" = "true" ] 
+        if [ "$format_setted" = 'true' ] 
         then
             exit_program "--format (-f) option is to be used only with --auto-filename (-u)
                       (when not using '-u', set format in the output filename)"
         fi
         
         # do not allow to use -o/--output-dir when specifying an output filename
-        if [ "$outputdir_setted" = "true" ] 
+        if [ "$outputdir_setted" = 'true' ] 
         then
             exit_program "--output-dir (-o) option is to be used only with --auto-filename (-u)
                       (when not using '-u', set output directory with the output filename)"
