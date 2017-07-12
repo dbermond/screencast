@@ -266,11 +266,11 @@ check_requirements() {
         
         case "$requirement" in
             notify-send)
-                request_string=''
+                unset request_string
                 installname="${requirement} (libnotify) (or use '-n')"
                 ;;
             ffmpeg)
-                request_string=''
+                unset request_string
                 installname='ffmpeg (version git master preferred)'
                 ;;
             ffprobe)
@@ -298,7 +298,7 @@ check_requirements() {
                 installname="${requirement} (advancecomp)"
                 ;;
             *)
-                request_string=''
+                unset request_string
                 installname="$requirement"
                 ;;
         esac
@@ -938,6 +938,8 @@ dimension_msg() {
             printf '%s' "dimension_msg(): invalid \$1 '${1}'"
             ;;
     esac
+    
+    unset msg
 }
 
 # check_dimension function: check if a given dimension is a multiple of 8
@@ -1172,9 +1174,9 @@ check_cmd_line() {
             ;;
         # video without audio stream (audio will not be recorded)
         none)
-            audio_input=''
-            audio_channel_layout=''
-            audio_general_options=''
+            unset audio_input
+            unset audio_channel_layout
+            unset audio_general_options
             audio_record_codec='-an'
             audio_encode_codec='-an'
             ;;
@@ -1258,7 +1260,7 @@ check_cmd_line() {
         [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
         [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-c) ${msg}"
         [ "$pngoptimizer_setted" = 'true' ] && exit_program "--png-optimizer (-g) ${msg}"
-        msg=''
+        unset msg
     fi
     
     # check for a valid watermark size format (NxN) (-z/--wmark-size)
