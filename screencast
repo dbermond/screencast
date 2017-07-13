@@ -61,7 +61,7 @@ codec_opus='-acodec libopus -ab 128k -ar 48000 -ac 2'
 codec_mp3lame='-acodec libmp3lame -ab 128k -ar 44100 -ac 2'
 codec_shine='-acodec libshine -b 128k -ar 44100 -ac 2'
 
-#video settings
+# video settings
 video_encoder='x264'          # default video encoder
 pixel_format='yuv420p'        # pixel format
 rec_extension='mkv'           # container format (file extension) for recording
