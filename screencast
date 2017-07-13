@@ -81,6 +81,9 @@ codec_theora='libtheora -qscale:v 5'
 codec_vp8='libvpx -crf 8 -b:v 2M'
 codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 
+# metadata
+metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}/")"
+
 # watermark settings
 watermark_font='Arial'
 watermark_size='255x35'
@@ -1712,6 +1715,7 @@ if ffmpeg \
        $audio_record_codec \
        -vcodec $video_record_codec \
        $fixed_length_options \
+       -metadata "$metadata" \
        -y \
        "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
 then 
@@ -1758,6 +1762,7 @@ then
            $audio_encode_codec \
            -vcodec $video_encode_codec \
            -pix_fmt $pixel_format \
+           -metadata "$metadata" \
            $faststart \
            -map 0 \
            -y \
