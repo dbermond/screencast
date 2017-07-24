@@ -126,14 +126,25 @@ supported types: aac, opus, vorbis, mp3/mp3lame, shine, none
 .TP
 \fB\-v\fR, \fB\-\-video\-encoder\fR=\fINAME\fR
 .RS
-Video encoder to be used to encode the recorded video. If using a NVIDIA
-hardware accelerated encoder please make sure that you have a NVIDIA graphics
-card that supports the chosen encoder.
+Video encoder to be used to encode the recorded video. If using a hardware
+accelerated encoder please make sure that you have a graphics card that
+supports the specified encoder.
 .PP
 .nf
         default: x264
-supported types: x264, h264_nvenc, x265, kvazaar, hevc_nvenc, theora, vp8, vp9
+supported types: x264, h264_nvenc, h264_vaapi, x265, kvazaar, hevc_nvenc,
+                 hevc_vaapi, theora, vp8, vp8_vaapi, vp9, vp9_vaapi
 .fi
+.RE
+.TP
+\fB\-A\fR, \fB\-\-vaapi\-device\fR=\fINODE\fR
+.RS
+DRM render node to be used to encode the recorded video. This option is to be
+used only when specifying a VAAPI hardware accelerated video encoder with the
+the \fB-v\fR option. Please make sure that the specified DRM render node is the
+right one.
+.PP
+default: /dev/dri/renderD128
 .RE
 .TP
 \fB\-e\fR, \fB\-\-fade\fR=\fITYPE\fR

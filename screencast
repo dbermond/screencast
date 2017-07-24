@@ -38,6 +38,7 @@ fixed_length='0'             # fixed length video in seconds (0 disable)
 notifications='true'         # desktop notifications (true, false)
 audio_encoder_setted='false' # if audio encoder  was setted by cmd line with -a
 video_encoder_setted='false' # if video encoder  was setted by cmd line with -v
+vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
 video_size_setted='false'    # if video size     was setted by cmd line with -s
 video_posi_setted='false'    # if video position was setted by cmd line with -p
 format_setted='false'        # if video format   was setted by cmd line with -f
@@ -69,17 +70,22 @@ format='mp4'                  # container format (file extension) for output
 video_position='0,0' #200,234 # X and Y screen coordinates to record video from
 video_size='640x480'          # video size (resolution)
 video_rate='25'               # video framerate (fps)
+vaapi_device='/dev/dri/renderD128' # default DRM render node (for vaapi video encoders)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 codec_x264='libx264 -crf 21 -preset veryslow'
 codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150"
+codec_h264_vaapi='h264_vaapi -qp 18'
 codec_x265='libx265 -crf 25 -preset veryslow'
 codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
 codec_hevc_nvenc='hevc_nvenc -preset slow'
+codec_hevc_vaapi='hevc_vaapi -qp 22'
 codec_theora='libtheora -qscale:v 5'
 codec_vp8='libvpx -crf 8 -b:v 2M'
+codec_vp8_vaapi='vp8_vaapi -global_quality 30'
 codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
+codec_vp9_vaapi='vp9_vaapi -global_quality 80'
 
 # metadata
 metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}/")"
@@ -116,7 +122,9 @@ format_default="$format"
 supported_fade='in, out, both, none'
 supported_formats='mp4, mkv, webm, ogg'
 supported_aencoders='aac, opus, vorbis, mp3/mp3lame, shine, none'
-supported_vencoders="x264, h264_nvenc, x265, kvazaar, hevc_nvenc, theora, vp8, vp9"
+supported_vencoders="x264, h264_nvenc, h264_vaapi, x265, kvazaar,
+                           hevc_nvenc, hevc_vaapi, theora, vp8, vp8_vaapi,
+                           vp9, vp9_vaapi"
 supported_pngopt='truepng, pingo, optipng, opt-png, none'
 
 #########################################
@@ -190,6 +198,7 @@ show_help() {
     printf '%s\n' "  -i, --audio-input=NAME   audio input device [${audio_input}]"
     printf '%s\n' "  -a, --audio-encoder=NAME audio encoder [${audio_encoder}]"
     printf '%s\n' "  -v, --video-encoder=NAME video encoder [${video_encoder}]"
+    printf '%s\n' "  -A, --vaapi-device=NODE  DRM render node [${vaapi_device}]"
     printf '%s\n' "  -e, --fade=TYPE          video fade effect [${fade}]"
     printf '%s\n' "  -m, --volume-factor=N    volume increase effect factor (1.0 disable) [${volume_factor}]"
     printf '%s\n' '  -w, --watermark=TEXT     enable and set text watermark [disabled]'
@@ -565,6 +574,29 @@ get_cmd_line() {
                 command_error '--video-encoder (-v)'
                 ;;
             
+            -A|--vaaapi-device)
+                if [ -n "$2" ] 
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--vaaapi-device (-A)'
+                    else
+                        vaapi_device="$2"
+                        vaapi_device_setted='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--vaaapi-device (-A)'
+                fi
+                ;;
+            --vaaapi-device=?*)
+                vaapi_device="$2"
+                vaapi_device_setted='true'
+                ;;
+            --vaaapi-device=)
+                command_error '--vaaapi-device (-A)'
+                ;;
+            
             -e|--fade)
                 if [ -n "$2" ] 
                 then
@@ -850,6 +882,12 @@ show_settings() {
     [ "$format"        = "$format_default"        ] && [ "$format_setted"        = 'false' ] &&
         [ "$auto_filename" = 'true'  ] && format_outstr='(default)'
     
+    case "$video_encoder" in
+        *_vaapi)
+            video_outstr="(${vaapi_device})"
+            ;;
+    esac
+    
     [ "$fade" != 'none' ] && effects="fade-${fade}"
     if [ "$watermark" = 'true' ] 
     then
@@ -1018,6 +1056,15 @@ check_screen() {
         exit_program 'recording area is out of screen bounds
                       (video height + position Y is greater than the current screen height)'
     fi
+}
+
+# check_vaapi function: check if specified DRM render node exists (-A/--vaapi-device)
+# arguments: none
+# return value: not relevant
+# return code (status): 0 - a valid DRM render node exists
+# note: it will make the program exit with error if an invalid DRM render node was setted
+check_vaapi() {
+    [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node on this system"
 }
 
 # check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
@@ -1192,6 +1239,11 @@ check_cmd_line() {
             check_ffmpeg_encoder h264 h264_nvenc || exit 1
             video_encode_codec="$codec_h264_nvenc"
             ;;
+        h264_vaapi)
+            check_ffmpeg_encoder h264 h264_vaapi || exit 1
+            check_vaapi
+            video_encode_codec="$codec_h264_vaapi"
+            ;;
         x265)
             check_ffmpeg_encoder hevc libx265 || exit 1
             video_encode_codec="$codec_x265"
@@ -1204,6 +1256,11 @@ check_cmd_line() {
             check_ffmpeg_encoder hevc hevc_nvenc || exit 1
             video_encode_codec="$codec_hevc_nvenc"
             ;;
+        hevc_vaapi)
+            check_ffmpeg_encoder hevc hevc_vaapi || exit 1
+            check_vaapi
+            video_encode_codec="$codec_hevc_vaapi"
+            ;;
         theora)
             check_ffmpeg_encoder theora libtheora || exit 1
             video_encode_codec="$codec_theora"
@@ -1213,12 +1270,33 @@ check_cmd_line() {
             video_record_codec="$video_record_codec_vp8"
             video_encode_codec="$codec_vp8"
             ;;
+        vp8_vaapi)
+            check_ffmpeg_encoder vp8 vp8_vaapi || exit 1
+            check_vaapi
+            video_encode_codec="$codec_vp8_vaapi"
+            ;;
         vp9)
             check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
             video_encode_codec="$codec_vp9"
             ;;
+        vp9_vaapi)
+            check_ffmpeg_encoder vp9 vp9_vaapi || exit 1
+            check_vaapi
+            video_encode_codec="$codec_vp9_vaapi"
+            ;;
         *)
             exit_program "'${video_encoder}' is not a valid video encoder for this program"
+            ;;
+    esac
+    
+    # do not allow to use -A/--vaapi-device without setting a vaapi video encoder
+    case "$video_encoder" in
+        *_vaapi)
+            :
+            ;;
+        *)
+            [ "$vaapi_device_setted" = 'true' ] && exit_program '--vaapi-device (-A) option is to be used only when a VAAPI video encoder is setted'
+            unset vaapi_device
             ;;
     esac
     
@@ -1317,7 +1395,9 @@ check_cmd_line() {
     if {
            [ "$format" = 'mp4' ] &&
            {
-               [ "$video_encoder" = 'theora' ] || [ "$video_encoder" = 'vp8' ] ;
+               [ "$video_encoder" = 'theora'    ] ||
+               [ "$video_encoder" = 'vp8'       ] ||
+               [ "$video_encoder" = 'vp8_vaapi' ] ;
            } ;
        } ||
        {
@@ -1325,9 +1405,11 @@ check_cmd_line() {
            {
                [ "$video_encoder" = 'x264'       ] ||
                [ "$video_encoder" = 'h264_nvenc' ] ||
+               [ "$video_encoder" = 'h264_vaapi' ] ||
                [ "$video_encoder" = 'x265'       ] ||
                [ "$video_encoder" = 'kvazaar'    ] ||
                [ "$video_encoder" = 'hevc_nvenc' ] ||
+               [ "$video_encoder" = 'hevc_vaapi' ] ||
                [ "$video_encoder" = 'theora'     ] ;
            } ;
        } ||
@@ -1336,10 +1418,13 @@ check_cmd_line() {
            {
                [ "$video_encoder" = 'x264'       ] ||
                [ "$video_encoder" = 'h264_nvenc' ] ||
+               [ "$video_encoder" = 'h264_vaapi' ] ||
                [ "$video_encoder" = 'x265'       ] ||
                [ "$video_encoder" = 'kvazaar'    ] ||
                [ "$video_encoder" = 'hevc_nvenc' ] ||
-               [ "$video_encoder" = 'vp9'        ] ;
+               [ "$video_encoder" = 'hevc_vaapi' ] ||
+               [ "$video_encoder" = 'vp9'        ] ||
+               [ "$video_encoder" = 'vp9_vaapi'  ] ;
            } ;
        }
     then
@@ -1357,7 +1442,11 @@ check_cmd_line() {
     
     # special condition check: mp4 + vp9
     # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-    if [ "$format" = 'mp4' ] && [ "$video_encoder" = 'vp9' ] 
+    if [ "$format" = 'mp4' ] &&
+       {
+           [ "$video_encoder" = 'vp9'       ] ||
+           [ "$video_encoder" = 'vp9_vaapi' ] ;
+       }
     then
         ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
         
@@ -1725,6 +1814,7 @@ then
         if create_watermark
         then
             vfilter_option='-filter_complex'
+            vfilter_settings="$watermark_options"
             [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
         fi
     fi
@@ -1733,13 +1823,21 @@ then
     if [ "$fade" != 'none' ] 
     then
         videofade
-        if [ "$watermark" = 'true' ] 
-        then
-            fade_options=",${fade_options}"
-        else
-            vfilter_option='-vf'
-        fi
+        [ "$watermark" = 'false' ] && vfilter_option='-vf'
+        vfilter_settings="${vfilter_settings:+"${vfilter_settings},${fade_options}"}"
+        vfilter_settings="${vfilter_settings:-"${fade_options}"}"
     fi
+    
+    # set vaapi options if user entered a vaapi hardware accelerated encoder (-v/--video-encoder)
+    case "$video_encoder" in
+        *_vaapi)
+            [ "$watermark" = 'false' ] && vfilter_option='-vf'
+            vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
+            vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
+            vaapi_device="-vaapi_device ${vaapi_device}"
+            pixel_format='vaapi_vld'
+            ;;
+    esac
     
     # set output filename
     if [ "$auto_filename" = 'true' ] 
@@ -1755,9 +1853,10 @@ then
     # encode the recorded lossless video file
     if ffmpeg \
            $audio_channel_layout \
+           $vaapi_device \
            -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
            $watermark_input \
-           $vfilter_option ${watermark_options}${fade_options} \
+           $vfilter_option $vfilter_settings \
            $volume_options \
            $audio_encode_codec \
            -vcodec $video_encode_codec \

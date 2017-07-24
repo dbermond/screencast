@@ -12,6 +12,7 @@ screencast
     - [`-i, --audio-input=NAME`](#-i---audio-inputname)
     - [`-a, --audio-encoder=NAME`](#-a---audio-encodername)
     - [`-v, --video-encoder=NAME`](#-v---video-encodername)
+    - [`-A, --vaapi-device=NODE`](#-a---vaapi-devicenode)
     - [`-e, --fade=TYPE`](#-e---fadetype)
     - [`-m, --volume-factor=N`](#-m---volume-factorn)
     - [`-w, --watermark=TEXT`](#-w---watermarktext)
@@ -110,11 +111,18 @@ supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
 
 #### `-v, --video-encoder=NAME`
 
-Video encoder to be used to encode the recorded video. If using a NVIDIA hardware accelerated encoder please make sure that you have a NVIDIA graphics card that supports the chosen encoder.
+Video encoder to be used to encode the recorded video. If using a hardware accelerated encoder please make sure that you have a graphics card that supports the specified encoder.
 
 default: `x264`
 
-supported types: `x264`, `h264_nvenc`, `x265`, `kvazaar`, `hevc_nvenc`, `theora`, `vp8`, `vp9`
+- supported types:
+    - `x264`, `h264_nvenc`, `h264_vaapi`, `x265`, `kvazaar`, `hevc_nvenc`, `hevc_vaapi`, `theora`, `vp8`, `vp8_vaapi`, `vp9`, `vp9_vaapi`
+
+#### `-A, --vaapi-device=NODE`
+
+DRM render node to be used to encode the recorded video. This option is to be used only when specifying a VAAPI hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option. Please make sure that the specified DRM render node is the right one.
+
+default: `/dev/dri/renderD128`
 
 #### `-e, --fade=TYPE`
 
