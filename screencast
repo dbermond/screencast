@@ -77,10 +77,12 @@ video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
 codec_x264='libx264 -crf 21 -preset veryslow'
 codec_h264_nvenc="h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150"
 codec_h264_vaapi='h264_vaapi -qp 18'
+codec_h264_qsv='h264_qsv -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
 codec_x265='libx265 -crf 25 -preset veryslow'
 codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
 codec_hevc_nvenc='hevc_nvenc -preset slow'
 codec_hevc_vaapi='hevc_vaapi -qp 22'
+codec_hevc_qsv='hevc_qsv -load_plugin hevc_hw -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
 codec_theora='libtheora -qscale:v 5'
 codec_vp8='libvpx -crf 8 -b:v 2M'
 codec_vp8_vaapi='vp8_vaapi -global_quality 30'
@@ -1244,6 +1246,10 @@ check_cmd_line() {
             check_vaapi
             video_encode_codec="$codec_h264_vaapi"
             ;;
+        h264_qsv)
+            check_ffmpeg_encoder h264 h264_qsv || exit 1
+            video_encode_codec="$codec_h264_qsv"
+            ;;
         x265)
             check_ffmpeg_encoder hevc libx265 || exit 1
             video_encode_codec="$codec_x265"
@@ -1260,6 +1266,10 @@ check_cmd_line() {
             check_ffmpeg_encoder hevc hevc_vaapi || exit 1
             check_vaapi
             video_encode_codec="$codec_hevc_vaapi"
+            ;;
+        hevc_qsv)
+            check_ffmpeg_encoder hevc hevc_qsv || exit 1
+            video_encode_codec="$codec_hevc_qsv"
             ;;
         theora)
             check_ffmpeg_encoder theora libtheora || exit 1
@@ -1406,10 +1416,12 @@ check_cmd_line() {
                [ "$video_encoder" = 'x264'       ] ||
                [ "$video_encoder" = 'h264_nvenc' ] ||
                [ "$video_encoder" = 'h264_vaapi' ] ||
+               [ "$video_encoder" = 'h264_qsv'   ] ||
                [ "$video_encoder" = 'x265'       ] ||
                [ "$video_encoder" = 'kvazaar'    ] ||
                [ "$video_encoder" = 'hevc_nvenc' ] ||
                [ "$video_encoder" = 'hevc_vaapi' ] ||
+               [ "$video_encoder" = 'hevc_qsv'   ] ||
                [ "$video_encoder" = 'theora'     ] ;
            } ;
        } ||
@@ -1419,10 +1431,12 @@ check_cmd_line() {
                [ "$video_encoder" = 'x264'       ] ||
                [ "$video_encoder" = 'h264_nvenc' ] ||
                [ "$video_encoder" = 'h264_vaapi' ] ||
+               [ "$video_encoder" = 'h264_qsv'   ] ||
                [ "$video_encoder" = 'x265'       ] ||
                [ "$video_encoder" = 'kvazaar'    ] ||
                [ "$video_encoder" = 'hevc_nvenc' ] ||
                [ "$video_encoder" = 'hevc_vaapi' ] ||
+               [ "$video_encoder" = 'hevc_qsv'   ] ||
                [ "$video_encoder" = 'vp9'        ] ||
                [ "$video_encoder" = 'vp9_vaapi'  ] ;
            } ;
@@ -1828,7 +1842,7 @@ then
         vfilter_settings="${vfilter_settings:-"${fade_options}"}"
     fi
     
-    # set vaapi options if user entered a vaapi hardware accelerated encoder (-v/--video-encoder)
+    # set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
     case "$video_encoder" in
         *_vaapi)
             [ "$watermark" = 'false' ] && vfilter_option='-vf'
@@ -1836,6 +1850,9 @@ then
             vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
             vaapi_device="-vaapi_device ${vaapi_device}"
             pixel_format='vaapi_vld'
+            ;;
+        *_qsv)
+            pixel_format='nv12'
             ;;
     esac
     

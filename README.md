@@ -111,7 +111,7 @@ supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
 
 #### `-v, --video-encoder=NAME`
 
-Video encoder to be used to encode the recorded video. If using a hardware accelerated encoder please make sure that you have a graphics card that supports the specified encoder.
+Video encoder to be used to encode the recorded video. If using a hardware accelerated video encoder please make sure that you have a graphics card that supports the specified encoder. Note that hardware accelerated video encoders have additional requirements: nvenc requires NVIDIA drivers to be installed, VAAPI requires libva and libdrm to be installed and QSV requires Intel Media SDK to be installed.
 
 default: `x264`
 
