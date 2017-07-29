@@ -12,12 +12,12 @@ The specified output filename must have an extension which in turn must be a
 supported container format.
 .SH DESCRIPTION
 \fBscreencast\fR is a command line interface to record a X11 desktop using
-FFmpeg. It's designed to make desktop recording a simple task, eliminating the
+FFmpeg. It\'s designed to make desktop recording a simple task, eliminating the
 somewhat complex FFmpeg command line arguments and the need of multiple
 commands. It uses predefined encoder settings that should be suitable for most
 needs. The default settings provides a quick and affordable way to record the
 desktop and is YouTube ready, letting the user to be focused on just specifying
-the desired video size (resolution) and position. If the user doesn't want to
+the desired video size (resolution) and position. If the user doesn\'t want to
 stick with the default settings it is possible to choose among a set of
 supported encoders and container formats.
 .PP
@@ -31,7 +31,7 @@ video fade-in / fade-out, text watermarking and volume increase.
 The default setting will be used for any option that is not specified. You do
 not need to specify an option if you want to use its default value.
 .PP
-Long options can be used with spaces or an equal sign ('='). For example,
+Long options can be used with spaces or an equal sign (\'=\'). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
 .PP
 Short options cannot be combined in UNIX style. For example,
@@ -74,9 +74,9 @@ dragging, use the arrow keys to fine tune. Right click or any other keystroke
 to cancel. The \fB\-s\fR and \fB\-p\fR options cannot be used with this option.
 .PP
 The selected width and height must be a multiple of 8 (please see the \fB-s\fR
-option for details). It's hard to select a screen region that matches this need
-with the currently used tool. To overcome this, if the width and height of the
-selected region does not meet this requirement they will be automatically
+option for details). It\'s hard to select a screen region that matches this
+need with the currently used tool. To overcome this, if the width and height of
+the selected region does not meet this requirement they will be automatically
 changed to the immediately higher number that comply with this criteria. Note
 that if these newly changed values are out of screen bounds \fBscreencast\fR
 will not be able to record and will exit with error.
@@ -297,7 +297,7 @@ default: /tmp
 .TP
 \fB\-K\fR, \fB\-\-keep\-tmpvideo\fR
 .RS
-Keep (don't delete) the temporary video.
+Keep (don\'t delete) the temporary video.
 .RE
 .TP
 \fB\-u\fR, \fB\-\-auto\-filename\fR
@@ -331,7 +331,7 @@ auto chosen output filename:
 .RE
 .PP
 Changing just the container format without specifying encoders will make it to
-auto choose them. In this case, the 'webm' format will produce a video with
+auto choose them. In this case, the \'webm\' format will produce a video with
 opus and vp9 encoders:
 .RS
 .PP
@@ -339,7 +339,7 @@ opus and vp9 encoders:
 .RE
 .PP
 Specifying save dir and container format, with auto chosen encoders and
-output filename. In this case, the 'ogg' format will produce a video with
+output filename. In this case, the \'ogg\' format will produce a video with
 vorbis (libvorbis) and theora encoders:
 .PP
 .RS
@@ -405,9 +405,9 @@ for PNG (watermark) optimization (\fB\-g\fR option).
 .SH REMARKS
 \fBscreencast\fR uses a two step recording process. Firstly the audio and
 video are recorded to a lossless format and at a second stage it is encoded
-to produce the output video. That's why you see a desktop notification
-saying 'encoding...'. This two step mechanism allows a better video and avoids
-problems.
+to produce the output video. That\'s why you see a desktop notification
+saying \'encoding...\'. This two step mechanism allows a better video and
+avoids problems.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
@@ -416,8 +416,8 @@ AAC audio encoder. Make sure to have a recent FFmpeg version as older versions
 do not support the built\-in AAC audio encoder without being experimental, or
 do not support it at all.
 .PP
-FFmpeg encoder names have the 'lib' prefix removed for simplicity. For example,
-libx264 is called \fIx264\fR in this program.
+FFmpeg encoder names have the \'lib\' prefix removed for simplicity. For
+example, libx264 is called \fIx264\fR in this program.
 .PP
 For vorbis and opus audio, FFmpeg has both an external library encoder (named
 \'libvorbis\' and \'libopus\' encoders) and a native built-in encoder (named
