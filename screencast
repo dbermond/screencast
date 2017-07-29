@@ -1134,14 +1134,14 @@ check_cmd_line() {
         # do not allow to use -f/--format when specifying an output filename
         if [ "$format_setted" = 'true' ] 
         then
-            exit_program "--format (-f) option is to be used only with --auto-filename (-u)
+            exit_program "--format (-f) option can be used only with --auto-filename (-u)
                       (when not using '-u', set format in the output filename)"
         fi
         
         # do not allow to use -o/--output-dir when specifying an output filename
         if [ "$outputdir_setted" = 'true' ] 
         then
-            exit_program "--output-dir (-o) option is to be used only with --auto-filename (-u)
+            exit_program "--output-dir (-o) option can be used only with --auto-filename (-u)
                       (when not using '-u', set output directory with the output filename)"
         fi
         
@@ -1306,7 +1306,7 @@ check_cmd_line() {
             :
             ;;
         *)
-            [ "$vaapi_device_setted" = 'true' ] && exit_program '--vaapi-device (-A) option is to be used only when a VAAPI video encoder is setted'
+            [ "$vaapi_device_setted" = 'true' ] && exit_program '--vaapi-device (-A) option can be used only when a VAAPI video encoder is selected'
             unset vaapi_device
             ;;
     esac
@@ -1338,7 +1338,7 @@ check_cmd_line() {
     # do not allow to use -z, -k, -c or -g options without -w option
     if [ "$watermark" = 'false' ] 
     then
-        msg='option is to be used only with --watermark (-w) option'
+        msg='option can be used only with --watermark (-w) option'
         [ "$wmark_size_setted"   = 'true' ] && exit_program "--wmark-size (-z) ${msg}"
         [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
         [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-c) ${msg}"
