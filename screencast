@@ -1577,31 +1577,37 @@ get_region() {
 randomstr() {
     if [ -c '/dev/urandom' ] 
     then
-        rnd="$(LC_CTYPE=C tr -dc '[:alnum:]' < /dev/urandom | head -c"$1")"
+        LC_CTYPE='C' tr -dc '[:alnum:]' < /dev/urandom | head -c"$1"
+        
     elif command -v shuf >/dev/null 2>&1
     then
         alphanum="a b c d e f g h i j k l m n o p q r s t u v w x y z \
                   A B C D E F G H Y J K L M N O P Q R S T U V W X Y Z \
                   0 1 2 3 4 5 6 7 8 9"
-        # redirect stderr to /dev/null to avoid a warning in some bash versions
-        { rnd="$(printf '%s' "$(shuf -ez -n"$1" "$alphanum")" )"; } 2>/dev/null
-    elif command -v pwgen >/dev/null 2>&1
-    then
-        rnd="$(pwgen -cns "$1" 1)"
+        shuf -ez -n"$1" $alphanum
+        unset alphanum
+        
     elif command -v openssl >/dev/null 2>&1
     then
-        rnd="$(openssl rand -hex "$1" | cut -c-"$1")"
+        openssl rand -hex "$1" | cut -c-"$1"
+        
+    elif command -v pwgen >/dev/null 2>&1
+    then
+        pwgen -cns "$1" 1
+
     else
+        print_good 'generating random string with legacy method' >&2
         rnd="$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
-        while [ "$(printf "%s" "$rnd" | wc -m)" -lt "$1" ] 
+        
+        while [ "$(printf '%s' "$rnd" | wc -m)" -lt "$1" ] 
         do
             sleep 1
-            rnd="$rnd""$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
+            rnd="${rnd}$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
         done
-        rnd="$(printf "%s" "$rnd" | cut -c-"$1")"
+        
+        printf '%s' "$rnd" | cut -c-"$1"
+        unset rnd
     fi
-    
-    printf '%s' "$rnd"
 }
 
 # create_watermark function: create a text watermark and set watermark options
