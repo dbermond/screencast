@@ -62,7 +62,7 @@ The specified output filename must have an extension which in turn must be a sup
 
 #### `-s, --size=NxN`
 
-The video size. This is actually the video resolution (width x height). Combined with `-p` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+The video size. This is actually the video resolution (width x height). Combined with [`-p`](#-p---positionnn) option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 Both the width and height specified in video size must a multiple of 8. This is a requirement for `x265`, `kvazaar`, `theora`, `vp8` and `vp9` video encoders. For `x264`, `h264_nvenc` and `hevc_nvenc` video encoders this is actually not required, but it will avoid speedloss with them.
 
@@ -70,13 +70,13 @@ default: `640x480`
 
 #### `-p, --position=N,N`
 
-The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with `-s` option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
+The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with [`-s`](#-s---sizenxn) option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: `0,0` (screen top left corner)
 
 #### `-S, --select-region`
 
-Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use the arrow keys to fine tune. Right click or any other keystroke to cancel. The `-s` and `-p` options cannot be used with this option.
+Select with mouse the screen region to record. Use a single mouse click to select an entire window. Click and drag with mouse to select a region. When dragging, use the arrow keys to fine tune. Right click or any other keystroke to cancel. The [`-s`](#-s---sizenxn) and [`-p`](#-p---positionnn) options cannot be used with this option.
 
 The selected width and height must be a multiple of 8 (please see the [`-s`](#-s---sizenxn) option for details). It's hard to select a screen region that matches this need with the currently used tool. To overcome this, if the width and height of the selected region does not meet this requirement they will be automatically changed to the immediately higher number that comply with this criteria. Note that if these newly changed values are out of screen bounds **screencast** will not be able to record and will exit with error.
 
@@ -88,7 +88,7 @@ default: `25`
 
 #### `-f, --format=TYPE`
 
-Container format of the output video. This is to be used with `-u` option (if you want to specify a container format when using automatic output filename choosing). When not using `-u` option the container format needs to be specified directly in the output filename. This option cannot be used when entering an output filename.
+Container format of the output video. This option can be used only with the [`-u`](#-u---auto-filename) option (if you want to specify a container format when using automatic output filename choosing). This option cannot be used when entering an output filename. When not using the [`-u`](#-u---auto-filename) option, the container format needs to be specified directly in the output filename.
 
 default: `mp4`
 
@@ -106,7 +106,7 @@ default: `pulse`
 
 #### `-a, --audio-encoder=NAME`
 
-Audio encoder to be used to encode the recorded audio. When setted to `none` the audio will be disabled (video without audio, only video stream will be present).
+Audio encoder that will be used to encode the recorded audio. When setted to `none` the audio will be disabled (video without audio, only video stream will be present).
 
 default: `aac`
 
@@ -114,7 +114,7 @@ supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
 
 #### `-v, --video-encoder=NAME`
 
-Video encoder to be used to encode the recorded video. If using a hardware accelerated video encoder please make sure that you have a graphics card that supports the specified encoder. Note that hardware accelerated video encoders have additional requirements: nvenc requires NVIDIA drivers to be installed, VAAPI requires libva and libdrm to be installed and QSV requires Intel Media SDK to be installed.
+Video encoder that will be used to encode the recorded video. If using a hardware accelerated video encoder please make sure that you have a graphics card that supports the specified encoder. Note that hardware accelerated video encoders have additional requirements: NVENC requires NVIDIA drivers to be installed, VAAPI requires libva and libdrm to be installed and QSV requires Intel Media SDK to be installed.
 
 default: `x264`
 
@@ -123,7 +123,7 @@ default: `x264`
 
 #### `-A, --vaapi-device=NODE`
 
-DRM render node to be used to encode the recorded video. This option is to be used only when specifying a VAAPI hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option. Please make sure that the specified DRM render node is the right one.
+DRM render node (VAAPI device) that will be used to encode the recorded video. This option can be used only when specifying a VAAPI hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option and cannot be used when selecting other video encoders. Please make sure that the specified DRM render node is the right one.
 
 default: `/dev/dri/renderD128`
 
@@ -149,13 +149,13 @@ default: disabled
 
 #### `-z, --wmark-size=NxN`
 
-Set text watermark size. Combined with `-k` option it will define a rectangular area in the video that will contain the text watermark image. Note that the generated image will be trimmed to remove the unneeded transparent areas. As a result, the actual PNG image that will be added to the video will have a slightly smaller size than the one specified here.
+Set text watermark size. Combined with [`-k`](#-k---wmark-positionnn) option it will define a rectangular area in the video that will contain the text watermark image. Note that the generated image will be trimmed to remove the unneeded transparent areas. As a result, the actual PNG image that will be added to the video will have a slightly smaller size than the one specified here. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
 default: `255x35`
 
 #### `-k, --wmark-position=N,N`
 
-Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with `-z` option it will define a rectangular area in the video that will contain the text watermark image.
+Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with [`-z`](#-z---wmark-sizenxn) option it will define a rectangular area in the video that will contain the text watermark image. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
 default: `0,0` (video top left corner)
 
@@ -168,7 +168,7 @@ default: `0,0` (video top left corner)
 
 #### `-c, --wmark-font=NAME`
 
-Set text watermark font to *NAME*.
+Set text watermark font to *NAME*. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
 default: `Arial`
 
@@ -186,7 +186,7 @@ Disable desktop notifications. Desktop notifications are shown by default, allow
 
 #### `-g, --png-optimizer=NAME`
 
-Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated by `-w` option that will be used as a text watermark. This option is useful when you want to use a big text watermark in a big video, allowing the video to be a few bytes smaller. Not really needed if using default watermark settings with a small text. When setted to `none` PNG optimization is disabled.
+Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated by the [`-w`](#-w---watermarktext) option that will be used as a text watermark. This option is useful when you want to use a big text watermark in a big video, allowing the video to be a bit smaller. Not really needed if using the default watermark settings with a small text. When setted to `none` PNG optimization is disabled. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
 default: `none`
 
@@ -194,7 +194,7 @@ supported ones: `truepng`, `pingo`, `optipng`, `opt-png`, `none`
 
 #### `-o, --output-dir=DIR`
 
-Set the output video to be saved in *DIR*. This is to be used with `-u` option (if you want to specify a save directory when using automatic output filename choosing). When not using `-u` option the output directory needs to be specified directly in the output filename. This option cannot be used when entering an output filename.
+Set the output video to be saved in *DIR*. This option can be used only with the [`-u`](#-u---auto-filename) option (if you want to specify a save directory when using automatic output filename choosing). This option cannot be used when entering an output filename. When not using the [`-u`](#-u---auto-filename) option, the output directory needs to be specified directly in the output filename.
 
 default: the local directory
 
