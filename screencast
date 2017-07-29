@@ -61,7 +61,7 @@ codec_aac='-codec:a aac -ab 128k -ar 44100 -ac 2'
 codec_vorbis='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
 codec_opus='-codec:a libopus -ab 128k -ar 48000 -ac 2'
 codec_mp3lame='-codec:a libmp3lame -ab 128k -ar 44100 -ac 2'
-codec_shine='-codec:a libshine -b 128k -ar 44100 -ac 2'
+codec_shine='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
 
 # video settings
 video_encoder='x264'               # video encoder
