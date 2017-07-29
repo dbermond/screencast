@@ -110,7 +110,7 @@ Audio encoder that will be used to encode the recorded audio. When setted to `no
 
 default: `aac`
 
-supported types: `aac`, `opus`, `vorbis`, `mp3`/`mp3lame`, `shine`, `none`
+supported types: `aac`, `opus`, `vorbis`, `mp3lame`, `shine`, `none`
 
 #### `-v, --video-encoder=NAME`
 
@@ -247,9 +247,9 @@ Show program version information.
 
     - `$ screencast -o /home/user/myvideos -f ogg -u`
 
-- 1280x720 video from screen positon 200,234 , 30 fps, mp3 (libmp3lame) audio encoder, x265 video encoder, mkv container format, fade-in video effect, volume increase effect of 50%, small text watermark in top right video corner:
+- 1280x720 video from screen positon 200,234 , 30 fps, mp3lame audio encoder, x265 video encoder, mkv container format, fade-in video effect, volume increase effect of 50%, small text watermark in top right video corner:
 
-    - `$ screencast -p 200,234 -s 1280x720 -r 30 -a mp3 -v x265 -e in -m 1.5 -w www.mysitehere.com myvideo.mkv`
+    - `$ screencast -p 200,234 -s 1280x720 -r 30 -a mp3lame -v x265 -e in -m 1.5 -w www.mysitehere.com myvideo.mkv`
 
 **NOTE**:
 When not using the `-x` option press the **q** key in terminal window to end the recording.
