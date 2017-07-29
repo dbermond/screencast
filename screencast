@@ -139,8 +139,8 @@ supported_pngopt='truepng, pingo, optipng, opt-png, none'
 # return code (status): not relevant
 cleanup() {
     # delete temporary files
-    rm -f "${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
-    [ "$keep_tmpvideo" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+    rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
+    [ "$keep_tmpvideo" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
@@ -1619,8 +1619,8 @@ randomstr() {
 # sets special variables: $watermark_options - ffmpeg watermark options
 create_watermark() {
     print_good 'generating watermark image'
-    randomstring_png="$(randomstr '20')" # random string for tmp png filename
-    wmark_image="${tmpdir}/screencast-tmpimage-${$}-${randomstring_png}.png"
+    rndstr_png="$(randomstr '20')" # random string for tmp png filename
+    wmark_image="${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
     
     # get font pointsize
     if watermark_pointsize="$(magick \
@@ -1714,10 +1714,8 @@ create_watermark() {
 # sets special variables: $fade_options - ffmpeg fade options
 videofade() {
     # get recorded video length in seconds
-    tmp_1stpart="screencast-tmpvideo-${$}-"  # split large line
-    tmp_2ndpart="${randomstring_rec}.${rec_extension}"
     video_length="$(ffprobe \
-                        -i "${tmpdir}/${tmp_1stpart}${tmp_2ndpart}" \
+                        -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
                         -show_entries format='duration' \
                         -v quiet \
                         -of csv='p=0')"
@@ -1808,8 +1806,7 @@ show_settings
 [ "$select_region" = 'true' ] && get_region && check_screen
 
 # some preparations before recording
-randomstring_rec="$(randomstr '20')" # random string for tmp video filename
-tmpvideo_volatile="${$}-${randomstring_rec}.${rec_extension}"
+rndstr_video="$(randomstr '20')" # random string for tmp video filename
 print_good 'recording'
 notify 'normal' '1700' 'media-record' 'recording...'
 
@@ -1827,7 +1824,7 @@ if ffmpeg \
        $fixed_length_options \
        -metadata "$metadata" \
        -y \
-       "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}"
+       "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
 then 
     # enable watermark effect if chosen by user (-w/--watermark)
     if [ "$watermark" = 'true' ] 
@@ -1878,7 +1875,7 @@ then
     if ffmpeg \
            $audio_channel_layout \
            $vaapi_device \
-           -i "${tmpdir}/screencast-tmpvideo-${tmpvideo_volatile}" \
+           -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
            $watermark_input \
            $vfilter_option $vfilter_settings \
            $volume_options \
