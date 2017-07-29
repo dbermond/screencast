@@ -49,8 +49,8 @@ pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
 outputdir_setted='false'     # if output dir     was setted by cmd line with -o
 
 # audio settings
-audio_input='pulse'          # default audio input
-audio_encoder='aac'          # default audio encoder
+audio_input='pulse'          # audio input
+audio_encoder='aac'          # audio encoder
 volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
 audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
@@ -63,14 +63,14 @@ codec_mp3lame='-acodec libmp3lame -ab 128k -ar 44100 -ac 2'
 codec_shine='-acodec libshine -b 128k -ar 44100 -ac 2'
 
 # video settings
-video_encoder='x264'          # default video encoder
-pixel_format='yuv420p'        # pixel format
-rec_extension='mkv'           # container format (file extension) for recording
-format='mp4'                  # container format (file extension) for output
-video_position='0,0' #200,234 # X and Y screen coordinates to record video from
-video_size='640x480'          # video size (resolution)
-video_rate='25'               # video framerate (fps)
-vaapi_device='/dev/dri/renderD128' # default DRM render node (for vaapi video encoders)
+video_encoder='x264'               # video encoder
+pixel_format='yuv420p'             # pixel format
+rec_extension='mkv'                # container format (file extension) for recording
+format='mp4'                       # container format (file extension) for output
+video_position='0,0' #200,234      # X and Y screen coordinates to record video from
+video_size='640x480'               # video size (resolution)
+video_rate='25'                    # video framerate (fps)
+vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
 video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
@@ -89,7 +89,7 @@ codec_vp8_vaapi='vp8_vaapi -global_quality 30'
 codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 codec_vp9_vaapi='vp9_vaapi -global_quality 80'
 
-# metadata
+# metadata settings
 metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}/")"
 
 # watermark settings
@@ -1060,11 +1060,11 @@ check_screen() {
     fi
 }
 
-# check_vaapi function: check if specified DRM render node exists (-A/--vaapi-device)
+# check_vaapi function: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - a valid DRM render node exists
-# note: it will make the program exit with error if an invalid DRM render node was setted
+# return code (status): 0 - a valid DRM render node (vaapi device) exists
+# note: it will make the program exit with error if an invalid DRM render node (vaapi device) was selected
 check_vaapi() {
     [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node on this system"
 }
@@ -1073,9 +1073,10 @@ check_vaapi() {
 #                              (will exit with error if an invalid png optimizer is chosen)
 # arguments: none
 # return value: not relevant
-# return code (status): not relevant
-# note: this png optimizer check should be on check_cmd_line(), but it is implemented
-#       as a separate function to allow it to be executed before check_requirements()
+# return code (status): 0 - a valid png optimizer was selected
+# note1: it will make the program exit with error if an invalid png optimizer was selected
+# note2: this png optimizer check should be on check_cmd_line(), but it is implemented
+#        as a separate function to allow it to be executed before check_requirements()
 check_pngoptimizer() {
     case "$pngoptimizer" in
         truepng|pingo|optipng|opt-png|none)
