@@ -1060,13 +1060,13 @@ check_screen() {
     fi
 }
 
-# check_vaapi function: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
+# check_vaapi_device function: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
 # arguments: none
 # return value: not relevant
 # return code (status): 0 - a valid DRM render node (vaapi device) exists
 # note: it will make the program exit with error if an invalid DRM render node (vaapi device) was selected
-check_vaapi() {
-    [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node on this system"
+check_vaapi_device() {
+    [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node (VAAPI device) on this system"
 }
 
 # check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
@@ -1244,7 +1244,7 @@ check_cmd_line() {
             ;;
         h264_vaapi)
             check_ffmpeg_encoder h264 h264_vaapi || exit 1
-            check_vaapi
+            check_vaapi_device
             video_encode_codec="$codec_h264_vaapi"
             ;;
         h264_qsv)
@@ -1265,7 +1265,7 @@ check_cmd_line() {
             ;;
         hevc_vaapi)
             check_ffmpeg_encoder hevc hevc_vaapi || exit 1
-            check_vaapi
+            check_vaapi_device
             video_encode_codec="$codec_hevc_vaapi"
             ;;
         hevc_qsv)
@@ -1283,7 +1283,7 @@ check_cmd_line() {
             ;;
         vp8_vaapi)
             check_ffmpeg_encoder vp8 vp8_vaapi || exit 1
-            check_vaapi
+            check_vaapi_device
             video_encode_codec="$codec_vp8_vaapi"
             ;;
         vp9)
@@ -1292,7 +1292,7 @@ check_cmd_line() {
             ;;
         vp9_vaapi)
             check_ffmpeg_encoder vp9 vp9_vaapi || exit 1
-            check_vaapi
+            check_vaapi_device
             video_encode_codec="$codec_vp9_vaapi"
             ;;
         *)
