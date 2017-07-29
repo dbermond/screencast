@@ -55,7 +55,10 @@ $ screencast [options] -u
 The specified output filename must have an extension which in turn must be a supported container format.
 
 ## OPTIONS
-Long options can be used with spaces or an equal sign (`=`). For example, `--fade in` is the same as `--fade=in`.
+- Options usage notes:
+    - The default setting will be used for any option that is not specified. You do not need to specify an option if you want to use its default value.
+    - Long options can be used with spaces or an equal sign (`=`). For example, `--fade in` is the same as `--fade=in`.
+    - Short options cannot be combined in UNIX style. For example, `$ screencast -unx 60` cannot be used and should be entered as `$ screencast -u -n -x 60`.
 
 #### `-s, --size=NxN`
 

@@ -25,8 +25,19 @@ supported encoders and container formats.
 also has options to automatically add some effects to the recordings, like
 video fade-in / fade-out, text watermarking and volume increase.
 .SH OPTIONS
+\fBOptions usage notes:\fR
+.RS
+.PP
+The default setting will be used for any option that is not specified. You do
+not need to specify an option if you want to use its default value.
+.PP
 Long options can be used with spaces or an equal sign ('='). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
+.PP
+Short options cannot be combined in UNIX style. For example,
+\'\fI$\fR \fBscreencast\fR \fB\-unx\fR \fI60\fR\' cannot be used and should be
+entered as \'\fI$\fR \fBscreencast\fR \fB\-u\fR \fB\-n\fR \fB\-x\fR \fI60\fR\'.
+.RE
 .TP
 \fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
 .RS
