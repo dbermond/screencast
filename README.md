@@ -137,7 +137,11 @@ supported types: `in`, `out`, `both`, `none`
 
 #### `-m, --volume-factor=N`
 
-Volume increase effect factor. This will increase the volume of the recorded audio. Usually, audio volume is low with default settings, even if you increse your microphone capture volume. Use this to give your videos a better hearing experience, letting your viewers fell more confortable to watch it whithout needing to rise their sound volume. It works as a percentage factor. For example, a value of `1.5` will increase volume by 50% and a value of `2.0` will double volume. It is also possible to set a volume decrease effect, although this is not recommended since for this you can simply decrease your microphone recording volume (for example, a value of `0.5` will decrease volume by 50%). When setted to `1.0` or `0.0` this effect is disabled.
+Volume increase effect factor. This will increase the volume of the recorded audio. Usually, audio volume is low with default settings, even if you increse your microphone capture volume. Use this to give your videos a better hearing experience, letting your viewers fell more confortable to watch it whithout needing to rise their sound volume.
+
+It works as a percentage factor. For example, a value of `1.5` will increase volume by 50% and a value of `2.0` will double volume. It is also possible to set a volume decrease effect, although this is not recommended since for this you can simply decrease your microphone recording volume (for example, a value of `0.5` will decrease volume by 50%).
+
+This option can be used only when the [`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options are not setted to `none`. When setted to `1.0` or `0.0` this effect is disabled.
 
 default: `1.0`
 

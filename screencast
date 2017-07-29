@@ -42,6 +42,7 @@ vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
 video_size_setted='false'    # if video size     was setted by cmd line with -s
 video_posi_setted='false'    # if video position was setted by cmd line with -p
 format_setted='false'        # if video format   was setted by cmd line with -f
+volume_factor_setted='false' # if volume factor  was setted by cmd line with -m
 wmark_size_setted='false'    # if wmark size     was setted by cmd line with -z
 wmark_posi_setted='false'    # if wmark position was setted by cmd line with -k
 wmark_font_setted='false'    # if wmark font     was setted by cmd line with -c
@@ -628,6 +629,7 @@ get_cmd_line() {
                         command_error '--volume-factor (-u)'
                     else
                         volume_factor="$2"
+                        volume_factor_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -636,6 +638,7 @@ get_cmd_line() {
                 ;;
             --volume-factor=?*)
                 volume_factor="${1#*=}"
+                volume_factor_setted='true'
                 ;;
             --volume-factor=)
                 command_error '--volume-factor (-m)'
@@ -1320,6 +1323,12 @@ check_cmd_line() {
             exit_program "'${fade}' is not a valid fade effect"
             ;;
     esac
+    
+    # do not allow to use -m option when -i or -a are setted to 'none'
+    if [ "$audio_encoder" = 'none' ] && [ "$volume_factor_setted" = 'true' ] 
+    then
+        exit_program "--volume-factor (-m) option cannot be used when '-i' or '-a' are setted to 'none'"
+    fi
     
     # check if the entered volume factor is a valid integer/float number (-m)
     if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
