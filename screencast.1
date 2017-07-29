@@ -73,7 +73,7 @@ select an entire window. Click and drag with mouse to select a region. When
 dragging, use the arrow keys to fine tune. Right click or any other keystroke
 to cancel. The \fB\-s\fR and \fB\-p\fR options cannot be used with this option.
 .PP
-The selected width and height must be a multiple of 8 (please see the \fB-s\fR
+The selected width and height must be a multiple of 8 (please see the \fB\-s\fR
 option for details). It\'s hard to select a screen region that matches this
 need with the currently used tool. To overcome this, if the width and height of
 the selected region does not meet this requirement they will be automatically
@@ -156,7 +156,7 @@ supported types: x264, h264_nvenc, h264_vaapi, h264_qsv,
 .RS
 DRM render node (VAAPI device) that will be used to encode the recorded video.
 This option can be used only when specifying a VAAPI hardware accelerated
-video encoder with the the \fB-v\fR option and cannot be used when selecting
+video encoder with the the \fB\-v\fR option and cannot be used when selecting
 other video encoders. Please make sure that the specified DRM render node is
 the right one.
 .PP
@@ -455,9 +455,9 @@ for most users as it will use the default recording device configured in
 pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
 .SH LIMITATIONS
 \fBscreencast\fR currently records only display \fI0\fR and screen \fI0\fR
-(\fIDISPLAY\fR value of \fI:0.0\fR - or \fI:0\fR), which is sufficient for
+(\fIDISPLAY\fR value of \fI:0.0\fR \- or \fI:0\fR), which is sufficient for
 single monitor environments. It may not produce the expected results when using
-a multi-monitor environment depending on your settings.
+a multi\-monitor environment depending on your settings.
 .SH BUGS
 None are known at the moment.
 .SH AUTHOR
