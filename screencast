@@ -71,6 +71,7 @@ format='mp4'                       # container format (file extension) for outpu
 video_position='0,0' #200,234      # X and Y screen coordinates to record video from
 video_size='640x480'               # video size (resolution)
 video_rate='25'                    # video framerate (fps)
+corner_padding='10'                # video corner padding (for watermark effect)
 vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
@@ -96,7 +97,7 @@ metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_webs
 # watermark settings
 watermark_font='Arial'
 watermark_size='255x35'
-watermark_position='0,0'
+watermark_position='bottomright'
     # good position values for hd720p (1280x720) with default watermark size:
     # 970,10  - top right corner
     # 10,10   - top left  corner
@@ -128,6 +129,8 @@ supported_aencoders='aac, opus, vorbis, mp3lame, shine, none'
 supported_vencoders='x264, h264_nvenc, h264_vaapi, h264_qsv,
                        x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
                        theora, vp8, vp8_vaapi, vp9, vp9_vaapi'
+supported_wmark_position='topleft, topright, bottomleft, bottomright
+                       (or the respective aliases tl, tr, bl, br)'
 supported_pngopt='truepng, pingo, optipng, opt-png, none'
 
 #########################################
@@ -206,7 +209,8 @@ show_help() {
     printf '%s\n' "  -m, --volume-factor=N    volume increase effect factor (1.0 disable) [${volume_factor}]"
     printf '%s\n' '  -w, --watermark=TEXT     enable and set text watermark [disabled]'
     printf '%s\n' "  -z, --wmark-size=NxN     watermark image size [${watermark_size}]"
-    printf '%s\n' "  -k, --wmark-position=N,N watermark position (video XY top left offsets) [${watermark_position}]"
+    printf '%s\n' '  -k, --wmark-position=N,N watermark position (video XY top left offsets,'
+    printf '%s\n' "      --wmark-position=PRE   or a predefined special value) [${watermark_position}]"
     printf '%s\n' "  -c, --wmark-font=NAME    watermark font [${watermark_font}]"
     printf '%s\n' "  -x, --fixed=N            fixed video length for N seconds (0 disable) [${fixed_length}]"
     printf '%s\n' '  -n, --no-notifications   disable desktop notifications'
@@ -385,6 +389,7 @@ list_supported() {
     printf '%s\n' "  -a, --audio-encoder  $(printf '%s' "$supported_aencoders")"
     printf '%s\n' "  -v, --video-encoder  $(printf '%s' "$supported_vencoders")"
     printf '%s\n' "  -e, --fade           $(printf '%s' "$supported_fade")"
+    printf '%s\n' "  -k, --wmark-position $(printf '%s' "$supported_wmark_position")"
     printf '%s\n' "  -g, --png-optimizer  $(printf '%s' "$supported_pngopt")"
     printf '\n'
     printf '%s\n' '  NOTE: selecting vorbis or opus audio encoders actually uses the higher'
@@ -1072,6 +1077,32 @@ check_vaapi_device() {
     [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node (VAAPI device) on this system"
 }
 
+# check_special_position function: check for a valid special position string
+# arguments: $1 - the string to check
+# return value: not relevant
+# return code (status): 0 - a valid special positon string was passed
+#                       1 - an invalid special positon string was passed
+# sets special variables: $special_position - the value to which the string translates
+check_special_position() {
+    case "$1" in
+        topright|tr)
+            special_position="main_w-overlay_w-${corner_padding}:${corner_padding}"
+            ;;
+        bottomright|br)
+            special_position="main_w-overlay_w-${corner_padding}:main_h-overlay_h-${corner_padding}"
+            ;;
+        topleft|tl)
+            special_position="${corner_padding}:${corner_padding}"
+            ;;
+        bottomleft|bl)
+            special_position="${corner_padding}:main_h-overlay_h-${corner_padding}"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 # check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
 #                              (will exit with error if an invalid png optimizer is chosen)
 # arguments: none
@@ -1384,7 +1415,13 @@ check_cmd_line() {
         # translate watermark position to what is really used in ffmpeg command
         watermark_position="$(printf '%s' "$watermark_position" | tr ',' ':')"
     else
-        exit_program "'${watermark_position}' is not a valid watermark position format"
+        # check for a valid watermark special position value
+        if check_special_position "$watermark_position"
+        then
+            watermark_position="$special_position"
+        else
+            exit_program "'${watermark_position}' is not a valid watermark position format"
+        fi
     fi
     
     # check if the entered fixed video length is a valid integer/float number (-x)

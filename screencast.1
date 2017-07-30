@@ -205,39 +205,32 @@ default: disabled
 .TP
 \fB\-z\fR, \fB\-\-wmark\-size\fR=\fIN\fRx\fIN\fR
 .RS
-Set text watermark size. Combined with \fB\-k\fR option it will define a
-rectangular area in the video that will contain the text watermark image. Note
-that the generated image will be trimmed to remove the unneeded transparent
-areas. As a result, the actual PNG image that will be added to the video will
-have a slightly smaller size than the one specified here. This option can be
-used only with the \fB\-w\fR option.
+Set text watermark size. Note that the generated image will be trimmed to
+remove the unneeded transparent areas. As a result, the actual PNG image
+that will be added to the video will have a slightly smaller size than the
+one specified here. This option can be used only with the \fB\-w\fR option.
 .PP
 default: 255x35
 .RE
 .TP
-\fB\-k\fR, \fB\-\-wmark\-position\fR=\fIN\fR,\fIN\fR
+\fB\-k\fR, \fB\-\-wmark\-position\fR=\fIPRE\fR, \fB\-\-wmark\-position\fR=\fIN\fR,\fIN\fR
 .RS
-Set text watermark position inside the video. These are X and Y offsets from
-the video top left corner (not from the screen). Combined with \fB\-z\fR option
-it will define a rectangular area in the video that will contain the text
-watermark image. This option can be used only with the \fB\-w\fR option.
+Set text watermark position inside the video. This option can be used only with
+the \fB\-w\fR option.
 .PP
-default: 0,0
-.PP
-Good position values for hd720p video (\fB\-s 1280x720\fR) with default
-watermark size:
+It accepts two types of values:
 .RS
 .PP
-970,10  - top right corner
+\fIN\fR,\fIN\fR: X and Y offsets from the video top left corner (not from the
+screen)
 .PP
-10,10   - top left corner
-.PP
-970,688 - bottom right corner
-.PP
-10,688  - bottom left corner
-.PP
-550,350 - centralized
+\fIPRE\fR: a predefined special value
 .RE
+.PP
+supported predefined special values: \fItopleft\fR/\fItl\fR,
+\fItopright\fR/\fItr\fR, \fIbottomleft\fR/\fIbl\fR, \fIbottomright\fR/\fIbr\fR
+.PP
+default: bottomright
 .RE
 .TP
 \fB\-c\fR, \fB\-\-wmark\-font\fR=\fINAME\fR

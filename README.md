@@ -17,7 +17,8 @@ screencast
     - [`-m, --volume-factor=N`](#-m---volume-factorn)
     - [`-w, --watermark=TEXT`](#-w---watermarktext)
     - [`-z, --wmark-size=NxN`](#-z---wmark-sizenxn)
-    - [`-k, --wmark-position=N,N`](#-k---wmark-positionnn)
+    - [`-k, --wmark-position=N,N`](#-k---wmark-positionpre---wmark-positionnn)
+    - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--wmark-position=PRE`](#-k---wmark-positionpre---wmark-positionnn)
     - [`-c, --wmark-font=NAME`](#-c---wmark-fontname)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
@@ -153,22 +154,21 @@ default: disabled
 
 #### `-z, --wmark-size=NxN`
 
-Set text watermark size. Combined with [`-k`](#-k---wmark-positionnn) option it will define a rectangular area in the video that will contain the text watermark image. Note that the generated image will be trimmed to remove the unneeded transparent areas. As a result, the actual PNG image that will be added to the video will have a slightly smaller size than the one specified here. This option can be used only with the [`-w`](#-w---watermarktext) option.
+Set text watermark size. Note that the generated image will be trimmed to remove the unneeded transparent areas. As a result, the actual PNG image that will be added to the video will have a slightly smaller size than the one specified here. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
 default: `255x35`
 
-#### `-k, --wmark-position=N,N`
+#### `-k, --wmark-position=PRE, --wmark-position=N,N`
 
-Set text watermark position inside the video. These are X and Y offsets from the video top left corner (not from the screen). Combined with [`-z`](#-z---wmark-sizenxn) option it will define a rectangular area in the video that will contain the text watermark image. This option can be used only with the [`-w`](#-w---watermarktext) option.
+Set text watermark position inside the video. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
-default: `0,0` (video top left corner)
+- It accepts two types of values:
+    - `NxN`: X and Y offsets from the video top left corner (not from the screen)
+    - `PRE`: a predefined special value
 
-- Good position values for hd720p video (`-s 1280x720`) with default watermark size:
-    - `970,10`  - top right corner
-    - `10,10`   - top left corner
-    - `970,688` - bottom right corner
-    - `10,688`  - bottom left corner
-    - `550,350` - centralized
+supported predefined special values: `topleft`/`tl`, `topright`/`tr`, `bottomleft`/`bl`, `bottomright`/`br`
+
+default: `bottomright`
 
 #### `-c, --wmark-font=NAME`
 
