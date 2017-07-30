@@ -23,7 +23,8 @@ supported encoders and container formats.
 .PP
 \fBscreencast\fR not only provides an easy way to record your desktop, but it
 also has options to automatically add some effects to the recordings, like
-video fade-in / fade-out, text watermarking and volume increase.
+video fade-in / fade-out, text watermarking, webcam overlay  and volume
+increase.
 .SH OPTIONS
 \fBOptions usage notes:\fR
 .RS
@@ -244,6 +245,51 @@ default: Arial
 .fi
 .RE
 .TP
+\fB\-W\fR, \fB\-\-webcam\fR
+.RS
+Enable webcam overlay effect.
+.PP
+default: disabled
+.RE
+.TP
+\fB\-I\fR, \fB\-\-webcam\-input\fR=\fIDEV\fR
+.RS
+Webcam input device, usually in the form of \fI/dev/videoN\fR. This option can
+be used only with the \fB\-W\fR option.
+.PP
+default: /dev/video0
+.RE
+.TP
+\fB\-Z\fR, \fB\-\-webcam\-size\fR=\fIN\fRx\fIN\fR
+.RS
+Set webcam video size (resolution). To get a list of supported resolutions for
+your webcam device you can execute \'\fI$\fB ffmpeg -f \fIv4l2 \fB-list_formats
+\fIall \fB-i \fI<device>\fR\' or use the \fBv4l2-ctl\fR utility. This option can be used
+only with the \fB\-W\fR option.
+.PP
+default: 320x240
+.RE
+.TP
+\fB\-P\fR, \fB\-\-wcam\-position\fR=\fIPRE\fR, \fB\-\-wcam\-position\fR=\fIN\fR,\fIN\fR
+.RS
+Set the webcam overlay position inside the video. This option can be used only
+with the \fB\-W\fR option.
+.PP
+It accepts two types of values:
+.RS
+.PP
+\fIN\fR,\fIN\fR: X and Y offsets from the video top left corner (not from the
+screen)
+.PP
+\fIPRE\fR: a predefined special value
+.RE
+.PP
+supported predefined special values: \fItopleft\fR/\fItl\fR,
+\fItopright\fR/\fItr\fR, \fIbottomleft\fR/\fIbl\fR, \fIbottomright\fR/\fIbr\fR
+.PP
+default: topright
+.RE
+.TP
 \fB\-x\fR, \fB\-\-fixed\fR=\fIN\fR
 .RS
 Set the video to have a fixed length of \fIN\fR seconds. When setted to \fI0\fR
@@ -370,7 +416,9 @@ desired encoders.
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
 \fInone\fR) \fIFFmpeg\fR must have been compiled with support for ALSA audio.
 The default \fIpulse\fR setting for \fB\-i\fR option requires \fIFFmpeg\fR to
-be compiled with support for pulseaudio (libpulse) as well.
+be compiled with support for PulseAudio (libpulse). When using webcam overlay
+effect (\fB-W\fR option) \fIFFmpeg\fR must have been compiled with support for
+Video4Linux2.
 .PP
 \fInotify\-send\fR (libnotify) is needed for desktop notifications. Note that
 desktop notifications are enabled by default. They can be disabled by using

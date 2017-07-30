@@ -20,6 +20,11 @@ screencast
     - [`-k, --wmark-position=N,N`](#-k---wmark-positionpre---wmark-positionnn)
     - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--wmark-position=PRE`](#-k---wmark-positionpre---wmark-positionnn)
     - [`-c, --wmark-font=NAME`](#-c---wmark-fontname)
+    - [`-W, --webcam`](#-w---webcam)
+    - [`-I, --webcam-input=DEV`](#-i---webcam-inputdev)
+    - [`-Z, --webcam-size=NxN`](#-z---webcam-sizenxn)
+    - [`-P, --wcam-position=N,N`](#-p---wcam-positionpre---wcam-positionnn)
+    - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--wcam-position=PRE`](#-p---wcam-positionpre---wcam-positionnn)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
     - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
@@ -45,7 +50,7 @@ screencast
 ## DESCRIPTION
 **screencast** is a command line interface to record a X11 desktop using FFmpeg. It’s designed to make desktop recording a simple task, eliminating the somewhat complex FFmpeg command line arguments and the need of multiple commands. It uses predefined encoder settings that should be suitable for most needs. The default settings provides a quick and affordable way to record the desktop and is YouTube ready, letting the user to be focused on just specifying the desired video size (resolution) and position. If the user doesn’t want to stick with the default settings it is possible to choose among a set of supported encoders and container formats.
 
-**screencast** not only provides an easy way to record your desktop, but it also has options to automatically add some effects to the recordings, like video fade-in / fade-out, text watermarking and volume increase.
+**screencast** not only provides an easy way to record your desktop, but it also has options to automatically add some effects to the recordings, like video fade-in / fade-out, text watermarking, webcam overlay and volume increase.
 
 ## USAGE
 ```
@@ -178,6 +183,36 @@ default: `Arial`
 
 note: if the default or setted font is not installed it will be auto chosen
 
+#### `-W, --webcam`
+
+Enable webcam overlay effect.
+
+default: disabled
+
+#### `-I, --webcam-input=DEV`
+
+Webcam input device, usually in the form of `/dev/videoN`. This option can be used only with the [`-W`](#-w---webcam) option.
+
+default: `/dev/video0`
+
+#### `-Z, --webcam-size=NxN`
+
+Set webcam video size (resolution). To get a list of supported resolutions for your webcam device you can execute `$ ffmpeg -f v4l2 -list_formats all -i <device>` or use the `v4l2-ctl` utility. This option can be used only with the [`-W`](#-w---webcam) option.
+
+default: `320x240`
+
+#### `-P, --wcam-position=PRE, --wcam-position=N,N`
+
+Set the webcam overlay position inside the video. This option can be used only with the [`-W`](#-w---webcam) option.
+
+- It accepts two types of values:
+    - `NxN`: X and Y offsets from the video top left corner (not from the screen)
+    - `PRE`: a predefined special value
+
+supported predefined special values: `topleft`/`tl`, `topright`/`tr`, `bottomleft`/`bl`, `bottomright`/`br`
+
+default: `topright`
+
 #### `-x, --fixed=N`
 
 Set the video to have a fixed length of *N* seconds. When setted to `0` this is disabled, meaning a indefinite video length that will be recorded until the user stops it by presing the **q** key in the terminal window.
@@ -271,7 +306,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REQUIREMENTS
 - The minimum requirements are a running X session, a recent *FFmpeg* version and *xdpyinfo*. It’s advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
 
-- When recording audio (`-i` and `-a` options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for `-i` option requires *FFmpeg* to be compiled with support for pulseaudio (libpulse) as well.
+- When recording audio (`-i` and `-a` options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for `-i` option requires *FFmpeg* to be compiled with support for PulseAudio (libpulse). When using webcam overlay effect (`-W`option) *FFmpeg* must have been compiled with support for Video4Linux2.
 
 - *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the `-n` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the `-n` option will result in error.
 
