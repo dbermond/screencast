@@ -1362,7 +1362,7 @@ check_cmd_line() {
     if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
     then
         # translate watermark position to what is really used in ffmpeg command
-        watermark_position="$(printf "%s" "$watermark_position" | tr ',' ':')"
+        watermark_position="$(printf '%s' "$watermark_position" | tr ',' ':')"
     else
         exit_program "'${watermark_position}' is not a valid watermark position format"
     fi
