@@ -1194,6 +1194,26 @@ check_cmd_line() {
             ;;
     esac
     
+    # some audio adjustments and checks
+    if [ "$audio_input" = 'none' ] 
+    then
+        # video without audio stream (audio will not be recorded)
+        audio_encoder='none' # trigger adjustments during $audio_encoder checks bellow
+    else
+        # check if the detected ffmpeg build has support for basic audio recording formats
+        if [ "$audio_encoder" != 'none' ] 
+        then
+            check_ffmpeg_format 'alsa' 'ALSA audio' || exit 1
+            
+            if [ "$audio_input" = 'pulse' ] 
+            then
+                check_ffmpeg_format 'pulse' 'Pulse audio' || exit 1
+            fi
+            
+            audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
+        fi
+    fi
+    
     ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
     
     # check for a valid audio encoder and set recording and encoding options accordingly
@@ -1784,26 +1804,9 @@ shift "$shift_count" # destroy all arguments except a possible output filename
 check_pngoptimizer
 check_requirements
 
-# check if the detected ffmpeg build has support for basic recording formats
+# check if the detected ffmpeg build has support for basic screen recording format
 ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format 'x11grab' 'X11' || exit 1
-if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
-then
-    check_ffmpeg_format 'alsa' 'ALSA audio' || exit 1
-    if [ "$audio_input" = 'pulse' ] 
-    then
-        check_ffmpeg_format 'pulse' 'Pulse audio' || exit 1
-    fi
-fi
-
-# audio adjustments based on $audio_input value
-if [ "$audio_input" = 'none' ] 
-then
-    # video without audio stream (audio will not be recorded)
-    audio_encoder='none' # trigger adjustments during $audio_encoder checks
-else
-    audio_input="-i ${audio_input}" # add ffmpeg '-i' option
-fi
 
 check_cmd_line "$@"
 check_dirs
