@@ -36,8 +36,8 @@ Long options can be used with spaces or an equal sign (\'=\'). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
 .PP
 Short options cannot be combined in UNIX style. For example,
-\'\fI$ \fBscreencast \-unx \fI60\fR\' cannot be used and should be entered as
-\'\fI$ \fBscreencast \-u \-n \-x \fI60\fR\'.
+\'$ \fBscreencast \-unx\fI60\fR\' cannot be used and should be entered as
+\'$ \fBscreencast \-u \-n \-x \fI60\fR\'.
 .RE
 .TP
 \fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
@@ -249,8 +249,8 @@ default: Arial
 .RS
 Enable webcam overlay effect. Before recording with webcam you can adjust your
 webcam settings like brightness, contrast and gamma correction with the
-\fBv4l2\-ctl\fR utility (use \'\fI$ \fBv4l2\-ctl \-L\fR\' to show available
-values and \'\fI$ \fBv4l2\-ctl \-c \fI<option>=<value>\fR\' to set values).
+\fBv4l2\-ctl\fR utility (use \'$ \fBv4l2\-ctl \-L\fR\' to show available
+values and \'$ \fBv4l2\-ctl \-c \fI<option>=<value>\fR\' to set values).
 .PP
 default: disabled
 .RE
@@ -259,7 +259,7 @@ default: disabled
 .RS
 Webcam input device, usually in the form of \fI/dev/videoN\fR. To list video
 capture devices on your system you can use the \fBv4l2-ctl\fR utility
-(\'\fI$ \fBv4l2\-ctl \-\-list-devices\fR\'). This option can be used only with
+(\'$ \fBv4l2\-ctl \-\-list-devices\fR\'). This option can be used only with
 the \fB\-W\fR option.
 .PP
 default: /dev/video0
@@ -268,10 +268,10 @@ default: /dev/video0
 \fB\-Z\fR, \fB\-\-webcam\-size\fR=\fIN\fRx\fIN\fR
 .RS
 Set webcam video size (resolution). To get a list of supported resolutions for
-your webcam device you can execute \'\fI$ \fBffmpeg \-f \fIv4l2
-\fB\-list_formats \fIall \fB\-i \fI<device>\fR\' or use the \fBv4l2\-ctl\fR
-utility (\'\fI$ \fBv4l2\-ctl \-\-list\-formats\-ext\fR\'). This option can be
-used only with the \fB\-W\fR option.
+your webcam device you can execute \'$ \fBffmpeg \-f \fIv4l2 \fB\-list_formats
+\fIall \fB\-i \fI<device>\fR\' or use the \fBv4l2\-ctl\fR utility
+(\'$ \fBv4l2\-ctl \-\-list\-formats\-ext\fR\'). This option can be used only
+with the \fB\-W\fR option.
 .PP
 default: 320x240
 .RE
@@ -437,8 +437,8 @@ not a requirement, \fIOxygen\fR icons are recommended to be installed for a
 better visual integration.
 .PP
 \fBscreencast\fR will try to play a notification sound when the encoding
-process is finished. For this, it will use \fIpaplay\fR (from \fIpulseaudio\fR)
-and a sound file from the freedesktop sound theme (usually a package called
+process is finished. For this, it will use \fIpaplay\fR (from PulseAudio) and
+a sound file from the freedesktop sound theme (usually a package called
 \fIsound-theme-freedesktop\fR in most Linux distributions). Although not a
 requirement, they are recommended to be installed for a better user experience.
 .PP
@@ -499,7 +499,7 @@ a video that is ready to be uploaded to \fIYouTube\fR.
 .PP
 The default \fIpulse\fR audio input setting (\fB\-i\fR option) will be suitable
 for most users as it will use the default recording device configured in
-pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
+PulseAudio, as long as FFmpeg was compiled with ALSA and PulseAudio support.
 .SH LIMITATIONS
 \fBscreencast\fR currently records only display \fI0\fR and screen \fI0\fR
 (\fIDISPLAY\fR value of \fI:0.0\fR \- or \fI:0\fR), which is sufficient for

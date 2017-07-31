@@ -64,7 +64,7 @@ The specified output filename must have an extension which in turn must be a sup
 - Options usage notes:
     - The default setting will be used for any option that is not specified. You do not need to specify an option if you want to use its default value.
     - Long options can be used with spaces or an equal sign (`=`). For example, `--fade in` is the same as `--fade=in`.
-    - Short options cannot be combined in UNIX style. For example, `$ screencast -unx 60` cannot be used and should be entered as `$ screencast -u -n -x 60`.
+    - Short options cannot be combined in UNIX style. For example, `$ screencast -unx60` cannot be used and should be entered as `$ screencast -u -n -x 60`.
 
 #### `-s, --size=NxN`
 
@@ -312,7 +312,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
 
-- **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from *pulseaudio*) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
+- **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from PulseAudio) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
 
 - Other requirements are needed according to additional options that may be specified by the user:
 
@@ -339,7 +339,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
 
-- The default `pulse` audio input setting (`-i` option) will be suitable for most users as it will use the default recording device configured in pulseaudio, as long as FFmpeg was compiled with ALSA and pulseaudio support.
+- The default `pulse` audio input setting (`-i` option) will be suitable for most users as it will use the default recording device configured in PulseAudio, as long as FFmpeg was compiled with ALSA and PulseAudio support.
 
 ## LIMITATIONS
 **screencast** currently records only display `0` and screen `0`
