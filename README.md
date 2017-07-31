@@ -306,9 +306,9 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REQUIREMENTS
 - The minimum requirements are a running X session, a recent *FFmpeg* version and *xdpyinfo*. It’s advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and a recommended *FFmpeg* Arch Linux AUR package at the [LINKS](#links) section.
 
-- When recording audio (`-i` and `-a` options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for `-i` option requires *FFmpeg* to be compiled with support for PulseAudio (libpulse). When using webcam overlay effect (`-W`option) *FFmpeg* must have been compiled with support for Video4Linux2.
+- When recording audio ([`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for [`-i`](#-i---audio-inputname) option requires *FFmpeg* to be compiled with support for PulseAudio (libpulse). When using webcam overlay effect ([`-W`](#-w---webcam)option) *FFmpeg* must have been compiled with support for Video4Linux2.
 
-- *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the `-n` option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the `-n` option will result in error.
+- *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the [`-n`](#-n---no-notifications) option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the [`-n`](#-n---no-notifications) option will result in error.
 
 - *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
 
@@ -316,13 +316,13 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - Other requirements are needed according to additional options that may be specified by the user:
 
-    - *slop* is needed for selecting the screen region with mouse (`-S` option).
+    - *slop* is needed for selecting the screen region with mouse ([`-S`](#-s---select-region) option).
 
-    - *FFprobe* and *bc* are needed for video fade effect (`-e` option).
+    - *FFprobe* and *bc* are needed for video fade effect ([`-e`](#-e---fadetype) option).
 
-    - *ImageMagick* is needed for text watermarking (`-w` option). Both IM6 and IM7 are supported, but IM7 is preferred.
+    - *ImageMagick* is needed for text watermarking ([`-w`](#-w---watermarktext) option). Both IM6 and IM7 are supported, but IM7 is preferred.
 
-    - At least one supported PNG optimizer and *advdef* (advancecomp) are needed for PNG (watermark) optimization (`-g` option).
+    - At least one supported PNG optimizer and *advdef* (advancecomp) are needed for PNG (watermark) optimization ([`-g`](#-g---png-optimizername) option).
 
 ## REMARKS
 - **screencast** uses a two step recording process. Firstly the audio and video are recorded to a lossless format and at a second stage it is encoded to produce the output video. That’s why you see a desktop notification saying ’*encoding...*’. This mechanism allows a better video and avoids problems.
@@ -339,7 +339,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
 
-- The default `pulse` audio input setting (`-i` option) will be suitable for most users as it will use the default recording device configured in PulseAudio, as long as FFmpeg was compiled with ALSA and PulseAudio support.
+- The default `pulse` audio input setting ([`-i`](#-i---audio-inputname) option) will be suitable for most users as it will use the default recording device configured in PulseAudio, as long as FFmpeg was compiled with ALSA and PulseAudio support.
 
 ## LIMITATIONS
 **screencast** currently records only display `0` and screen `0`
