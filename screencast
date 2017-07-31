@@ -1580,7 +1580,7 @@ check_cmd_line() {
             webcam_corner='bottomright'
             ;;
         tl)
-                webcam_corner='topleft'
+            webcam_corner='topleft'
             ;;
         bl)
             webcam_corner='bottomleft'
