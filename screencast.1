@@ -36,8 +36,8 @@ Long options can be used with spaces or an equal sign (\'=\'). For example,
 \fB\-\-fade \fIin\fR is the same as \fB\-\-fade\fR=\fIin\fR.
 .PP
 Short options cannot be combined in UNIX style. For example,
-\'\fI$\fR \fBscreencast\fR \fB\-unx\fR \fI60\fR\' cannot be used and should be
-entered as \'\fI$\fR \fBscreencast\fR \fB\-u\fR \fB\-n\fR \fB\-x\fR \fI60\fR\'.
+\'\fI$ \fBscreencast \-unx \fI60\fR\' cannot be used and should be entered as
+\'\fI$ \fBscreencast \-u \-n \-x \fI60\fR\'.
 .RE
 .TP
 \fB\-s\fR, \fB\-\-size\fR=\fIN\fRx\fIN\fR
@@ -247,15 +247,20 @@ default: Arial
 .TP
 \fB\-W\fR, \fB\-\-webcam\fR
 .RS
-Enable webcam overlay effect.
+Enable webcam overlay effect. Before recording with webcam you can adjust your
+webcam settings like brightness, contrast and gamma correction with the
+\fBv4l2\-ctl\fR utility (use \'\fI$ \fBv4l2\-ctl \-L\fR\' to show available
+values and \'\fI$ \fBv4l2\-ctl \-c \fI<option>=<value>\fR\' to set values).
 .PP
 default: disabled
 .RE
 .TP
 \fB\-I\fR, \fB\-\-webcam\-input\fR=\fIDEV\fR
 .RS
-Webcam input device, usually in the form of \fI/dev/videoN\fR. This option can
-be used only with the \fB\-W\fR option.
+Webcam input device, usually in the form of \fI/dev/videoN\fR. To list video
+capture devices on your system you can use the \fBv4l2-ctl\fR utility
+(\'\fI$ \fBv4l2\-ctl \-\-list-devices\fR\'). This option can be used only with
+the \fB\-W\fR option.
 .PP
 default: /dev/video0
 .RE
@@ -263,9 +268,10 @@ default: /dev/video0
 \fB\-Z\fR, \fB\-\-webcam\-size\fR=\fIN\fRx\fIN\fR
 .RS
 Set webcam video size (resolution). To get a list of supported resolutions for
-your webcam device you can execute \'\fI$\fB ffmpeg -f \fIv4l2 \fB-list_formats
-\fIall \fB-i \fI<device>\fR\' or use the \fBv4l2-ctl\fR utility. This option can be used
-only with the \fB\-W\fR option.
+your webcam device you can execute \'\fI$ \fBffmpeg \-f \fIv4l2
+\fB\-list_formats \fIall \fB\-i \fI<device>\fR\' or use the \fBv4l2\-ctl\fR
+utility (\'\fI$ \fBv4l2\-ctl \-\-list\-formats\-ext\fR\'). This option can be
+used only with the \fB\-W\fR option.
 .PP
 default: 320x240
 .RE

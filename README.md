@@ -185,19 +185,19 @@ note: if the default or setted font is not installed it will be auto chosen
 
 #### `-W, --webcam`
 
-Enable webcam overlay effect.
+Enable webcam overlay effect. Before recording with webcam you can adjust your webcam settings like brightness, contrast and gamma correction with the `v4l2-ctl` utility (use `$ v4l2-ctl -L` to show available values and `$ v4l2-ctl -c <option>=<value>` to set values).
 
 default: disabled
 
 #### `-I, --webcam-input=DEV`
 
-Webcam input device, usually in the form of `/dev/videoN`. This option can be used only with the [`-W`](#-w---webcam) option.
+Webcam input device, usually in the form of `/dev/videoN`. To list video capture devices on your system you can use the `v4l2-ctl` utility (`$ v4l2-ctl --list-devices`). This option can be used only with the [`-W`](#-w---webcam) option.
 
 default: `/dev/video0`
 
 #### `-Z, --webcam-size=NxN`
 
-Set webcam video size (resolution). To get a list of supported resolutions for your webcam device you can execute `$ ffmpeg -f v4l2 -list_formats all -i <device>` or use the `v4l2-ctl` utility. This option can be used only with the [`-W`](#-w---webcam) option.
+Set webcam video size (resolution). To get a list of supported resolutions for your webcam device you can execute `$ ffmpeg -f v4l2 -list_formats all -i <device>` or use the `v4l2-ctl` utility (`$ v4l2-ctl --list-formats-ext`). This option can be used only with the [`-W`](#-w---webcam) option.
 
 default: `320x240`
 
