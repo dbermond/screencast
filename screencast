@@ -20,7 +20,7 @@
 
 # program settings
 screencast_version='v1.4.0.next'
-screencast_website='https://github.com/dbermond/screencast'
+screencast_website='https://github.com/dbermond/screencast/'
 
 # system related settings
 savedir="$(pwd)"             # path to save output files
@@ -96,7 +96,7 @@ codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 codec_vp9_vaapi='vp9_vaapi -global_quality 80'
 
 # metadata settings
-metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}/")"
+metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}")"
 
 # watermark settings
 watermark_font='Arial'
@@ -208,37 +208,38 @@ show_help() {
     printf '%s\n' 'Usage: screencast [options] <output>'
     printf '%s\n' '                  [options] -u'
     printf '\n'
-    printf '%s\n' "  -s, --size=NxN           video size (resolution) [${video_size}]"
-    printf '%s\n' "  -p, --position=N,N       recording position (screen XY top left offsets) [${video_position}]"
-    printf '%s\n' '  -S, --select-region      select with mouse the screen region to record'
-    printf '%s\n' "  -r, --fps=N              video framerate (fps) [${video_rate}]"
-    printf '%s\n' "  -f, --format=TYPE        container format (to use with -u) [${format}]"
-    printf '%s\n' "  -i, --audio-input=NAME   audio input device [${audio_input}]"
-    printf '%s\n' "  -a, --audio-encoder=NAME audio encoder [${audio_encoder}]"
-    printf '%s\n' "  -v, --video-encoder=NAME video encoder [${video_encoder}]"
-    printf '%s\n' "  -A, --vaapi-device=NODE  DRM render node [${vaapi_device}]"
-    printf '%s\n' "  -e, --fade=TYPE          video fade effect [${fade}]"
-    printf '%s\n' "  -m, --volume-factor=N    volume increase effect factor (1.0 disable) [${volume_factor}]"
-    printf '%s\n' '  -w, --watermark=TEXT     enable and set text watermark [disabled]'
-    printf '%s\n' "  -z, --wmark-size=NxN     watermark image size [${watermark_size}]"
-    printf '%s\n' '  -k, --wmark-position=N,N watermark position (video XY top left offsets,'
-    printf '%s\n' "      --wmark-position=PRE   or a predefined special value) [${watermark_position}]"
-    printf '%s\n' "  -c, --wmark-font=NAME    watermark font [${watermark_font}]"
-    printf '%s\n' '  -W, --webcam             enable webcam overlay [disabled]'
-    printf '%s\n' "  -I, --webcam-input=DEV   webcam input device [${webcam_input}]"
-    printf '%s\n' "  -Z, --webcam-size=NxN    webcam video size (resolution) [${webcam_size}]"
-    printf '%s\n' '  -P, --wcam-position=N,N  webcam position (video XY top left offsets,'
-    printf '%s\n' "      --wcam-position=PRE    or a predefined special value) [${webcam_position}]"
-    printf '%s\n' "  -x, --fixed=N            fixed video length for N seconds (0 disable) [${fixed_length}]"
-    printf '%s\n' '  -n, --no-notifications   disable desktop notifications'
-    printf '%s\n' "  -g, --png-optimizer=NAME use png (watermark) optimizer and advdef [${pngoptimizer}]"
-    printf '%s\n' '  -o, --output-dir=DIR     save videos to DIR (to use with -u) [local directory]'
-    printf '%s\n' "  -t, --tmp-dir=DIR        use DIR for temporary files [${tmpdir}]"
-    printf '%s\n' "  -K, --keep-tmpvideo      keep (don't delete) the temporary video"
-    printf '%s\n' '  -u, --auto-filename      auto choose output filename based on date/time'
-    printf '%s\n' '  -l, --list               list arguments supported by these options'
-    printf '%s\n' '  -h, --help               this help screen'
-    printf '%s\n' '  -V, --version            version information'
+    printf 'Options:\n'
+    printf '%s\n' "  -s, --size=NxN            video size (resolution) [${video_size}]"
+    printf '%s\n' "  -p, --position=N,N        recording position (screen XY topleft offsets) [${video_position}]"
+    printf '%s\n' '  -S, --select-region       select with mouse the screen region to record'
+    printf '%s\n' "  -r, --fps=N               video framerate (fps) [${video_rate}]"
+    printf '%s\n' "  -f, --format=TYPE         container format (to use with -u) [${format}]"
+    printf '%s\n' "  -i, --audio-input=NAME    audio input device [${audio_input}]"
+    printf '%s\n' "  -a, --audio-encoder=NAME  audio encoder [${audio_encoder}]"
+    printf '%s\n' "  -v, --video-encoder=NAME  video encoder [${video_encoder}]"
+    printf '%s\n' "  -A, --vaapi-device=NODE   DRM render node [${vaapi_device}]"
+    printf '%s\n' "  -e, --fade=TYPE           video fade effect [${fade}]"
+    printf '%s\n' "  -m, --volume-factor=N     volume increase effect factor (1.0 disable) [${volume_factor}]"
+    printf '%s\n' '  -w, --watermark=TEXT      enable and set text watermark effect [disabled]'
+    printf '%s\n' "  -z, --wmark-size=NxN      watermark image size (resolution) [${watermark_size}]"
+    printf '%s\n' '  -k, --wmark-position=N,N  watermark position (video XY topleft offsets,'
+    printf '%s\n' "      --wmark-position=PRE    or a predefined special value) [${watermark_position}]"
+    printf '%s\n' "  -c, --wmark-font=NAME     watermark font [${watermark_font}]"
+    printf '%s\n' '  -W, --webcam              enable webcam overlay effect [disabled]'
+    printf '%s\n' "  -I, --webcam-input=DEV    webcam input device [${webcam_input}]"
+    printf '%s\n' "  -Z, --webcam-size=NxN     webcam video size (resolution) [${webcam_size}]"
+    printf '%s\n' '  -P, --webcam-position=N,N webcam position (video XY topleft offsets,'
+    printf '%s\n' "      --webcam-position=PRE   or a predefined special value) [${webcam_position}]"
+    printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
+    printf '%s\n' '  -n, --no-notifications    disable desktop notifications'
+    printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
+    printf '%s\n' '  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]'
+    printf '%s\n' "  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]"
+    printf '%s\n' "  -K, --keep-tmpvideo       keep (don't delete) the temporary video"
+    printf '%s\n' '  -u, --auto-filename       auto choose output filename based on date/time'
+    printf '%s\n' '  -l, --list                list arguments supported by these options'
+    printf '%s\n' '  -h, --help                this help screen'
+    printf '%s\n' '  -V, --version             version information'
     printf '\n'
     printf '%s\n' "For further help run 'man screencast'"
 }
@@ -400,8 +401,7 @@ remove_spaces() {
 list_supported() {
     show_header
     printf '\n'
-    printf '%s\n' ' Supported arguments:'
-    printf '\n'
+    printf '%s\n' 'Supported arguments:'
     printf '%s\n' "  -f, --format         $(printf '%s' "$supported_formats")"
     printf '%s\n' "  -a, --audio-encoder  $(printf '%s' "$supported_aencoders")"
     printf '%s\n' "  -v, --video-encoder  $(printf '%s' "$supported_vencoders")"
@@ -410,10 +410,10 @@ list_supported() {
     printf '%s\n' "  -P, --wcam-position  $(printf '%s' "$supported_webcam_position")"
     printf '%s\n' "  -g, --png-optimizer  $(printf '%s' "$supported_pngopt")"
     printf '\n'
-    printf '%s\n' '  NOTE: selecting vorbis or opus audio encoders actually uses the higher'
+    printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
     printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
     printf '\n'
-    printf '%s\n' '  NOTE: mkv is the only container format that supports all audio and video'
+    printf '%s\n' '  note: mkv is the only container format that supports all audio and video'
     printf '%s\n' '        encoders. Restrictions apply to other container formats.'
     }
 
