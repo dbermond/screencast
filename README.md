@@ -98,7 +98,7 @@ Container format of the output video. This option can be used only with the [`-u
 
 default: `mp4`
 
-supported types: `mp4`, `mkv`, `webm`, `ogg`
+supported types: `mp4`, `mov`, `mkv`, `webm`, `ogg`, `ogv`, `flv`, `nut`, `wmv`, `asf`, `avi`
 
 #### `-i, --audio-input=NAME`
 

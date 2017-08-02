@@ -134,7 +134,7 @@ format_default="$format"
 
 # supported arguments (for use with -l/--list)
 supported_fade='in, out, both, none'
-supported_formats='mp4, mkv, webm, ogg'
+supported_formats='mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi'
 supported_aencoders='aac, opus, vorbis, mp3lame, shine, none'
 supported_vencoders='x264, h264_nvenc, h264_vaapi, h264_qsv,
                        x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
@@ -413,8 +413,8 @@ list_supported() {
     printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
     printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
     printf '\n'
-    printf '%s\n' '  note: mkv is the only container format that supports all audio and video'
-    printf '%s\n' '        encoders. Restrictions apply to other container formats.'
+    printf '%s\n' '  note: the container formats mkv and nut support a combination of all audio'
+    printf '%s\n' '        and video encoders. Restrictions apply to other container formats.'
     }
 
 # get_cmd_line function: get command line arguments and adjust related variables
@@ -1297,24 +1297,24 @@ check_cmd_line() {
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
     fi
     
-    # check if a valid container format was selected; auto choose audio/video
-    # encoder if user specified only the format without the encoders
+    # check if a valid container format was selected
+    # auto choose audio/video encoder (if needed) if user specified only the format without the encoders
     case "$format" in
-        # no need to adjust encoders (default settings are for mp4)
-        mp4)
+        # no need to auto choose encoders (default settings are for mp4; mov is very similar)
+        mp4|mov)
             faststart='-movflags +faststart'
-            ;;
-        # no action needed (mkv accepts a combination of all encoders)
-        mkv)
-            :
             ;;
         webm)
             [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
             [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
             ;;
-        ogg)
+        ogg|ogv)
             [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
             [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
+            ;;
+        # no need to auto choose encoders (these container formats accept the default audio and video encoders)
+        mkv|flv|nut|wmv|asf|avi)
+            :
             ;;
         *)
             exit_program "'${format}' is not a valid container format for this program"
@@ -1600,7 +1600,14 @@ check_cmd_line() {
     
     # check for invalid combination of audio encoder and container format
     if {
-           [ "$format" = 'mp4' ] && [ "$audio_encoder" = 'opus' ] ;
+           {
+               [ "$format" = 'mp4' ] || # note: opus support in mp4 is currently experimental in ffmpeg
+               [ "$format" = 'mov' ] ||
+               [ "$format" = 'wmv' ] ||
+               [ "$format" = 'asf' ] ||
+               [ "$format" = 'avi' ] ;
+            } &&
+            [ "$audio_encoder" = 'opus' ] ;
        } ||
        {
            [ "$format" = 'webm' ] &&
@@ -1611,15 +1618,25 @@ check_cmd_line() {
            } ;
        } ||
        {
-           [ "$format" = 'ogg' ] &&
+           {
+               [ "$format" = 'ogg' ] ||
+               [ "$format" = 'ogv' ] ;
+           } &&
            {
                [ "$audio_encoder" = 'aac'     ] ||
                [ "$audio_encoder" = 'mp3lame' ] ||
                [ "$audio_encoder" = 'shine'   ] ;
            } ;
+       } ||
+       {
+           [ "$format" = 'flv' ] &&
+           {
+               [ "$audio_encoder" = 'opus'   ] ||
+               [ "$audio_encoder" = 'vorbis' ] ;
+           } ;
        }
     then
-        msg="container format '${format}' does not support '${audio_encoder}' encoder"
+        msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
         
         if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
         then
@@ -1656,7 +1673,10 @@ check_cmd_line() {
            } ;
        } ||
        {
-           [ "$format" = 'ogg' ] &&
+           {
+               [ "$format" = 'ogg' ] ||
+               [ "$format" = 'ogv' ] ;
+           } &&
            {
                [ "$video_encoder" = 'x264'       ] ||
                [ "$video_encoder" = 'h264_nvenc' ] ||
@@ -1670,9 +1690,44 @@ check_cmd_line() {
                [ "$video_encoder" = 'vp9'        ] ||
                [ "$video_encoder" = 'vp9_vaapi'  ] ;
            } ;
+       } ||
+       {
+           [ "$format" = 'flv' ] &&
+           {
+               [ "$video_encoder" = 'x265'       ] ||
+               [ "$video_encoder" = 'kvazaar'    ] ||
+               [ "$video_encoder" = 'hevc_nvenc' ] ||
+               [ "$video_encoder" = 'hevc_vaapi' ] ||
+               [ "$video_encoder" = 'hevc_qsv'   ] ||
+               [ "$video_encoder" = 'theora'     ] ||
+               [ "$video_encoder" = 'vp8'        ] ||
+               [ "$video_encoder" = 'vp8_vaapi'  ] ||
+               [ "$video_encoder" = 'vp9'        ] ||
+               [ "$video_encoder" = 'vp9_vaapi'  ] ;
+           } ;
+       } ||
+       {
+           {
+               [ "$format" = 'wmv' ] ||
+               [ "$format" = 'asf' ] ;
+           } &&
+           {
+               [ "$video_encoder" = 'x265'       ] ||
+               [ "$video_encoder" = 'kvazaar'    ] ||
+               [ "$video_encoder" = 'hevc_nvenc' ] ||
+               [ "$video_encoder" = 'hevc_vaapi' ] ||
+               [ "$video_encoder" = 'hevc_qsv'   ] ;
+           } ;
+       } ||
+       {
+           [ "$format" = 'mov' ] &&
+           {
+               [ "$video_encoder" = 'vp9'       ] ||
+               [ "$video_encoder" = 'vp9_vaapi' ] ;
+           } ;
        }
     then
-        msg="container format '${format}' does not support '${video_encoder}' encoder"
+        msg="container format '${format}' does not support '${video_encoder}' video encoder"
         
         if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
         then
@@ -2013,6 +2068,23 @@ check_ffmpeg_format 'x11grab' 'X11' || exit 1
 check_cmd_line "$@"
 check_dirs
 show_settings
+
+# print a waning if user chosen a possible unplayable combinantion of encoder and container format
+if [ "$format" = 'mov' ] 
+then
+    msg="on 'mov' container format may not be playable"
+    
+    [ "$audio_encoder" = 'vorbis' ] && print_warn "'${audio_encoder}' audio encoder ${msg}"
+    
+    case "$video_encoder" in
+        theora|vp8|vp8_vaapi)
+            print_warn "'${video_encoder}' video encoder ${msg}"
+            ;;
+    esac
+    
+    unset msg
+    unset encoder
+fi
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
