@@ -1518,7 +1518,7 @@ check_cmd_line() {
         msg='option can be used only with --webcam (-W) option'
         [ "$webcam_size_setted"  = 'true' ] && exit_program "--webcam-size (-Z) ${msg}"
         [ "$webcam_input_setted" = 'true' ] && exit_program "--webcam-input (-I) ${msg}"
-        [ "$webcam_posi_setted"  = 'true' ] && exit_program "--wcam-position (-P) ${msg}"
+        [ "$webcam_posi_setted"  = 'true' ] && exit_program "--webcam-position (-P) ${msg}"
         unset msg
     fi
     
@@ -1549,7 +1549,7 @@ check_cmd_line() {
     # check for a valid webcam size format (NxN) (-Z/--webcam-size)
     printf '%s' "$webcam_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${webcam_size}' is not a valid webcam size format"
     
-    # check for a valid webcam position format ('N,N' or 'PRE') (-P/--wcam-position)
+    # check for a valid webcam position format ('N,N' or 'PRE') (-P/--webcam-position)
     if printf '%s' "$webcam_position" | grep -Eq '^[0-9]+,[0-9]+$'
     then
         # translate webcam position to what is really used in ffmpeg command
