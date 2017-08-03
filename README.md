@@ -117,7 +117,7 @@ Audio encoder that will be used to encode the recorded audio. When setted to `no
 
 default: `aac`
 
-supported types: `aac`, `opus`, `vorbis`, `mp3lame`, `shine`, `none`
+supported types: `aac`, `opus`, `vorbis`, `mp3lame`, `shine`, `wma`, `none`
 
 #### `-v, --video-encoder=NAME`
 
@@ -126,7 +126,7 @@ Video encoder that will be used to encode the recorded video. If using a hardwar
 default: `x264`
 
 - supported types:
-    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `theora`, `vp8`, `vp8_vaapi`, `vp9`, `vp9_vaapi`
+    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `vp9_vaapi`, `theora`, `wmv`
 
 #### `-A, --vaapi-device=NODE`
 

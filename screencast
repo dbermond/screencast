@@ -66,6 +66,7 @@ codec_vorbis='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
 codec_opus='-codec:a libopus -ab 128k -ar 48000 -ac 2'
 codec_mp3lame='-codec:a libmp3lame -ab 128k -ar 44100 -ac 2'
 codec_shine='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
+codec_wma='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
 
 # video settings
 video_encoder='x264'               # video encoder
@@ -94,6 +95,7 @@ codec_vp8='libvpx -crf 8 -b:v 2M'
 codec_vp8_vaapi='vp8_vaapi -global_quality 30'
 codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 codec_vp9_vaapi='vp9_vaapi -global_quality 80'
+codec_wmv='wmv2 -qscale:v 3'
 
 # metadata settings
 metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}")"
@@ -135,10 +137,10 @@ format_default="$format"
 # supported arguments (for use with -l/--list)
 supported_fade='in, out, both, none'
 supported_formats='mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi'
-supported_aencoders='aac, opus, vorbis, mp3lame, shine, none'
+supported_aencoders='aac, opus, vorbis, mp3lame, shine, wma, none'
 supported_vencoders='x264, h264_nvenc, h264_vaapi, h264_qsv,
                        x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
-                       theora, vp8, vp8_vaapi, vp9, vp9_vaapi'
+                       vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
 supported_wmark_position='topleft, topright, bottomleft, bottomright
                        (or the respective aliases tl, tr, bl, br)'
 supported_webcam_position='topleft, topright, bottomleft, bottomright
@@ -1051,7 +1053,7 @@ check_ffmpeg_format() {
 #                       1 - ffmpeg build has no support for desired encoder
 # note: needs $ffmpeg_encoders - ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 check_ffmpeg_encoder() {
-    if ! printf '%s' "$ffmpeg_encoders" | grep -q ".*${1}.*encoders:.*${2}.*"
+    if ! printf '%s' "$ffmpeg_encoders" | grep -q ".*E.*${1}.*${2}.*"
     then
         [ "$2" != 'libfdk_aac' ] && ffmpeg_msg "$2"
         return 1
@@ -1369,6 +1371,10 @@ check_cmd_line() {
             check_ffmpeg_encoder mp3 libshine || exit 1
             audio_encode_codec="$codec_shine"
             ;;
+        wma)
+            check_ffmpeg_encoder wmav2 'Windows Media Audio 2' || exit 1
+            audio_encode_codec="$codec_wma"
+            ;;
         # video without audio stream (audio will not be recorded)
         none)
             unset audio_input
@@ -1444,6 +1450,10 @@ check_cmd_line() {
             check_ffmpeg_encoder vp9 vp9_vaapi || exit 1
             check_vaapi_device
             video_encode_codec="$codec_vp9_vaapi"
+            ;;
+        wmv)
+            check_ffmpeg_encoder wmv2 'Windows Media Video 8' || exit 1
+            video_encode_codec="$codec_wmv"
             ;;
         *)
             exit_program "'${video_encoder}' is not a valid video encoder for this program"
@@ -1600,21 +1610,20 @@ check_cmd_line() {
     
     # check for invalid combination of audio encoder and container format
     if {
+           # note: opus support in mp4 is currently experimental in ffmpeg
+           [ "$format" = 'mp4' ] &&
            {
-               [ "$format" = 'mp4' ] || # note: opus support in mp4 is currently experimental in ffmpeg
-               [ "$format" = 'mov' ] ||
-               [ "$format" = 'wmv' ] ||
-               [ "$format" = 'asf' ] ||
-               [ "$format" = 'avi' ] ;
-            } &&
-            [ "$audio_encoder" = 'opus' ] ;
+               [ "$audio_encoder" = 'opus' ] ||
+               [ "$audio_encoder" = 'wma'  ] ;
+           } ;
        } ||
        {
            [ "$format" = 'webm' ] &&
            {
                [ "$audio_encoder" = 'aac'     ] ||
                [ "$audio_encoder" = 'mp3lame' ] ||
-               [ "$audio_encoder" = 'shine'   ] ;
+               [ "$audio_encoder" = 'shine'   ] ||
+               [ "$audio_encoder" = 'wma'     ] ;
            } ;
        } ||
        {
@@ -1625,15 +1634,26 @@ check_cmd_line() {
            {
                [ "$audio_encoder" = 'aac'     ] ||
                [ "$audio_encoder" = 'mp3lame' ] ||
-               [ "$audio_encoder" = 'shine'   ] ;
+               [ "$audio_encoder" = 'shine'   ] ||
+               [ "$audio_encoder" = 'wma'     ] ;
            } ;
        } ||
        {
            [ "$format" = 'flv' ] &&
            {
                [ "$audio_encoder" = 'opus'   ] ||
-               [ "$audio_encoder" = 'vorbis' ] ;
+               [ "$audio_encoder" = 'vorbis' ] ||
+               [ "$audio_encoder" = 'wma'    ] ;
            } ;
+       } ||
+       {
+           {
+               [ "$format" = 'wmv' ] ||
+               [ "$format" = 'asf' ] ||
+               [ "$format" = 'avi' ] ||
+               [ "$format" = 'mov' ] ;
+           } &&
+           [ "$audio_encoder" = 'opus' ] ;
        }
     then
         msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
@@ -1654,7 +1674,8 @@ check_cmd_line() {
            {
                [ "$video_encoder" = 'theora'    ] ||
                [ "$video_encoder" = 'vp8'       ] ||
-               [ "$video_encoder" = 'vp8_vaapi' ] ;
+               [ "$video_encoder" = 'vp8_vaapi' ] ||
+               [ "$video_encoder" = 'wmv'       ] ;
            } ;
        } ||
        {
@@ -1669,7 +1690,8 @@ check_cmd_line() {
                [ "$video_encoder" = 'hevc_nvenc' ] ||
                [ "$video_encoder" = 'hevc_vaapi' ] ||
                [ "$video_encoder" = 'hevc_qsv'   ] ||
-               [ "$video_encoder" = 'theora'     ] ;
+               [ "$video_encoder" = 'theora'     ] ||
+               [ "$video_encoder" = 'wmv'        ] ;
            } ;
        } ||
        {
@@ -1688,7 +1710,8 @@ check_cmd_line() {
                [ "$video_encoder" = 'hevc_vaapi' ] ||
                [ "$video_encoder" = 'hevc_qsv'   ] ||
                [ "$video_encoder" = 'vp9'        ] ||
-               [ "$video_encoder" = 'vp9_vaapi'  ] ;
+               [ "$video_encoder" = 'vp9_vaapi'  ] ||
+               [ "$video_encoder" = 'wmv'        ] ;
            } ;
        } ||
        {
@@ -1703,7 +1726,8 @@ check_cmd_line() {
                [ "$video_encoder" = 'vp8'        ] ||
                [ "$video_encoder" = 'vp8_vaapi'  ] ||
                [ "$video_encoder" = 'vp9'        ] ||
-               [ "$video_encoder" = 'vp9_vaapi'  ] ;
+               [ "$video_encoder" = 'vp9_vaapi'  ] ||
+               [ "$video_encoder" = 'wmv'        ] ;
            } ;
        } ||
        {
@@ -2074,16 +2098,19 @@ if [ "$format" = 'mov' ]
 then
     msg="on 'mov' container format may not be playable"
     
-    [ "$audio_encoder" = 'vorbis' ] && print_warn "'${audio_encoder}' audio encoder ${msg}"
+    case "$audio_encoder" in
+        vorbis|wma)
+            print_warn "'${audio_encoder}' audio encoder ${msg}"
+            ;;
+    esac
     
     case "$video_encoder" in
-        theora|vp8|vp8_vaapi)
+        theora|vp8|vp8_vaapi|wmv)
             print_warn "'${video_encoder}' video encoder ${msg}"
             ;;
     esac
     
     unset msg
-    unset encoder
 fi
 
 # select with mouse the screen region to record if chosen by user
