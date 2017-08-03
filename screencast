@@ -139,12 +139,12 @@ supported_fade='in, out, both, none'
 supported_formats='mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi'
 supported_aencoders='aac, opus, vorbis, mp3lame, shine, wma, none'
 supported_vencoders='x264, h264_nvenc, h264_vaapi, h264_qsv,
-                       x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
-                       vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
+                         x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
+                         vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
 supported_wmark_position='topleft, topright, bottomleft, bottomright
-                       (or the respective aliases tl, tr, bl, br)'
+                         (or the respective aliases tl, tr, bl, br)'
 supported_webcam_position='topleft, topright, bottomleft, bottomright
-                       (or the respective aliases tl, tr, bl, br)'
+                         (or the respective aliases tl, tr, bl, br)'
 supported_pngopt='truepng, pingo, optipng, opt-png, none'
 
 #########################################
@@ -404,13 +404,13 @@ list_supported() {
     show_header
     printf '\n'
     printf '%s\n' 'Supported arguments:'
-    printf '%s\n' "  -f, --format         $(printf '%s' "$supported_formats")"
-    printf '%s\n' "  -a, --audio-encoder  $(printf '%s' "$supported_aencoders")"
-    printf '%s\n' "  -v, --video-encoder  $(printf '%s' "$supported_vencoders")"
-    printf '%s\n' "  -e, --fade           $(printf '%s' "$supported_fade")"
-    printf '%s\n' "  -k, --wmark-position $(printf '%s' "$supported_wmark_position")"
-    printf '%s\n' "  -P, --wcam-position  $(printf '%s' "$supported_webcam_position")"
-    printf '%s\n' "  -g, --png-optimizer  $(printf '%s' "$supported_pngopt")"
+    printf '%s\n' "  -f, --format           $(printf '%s' "$supported_formats")"
+    printf '%s\n' "  -a, --audio-encoder    $(printf '%s' "$supported_aencoders")"
+    printf '%s\n' "  -v, --video-encoder    $(printf '%s' "$supported_vencoders")"
+    printf '%s\n' "  -e, --fade             $(printf '%s' "$supported_fade")"
+    printf '%s\n' "  -k, --wmark-position   $(printf '%s' "$supported_wmark_position")"
+    printf '%s\n' "  -P, --webcam-position  $(printf '%s' "$supported_webcam_position")"
+    printf '%s\n' "  -g, --png-optimizer    $(printf '%s' "$supported_pngopt")"
     printf '\n'
     printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
     printf '%s\n' '        quality libvorbis and libopus encoders respectively.'

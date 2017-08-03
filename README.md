@@ -23,8 +23,8 @@ screencast
     - [`-W, --webcam`](#-w---webcam)
     - [`-I, --webcam-input=DEV`](#-i---webcam-inputdev)
     - [`-Z, --webcam-size=NxN`](#-z---webcam-sizenxn)
-    - [`-P, --wcam-position=N,N`](#-p---wcam-positionpre---wcam-positionnn)
-    - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--wcam-position=PRE`](#-p---wcam-positionpre---wcam-positionnn)
+    - [`-P, --webcam-position=N,N`](#-p---webcam-positionpre---webcam-positionnn)
+    - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--webcam-position=PRE`](#-p---webcam-positionpre---webcam-positionnn)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
     - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
@@ -202,7 +202,7 @@ Set webcam video size (resolution). To get a list of supported resolutions for y
 
 default: `320x240`
 
-#### `-P, --wcam-position=PRE, --wcam-position=N,N`
+#### `-P, --webcam-position=PRE, --webcam-position=N,N`
 
 Set the webcam overlay position inside the video. This option can be used only with the [`-W`](#-w---webcam) option.
 
