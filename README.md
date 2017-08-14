@@ -25,6 +25,7 @@ screencast
     - [`-Z, --webcam-size=NxN`](#-z---webcam-sizenxn)
     - [`-P, --webcam-position=N,N`](#-p---webcam-positionpre---webcam-positionnn)
     - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--webcam-position=PRE`](#-p---webcam-positionpre---webcam-positionnn)
+    - [`-R, --webcam-fps=N`](#-r---webcam-fpsn)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
     - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
@@ -213,6 +214,12 @@ Set the webcam overlay position inside the video. This option can be used only w
 supported predefined special values: `topleft`/`tl`, `topright`/`tr`, `bottomleft`/`bl`, `bottomright`/`br`
 
 default: `topright`
+
+#### `-R, --webcam-fps=N`
+
+Set webcam framerate (fps). To get a list of supported framerates for your webcam device you can use the `v4l2-ctl` utility (`$ v4l2-ctl --list-formats-ext`). This option can be used only with the [`-W`](#-w---webcam) option.
+
+default: device default
 
 #### `-x, --fixed=N`
 

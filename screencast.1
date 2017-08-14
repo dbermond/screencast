@@ -298,6 +298,17 @@ supported predefined special values: \fItopleft\fR/\fItl\fR,
 default: topright
 .RE
 .TP
+\fB\-R\fR, \fB\-\-webcam\-fps\fR=\fIN\fR
+.RS
+Set webcam framerate (fps). Please make sure that the specified framerate is
+supported by your webcam device. To get a list of supported framerates for
+your webcam device you can use the \fBv4l2\-ctl\fR utility
+(\'$ \fBv4l2\-ctl \-\-list\-formats\-ext\fR\'). This option can be used only
+with the \fB\-W\fR option.
+.PP
+default: device default
+.RE
+.TP
 \fB\-x\fR, \fB\-\-fixed\fR=\fIN\fR
 .RS
 Set the video to have a fixed length of \fIN\fR seconds. When setted to \fI0\fR

@@ -50,6 +50,7 @@ wmark_font_setted='false'    # if wmark font     was setted by cmd line with -c
 webcam_input_setted='false'  # if webcam input   was setted by cmd line with -I
 webcam_size_setted='false'   # if webcam size    was setted by cmd line with -Z
 webcam_posi_setted='false'   # if wcam position  was setted by cmd line with -P
+webcam_rate_setted='false'   # if webcam fps     was setted by cmd line with -R
 pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
 outputdir_setted='false'     # if output dir     was setted by cmd line with -o
 
@@ -76,7 +77,7 @@ format='mp4'                       # container format (file extension) for outpu
 video_position='0,0' #200,234      # X and Y screen coordinates to record video from
 video_size='640x480'               # video size (resolution)
 video_rate='25'                    # video framerate (fps)
-corner_padding='10'                # video corner padding (for watermark effect)
+corner_padding='10'                # video corner padding (for watermark and webcam effects)
 vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 video_record_codec='ffv1 -level 3 -slicecrc 1'
@@ -232,6 +233,7 @@ show_help() {
     printf '%s\n' "  -Z, --webcam-size=NxN     webcam video size (resolution) [${webcam_size}]"
     printf '%s\n' '  -P, --webcam-position=N,N webcam position (video XY topleft offsets,'
     printf '%s\n' "      --webcam-position=PRE   or a predefined special value) [${webcam_position}]"
+    printf '%s\n' '  -R, --webcam-fps=N        webcam framerate (fps) [device default]'
     printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
     printf '%s\n' '  -n, --no-notifications    disable desktop notifications'
     printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
@@ -832,6 +834,29 @@ get_cmd_line() {
                 ;;
             --webcam-position=)
                 command_error '--webcam-position (-P)'
+                ;;
+            
+            -R|--webcam-fps)
+                if [ -n "$2" ] 
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--webcam-fps (-R)'
+                    else
+                        webcam_rate="$2"
+                        webcam_rate_setted='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--webcam-fps (-R)'
+                fi
+                ;;
+            --webcam-position=?*)
+                webcam_rate="${1#*=}"
+                webcam_rate_setted='true'
+                ;;
+            --webcam-position=)
+                command_error '--webcam-fps (-R)'
                 ;;
             
             -x|--fixed)
@@ -1519,6 +1544,7 @@ check_cmd_line() {
         [ "$webcam_size_setted"  = 'true' ] && exit_program "--webcam-size (-Z) ${msg}"
         [ "$webcam_input_setted" = 'true' ] && exit_program "--webcam-input (-I) ${msg}"
         [ "$webcam_posi_setted"  = 'true' ] && exit_program "--webcam-position (-P) ${msg}"
+        [ "$webcam_rate_setted"  = 'true' ] && exit_program "--webcam-fps (-R) ${msg}"
         unset msg
     fi
     
@@ -2120,7 +2146,8 @@ fi
 if [ "$webcam_overlay" = 'true' ] 
 then
     check_ffmpeg_format 'video4linux2,v4l2' 'Video4Linux2 device grab' || exit 1
-    webcam_options="$webcam_general_options -video_size $webcam_size -i $webcam_input"
+    [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
+    webcam_options="$webcam_general_options ${webcam_options} -video_size $webcam_size -i $webcam_input"
     vfilter_option='-filter_complex'
     vfilter_settings="overlay=${webcam_position},format=bgr0,fps=${video_rate}"
     map_option='-map 0'
