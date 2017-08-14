@@ -317,9 +317,10 @@ sufficient upload bandwidth to send the video data to the server. Note that
 the higher the video size (resolution) and framerate (fps), the higher will be
 the needed upload bandwidth. Use the \fB\-K\fR option if you want to save a
 local copy of the live streamed video. \fBscreencast\fR will record offline
-when this option is not specified. This option cannot be used with the
-\fB\-e\fR (fade effect) option. It has been tested only with \fIYouTube\fR
-live streaming service.
+when this option is not specified. This option cannot be used in the following
+situations: with the \fB\-e\fR (fade effect) option and when recording without
+audio (when \fB\-i\fR or \fB\-a\fR are setted to \fInone\fR). It has been
+tested only with the \fIYouTube\fR live streaming service.
 .PP
 default: disabled
 .RE

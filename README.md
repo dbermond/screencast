@@ -224,7 +224,7 @@ default: device default
 
 #### `-L, --live-streaming=URL`
 
-Do a live streaming to the server address specified in *URL*. Please make sure to have a working connection to the specified server address and sufficient upload bandwidth to send the video data to the server. Note that the higher the video size (resolution) and framerate (fps), the higher will be the needed upload bandwidth. Use the [`-K`](#-k---keep) option if you want to save a local copy of the live streamed video. **screencast** will record offline when this option is not specified. This option cannot be used with the [`-e`](#-e---fadetype) (fade effect) option. It has been tested only with [YouTube](https://www.youtube.com/) live streaming service.
+Do a live streaming to the server address specified in *URL*. Please make sure to have a working connection to the specified server address and sufficient upload bandwidth to send the video data to the server. Note that the higher the video size (resolution) and framerate (fps), the higher will be the needed upload bandwidth. Use the [`-K`](#-k---keep) option if you want to save a local copy of the live streamed video. **screencast** will record offline when this option is not specified. This option cannot be used in the following situations: with the [`-e`](#-e---fadetype) (fade effect) option and when recording without audio (when [`-i`](#-i---audio-inputname) or [`-a`](#-a---audio-encodername) are setted to `none`). It has been tested only with the [YouTube](https://www.youtube.com/) live streaming service.
 
 default: disabled
 

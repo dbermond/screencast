@@ -1931,6 +1931,8 @@ check_cmd_line() {
             exit_program "live streaming cannot be sent with '${audio_encoder}' audio encoder"
         fi
         
+        [ "$audio_encoder" = 'none' ] && exit_program 'live streaming cannot be sent without audio'
+        
         # check for invalid video encoder with the flv cotainer format
         # (flv is will used internally by ffmpeg to send live straming to the server)
         if [ "$video_encoder" = 'x265'       ] ||
