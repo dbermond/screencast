@@ -31,10 +31,11 @@ finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
 # control settings (controls various aspects)
 select_region='false'        # mouse screen region selection (true, false)
 auto_filename='false'        # auto choose output filename based on date/time
-keep_tmpvideo='false'        # keep temporary video in $tmpdir (true, false)
+keep_video='false'           # keep live streaming or the tmp video (true, false)
 fade='none'                  # fade effect (in, out, both, none)
 watermark='false'            # watermark effect (true, false)
 webcam_overlay='false'       # webcam overlay effect (true, false)
+streaming='false'            # live streaming (true, false)
 fixed_length='0'             # fixed length video in seconds (0 disable)
 notifications='true'         # desktop notifications (true, false)
 audio_encoder_setted='false' # if audio encoder  was setted by cmd line with -a
@@ -98,6 +99,9 @@ codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
 codec_vp9_vaapi='vp9_vaapi -global_quality 80'
 codec_wmv='wmv2 -qscale:v 3'
 
+# live streaming settings
+codec_streaming_x264='libx264 -preset fast'
+
 # metadata settings
 metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}")"
 
@@ -159,7 +163,7 @@ supported_pngopt='truepng, pingo, optipng, opt-png, none'
 cleanup() {
     # delete temporary files
     rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
-    [ "$keep_tmpvideo" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    [ "$keep_video" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
@@ -234,12 +238,13 @@ show_help() {
     printf '%s\n' '  -P, --webcam-position=N,N webcam position (video XY topleft offsets,'
     printf '%s\n' "      --webcam-position=PRE   or a predefined special value) [${webcam_position}]"
     printf '%s\n' '  -R, --webcam-fps=N        webcam framerate (fps) [device default]'
+    printf '%s\n' '  -L, --live-streaming=URL  enable live streaming, setting url to URL [disabled]'
     printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
     printf '%s\n' '  -n, --no-notifications    disable desktop notifications'
     printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
     printf '%s\n' '  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]'
     printf '%s\n' "  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]"
-    printf '%s\n' "  -K, --keep-tmpvideo       keep (don't delete) the temporary video"
+    printf '%s\n' '  -K, --keep                keep the live streaming or the temporary video'
     printf '%s\n' '  -u, --auto-filename       auto choose output filename based on date/time'
     printf '%s\n' '  -l, --list                list arguments supported by these options'
     printf '%s\n' '  -h, --help                this help screen'
@@ -859,6 +864,29 @@ get_cmd_line() {
                 command_error '--webcam-fps (-R)'
                 ;;
             
+            -L|--live-streaming)
+                if [ -n "$2" ] 
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--live-streaming (-L)'
+                    else
+                        streaming_url="$2"
+                        streaming='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--live-streaming (-L)'
+                fi
+                ;;
+            --live-streaming=?*)
+                streaming_url="${1#*=}"
+                streaming='true'
+                ;;
+            --live-streaming=)
+                command_error '--live-streaming (-L)'
+                ;;
+            
             -x|--fixed)
                 if [ -n "$2" ] 
                 then
@@ -953,8 +981,8 @@ get_cmd_line() {
                 command_error '--tmp-dir (-t)'
                 ;;
             
-            -K|--keep-tmpvideo) # option without argument
-                keep_tmpvideo='true'
+            -K|--keep) # option without argument
+                keep_video='true'
                 ;;
             
             -u|--auto-filename) # option without argument
@@ -1034,9 +1062,19 @@ show_settings() {
     fi
     
     effects="${effects:-none}"
+    
     print_good "${color_bold:-}video encoder   :${color_off:-} ${video_encoder} ${video_outstr:-}"
     print_good "${color_bold:-}audio encoder   :${color_off:-} ${audio_encoder} ${audio_outstr:-}"
-    print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
+    
+    if [ "$streaming" = 'false' ] ||
+       {
+           [ "$streaming"  = 'true' ] &&
+           [ "$keep_video" = 'true' ] ;
+       }
+    then
+        print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
+    fi
+    
     print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
 }
 
@@ -1279,24 +1317,52 @@ check_cmd_line() {
     # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
     printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program "'${video_rate}' is not a valid video framerate (fps) format"
     
-    # if '-u' is not set, make some needed checks and settings
+    # checks and settings based on usage of the '-u' option
     if [ "$auto_filename" = 'false' ] 
     then
         # check if user have not entered an output filename after the options
-        [ "$#" -eq '0' ] && exit_program "you must enter an output filename with extension (or use '-u')"
+        if [ "$#" -eq '0' ] &&
+           {
+               [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"     = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               } ;
+           }
+        then
+            exit_program "you must enter an output filename with extension (or use '-u')"
+        fi
+        
+        # do not allow to enter an output filename when not saving the live streaming
+        [ "$#" -eq '1' ] && [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] &&
+            exit_program "output filename was specified but but not saving the live streaming"
         
         # do not allow to enter anything after the output filename
         [ "$#" -gt '1' ] && exit_program 'please do not enter anything after the output filename'
         
         # do not allow to use -f/--format when specifying an output filename
-        if [ "$format_setted" = 'true' ] 
+        if [ "$format_setted" = 'true' ] &&
+           {
+               [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true'  ] &&
+                   [ "$keep_video" = 'false' ] ;
+               } ;
+           }
         then
             exit_program "--format (-f) option can be used only with --auto-filename (-u)
                       (when not using '-u', set format in the output filename)"
         fi
         
         # do not allow to use -o/--output-dir when specifying an output filename
-        if [ "$outputdir_setted" = 'true' ] 
+        if [ "$outputdir_setted" = 'true' ] &&
+           {
+               [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true'  ] &&
+                   [ "$keep_video" = 'false' ] ;
+               } ;
+           }
         then
             exit_program "--output-dir (-o) option can be used only with --auto-filename (-u)
                       (when not using '-u', set output directory with the output filename)"
@@ -1316,12 +1382,22 @@ check_cmd_line() {
         # to make the program output more clear
         printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd)")")"
         
-        # get output filename extension and assign to container format
-        format="$(basename "$1")"
-        format="${format##*.}"
-    # if '-u' is set, don't allow to set an output filename in command line
+        output_file="$(basename "$1")" # set the output filename
+        format="${output_file##*.}"    # set container format (output filename extension)
     else
+        # do not allow to use '-u' when not saving the live streaming
+        [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && exit_program "'-u' is set but not saving the live streaming"
+        
+        # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
+        
+        # set the output filename
+        if [ "$streaming" = 'true' ] 
+        then
+            output_file="screencast-livestreaming-$(date +%Y-%m-%d_%H.%M.%S).${format}"
+        else
+            output_file="screencast-$(date +%Y-%m-%d_%H.%M.%S).${format}"
+        fi
     fi
     
     # check if a valid container format was selected
@@ -1329,7 +1405,12 @@ check_cmd_line() {
     case "$format" in
         # no need to auto choose encoders (default settings are for mp4; mov is very similar)
         mp4|mov)
-            faststart='-movflags +faststart'
+            if [ "$streaming"  = 'true' ] 
+            then
+                faststart='[movflags=+faststart]'
+            else
+                faststart='-movflags +faststart'
+            fi
             ;;
         webm)
             [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
@@ -1344,7 +1425,14 @@ check_cmd_line() {
             :
             ;;
         *)
-            exit_program "'${format}' is not a valid container format for this program"
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
+            then
+                exit_program "'${format}' is not a valid container format for this program"
+            fi
             ;;
     esac
     
@@ -1417,7 +1505,12 @@ check_cmd_line() {
     case "$video_encoder" in
         x264)
             check_ffmpeg_encoder h264 libx264 || exit 1
-            video_encode_codec="$codec_x264"
+            if [ "$streaming" = 'true' ] 
+            then
+                video_encode_codec="$codec_streaming_x264"
+            else
+                video_encode_codec="$codec_x264"
+            fi
             ;;
         h264_nvenc)
             check_ffmpeg_encoder h264 h264_nvenc || exit 1
@@ -1499,7 +1592,8 @@ check_cmd_line() {
     # check if a valid fade effect was entered (-e/--fade)
     case "$fade" in
         in|out|both|none)
-            :
+            # do not allow to use fade effect with live streaming
+            [ "$fade" != 'none' ] && [ "$streaming" = 'true' ] && exit_program 'fade effect cannot be used with live streaming'
             ;;
         *)
             exit_program "'${fade}' is not a valid fade effect"
@@ -1824,6 +1918,67 @@ check_cmd_line() {
             exit_program "$msg"
         fi
     fi
+    
+    # check for invalid audio encoder, video encoder and container format if live streaming is chosen by user
+    if [ "$streaming" = 'true' ] 
+    then
+        # check for invalid audio encoder with the flv cotainer format
+        # (flv is will used internally by ffmpeg to send live straming to the server)
+        if [ "$audio_encoder" = 'opus'   ] ||
+           [ "$audio_encoder" = 'vorbis' ] ||
+           [ "$audio_encoder" = 'wma'    ] 
+        then
+            exit_program "live streaming cannot be sent with '${audio_encoder}' audio encoder"
+        fi
+        
+        # check for invalid video encoder with the flv cotainer format
+        # (flv is will used internally by ffmpeg to send live straming to the server)
+        if [ "$video_encoder" = 'x265'       ] ||
+           [ "$video_encoder" = 'kvazaar'    ] ||
+           [ "$video_encoder" = 'hevc_nvenc' ] ||
+           [ "$video_encoder" = 'hevc_vaapi' ] ||
+           [ "$video_encoder" = 'hevc_qsv'   ] ||
+           [ "$video_encoder" = 'theora'     ] ||
+           [ "$video_encoder" = 'vp8'        ] ||
+           [ "$video_encoder" = 'vp8_vaapi'  ] ||
+           [ "$video_encoder" = 'vp9'        ] ||
+           [ "$video_encoder" = 'vp9_vaapi'  ] ||
+           [ "$video_encoder" = 'wmv'        ] 
+        then
+            exit_program "live streaming cannot be sent with '${video_encoder}' video encoder"
+        fi
+        
+        # check for valid combination of container format and audio/video encoders if saving the live stream
+        if [ "$keep_video" = 'true' ] 
+        then
+            case "$format" in
+                ogg|ogv|webm)
+                    exit_program "live streaming cannot be saved to the '$format' container format"
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            
+            case "$audio_encoder" in
+                opus|vorbis|wma)
+                    exit_program "live streaming cannot be saved with the '$audio_encoder' audio encoder"
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            
+            case "$video_encoder" in
+                x264|h264_nvenc|h264_vaapi|h264_qsv)
+                    :
+                    ;;
+                *)
+                    exit_program "live streaming cannot be saved with the '$video_encoder' video encoder"
+                    ;;
+            esac
+        fi
+    fi
 }
 
 # check_dirs function: check for valid output and tmp directories (-o and -t)
@@ -2076,6 +2231,355 @@ videofade() {
     esac
 }
 
+# set_vfilter_option function: set ffmpeg video filter option
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_vfilter_option() {
+    if   [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] 
+    then
+        vfilter_option='-vf'
+        
+    elif [ "$webcam_overlay" = 'true'  ] || [ "$watermark" = 'true'  ] 
+    then
+        vfilter_option='-filter_complex'
+    fi
+}
+
+# set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_watermark() {
+    if [ "$watermark" = 'true' ] 
+    then
+        if create_watermark
+        then
+            vfilter_settings="${vfilter_settings:+"${vfilter_settings},${watermark_options}"}"
+            vfilter_settings="${vfilter_settings:-"$watermark_options"}"
+            [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
+        fi
+    fi
+}
+
+# set_webcam function: enable webcam overlay effect if chosen by user (-W/--webcam)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_webcam() {
+    if [ "$webcam_overlay" = 'true' ] 
+    then
+        check_ffmpeg_format 'video4linux2,v4l2' 'Video4Linux2 device grab' || exit 1
+        [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
+        webcam_options="${webcam_general_options} ${webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
+        vfilter_settings="${vfilter_settings:+"${vfilter_settings},overlay=${webcam_position},format=bgr0"}"
+        vfilter_settings="${vfilter_settings:-"overlay=${webcam_position},format=bgr0"}"
+    fi
+}
+
+# fix_pass_duration function: fix 'pass duration too large' messages in ffmpeg
+# arguments: none
+# return value: none
+# return code (status): not relevant
+fix_pass_duration() {
+    vfilter_settings="${vfilter_settings:+"${vfilter_settings},fps=${video_rate}"}"
+    vfilter_settings="${vfilter_settings:-"fps=${video_rate}"}"
+}
+
+# set_vaapi_qsv function: set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_vaapi_qsv() {
+    case "$video_encoder" in
+        *_vaapi)
+            [   "$watermark" = 'false' ] && [ "$webcam_overlay" = 'false' ]     && vfilter_option='-vf'
+            { [ "$watermark" = 'true'  ] || [ "$webcam_overlay" = 'true'  ] ; } && vfilter_option='-filter_complex'
+            vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
+            vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
+            vaapi_device="-vaapi_device ${vaapi_device}"
+            pixel_format='vaapi_vld'
+            ;;
+        *_qsv)
+            pixel_format='nv12'
+            ;;
+    esac
+}
+
+# finish function: print message and show notification when finished
+# arguments: none
+# return value: the printed message
+# return code (status): not relevant
+finish() {
+    print_good 'finish'
+    notify 'normal' '3000' 'mail-mark-notjunk' 'finish'
+    
+    # play a sound after finish if requirements are present
+    if command -v paplay >/dev/null 2>&1
+    then
+        [ -f "$finish_sound" ] && paplay "$finish_sound"
+    fi
+}
+
+# recording_error function: exit the program with the proper message/notifications if a recording error has occurred
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+recording_error() {
+    print_error 'recording error!'
+    notify 'critical' '5000' 'process-stop' 'recording error!'
+    exit 1
+}
+
+# encoding_error function: exit the program with the proper message/notifications if an encoding error has occurred
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+recording_error() {
+    print_error 'encoding error!'
+    notify 'critical' '5000' 'process-stop' 'encoding error!'
+    exit 1
+}
+
+# live_streaming function: record and live stream
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# note: it will make the program exit with error if a recording error occurs
+live_streaming() {
+    # set ffmpeg '-maxrate' and '-bufsize' options
+    if   [ "$video_height" -gt '2160' ] 
+    then
+         if [ "$video_rate" -ge '60' ] 
+         then
+             video_encode_codec="${video_encode_codec} -maxrate 40M -bufsize 80M"
+         else
+             video_encode_codec="${video_encode_codec} -maxrate 30M -bufsize 60M"
+         fi
+         
+    elif [ "$video_height" -eq '2160' ] 
+    then
+         if [ "$video_rate" -ge '60' ] 
+         then
+             video_encode_codec="${video_encode_codec} -maxrate 22M -bufsize 44M"
+         else
+             video_encode_codec="${video_encode_codec} -maxrate 15M -bufsize 30M"
+         fi
+         
+    elif [ "$video_height" -eq '1440' ] ||
+         {
+             [ "$video_height" -lt '2160' ] &&
+             [ "$video_height" -gt '1440' ] ;
+         }
+    then
+         if [ "$video_rate" -ge '60' ] 
+         then
+             video_encode_codec="${video_encode_codec} -maxrate 10M -bufsize 20M"
+         else
+             video_encode_codec="${video_encode_codec} -maxrate 7M -bufsize 14M"
+         fi
+         
+    elif [ "$video_height" -eq '1080' ] ||
+         {
+             [ "$video_height" -lt '1440' ] &&
+             [ "$video_height" -gt '1080' ] ;
+         }
+    then
+         if [ "$video_rate" -ge '60' ] 
+         then
+             video_encode_codec="${video_encode_codec} -maxrate 5M -bufsize 10M"
+         else
+             video_encode_codec="${video_encode_codec} -maxrate 4M -bufsize 8M"
+         fi
+         
+    elif [ "$video_height" -eq '720' ] ||
+         {
+             [ "$video_height" -lt '1080' ] &&
+             [ "$video_height" -gt '720'  ] ;
+         }
+    then
+         if [ "$video_rate" -ge '60' ] 
+         then
+             video_encode_codec="${video_encode_codec} -maxrate 3M -bufsize 6M"
+         else
+             video_encode_codec="${video_encode_codec} -maxrate 2M -bufsize 4M"
+         fi
+         
+    elif [ "$video_height" -eq '480' ] ||
+         {
+             [ "$video_height" -lt '720' ] &&
+             [ "$video_height" -gt '480' ] ;
+         }
+    then
+         video_encode_codec="${video_encode_codec} -maxrate 1M -bufsize 2M"
+         
+    elif [ "$video_height" -eq '360' ] ||
+         {
+             [ "$video_height" -lt '480' ] &&
+             [ "$video_height" -gt '360' ] ;
+         }
+    then
+         video_encode_codec="${video_encode_codec} -maxrate 500k -bufsize 1000k"
+         
+    elif [ "$video_height" -eq '240' ] ||
+         {
+             [ "$video_height" -lt '360' ] &&
+             [ "$video_height" -gt '240' ] ;
+         }
+    then
+         video_encode_codec="${video_encode_codec} -maxrate 400k -bufsize 800k"
+         
+    else
+         video_encode_codec="${video_encode_codec} -maxrate 2M -bufsize 4M"
+    fi
+    
+    video_encode_codec="${video_encode_codec} -g $((video_rate * 2))" # set gop size
+    
+    set_vfilter_option
+    set_watermark
+    set_webcam
+    fix_pass_duration
+    set_vaapi_qsv
+    
+    print_good 'live streaming'
+    notify 'normal' '1700' 'media-record' 'live streaming...'
+    
+    # do the live stream and save the recorded content to an output file
+    if [ "$keep_video" = 'true' ] 
+    then
+        if ffmpeg \
+               $audio_general_options \
+               $audio_input \
+               $vaapi_device \
+               $video_general_options \
+               -framerate $video_rate \
+               -video_size $video_size \
+               -i :0.0+${video_position} \
+               $watermark_input \
+               $webcam_options \
+               $vfilter_option $vfilter_settings \
+               $volume_options \
+               -flags +global_header \
+               $audio_encode_codec \
+               -codec:v $video_encode_codec \
+               $fixed_length_options \
+               -pix_fmt $pixel_format \
+               -metadata "$metadata" \
+               -f tee \
+               -map 0:a \
+               -map 1:v \
+               -y \
+               "${faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
+        then
+            finish
+        else
+            recording_error
+        fi
+    
+    # live streaming only, do not save the recorded content to an output file
+    else
+        if ffmpeg \
+               $audio_general_options \
+               $audio_input \
+               $vaapi_device \
+               $video_general_options \
+               -framerate $video_rate \
+               -video_size $video_size \
+               -i :0.0+${video_position} \
+               $watermark_input \
+               $webcam_options \
+               $vfilter_option $vfilter_settings \
+               $volume_options \
+               $audio_encode_codec \
+               -codec:v $video_encode_codec \
+               $fixed_length_options \
+               -pix_fmt $pixel_format \
+               -metadata "$metadata" \
+               -f flv \
+               "$streaming_url"
+        then
+            finish
+        else
+            recording_error
+        fi
+    fi
+}
+
+# record_offline function: record offline (without live streaming)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# note: it will make the program exit with error if a recording or encoding error occurs
+record_offline() {
+    set_vfilter_option
+    set_webcam
+    fix_pass_duration
+    rndstr_video="$(randomstr '20')" # random string for tmp video filename
+    print_good 'recording'
+    notify 'normal' '1700' 'media-record' 'recording...'
+    
+    # record screen to a lossless video
+    if ffmpeg \
+           $audio_general_options \
+           $audio_input \
+           $video_general_options \
+           -framerate $video_rate \
+           -video_size $video_size \
+           -i :0.0+${video_position} \
+           $webcam_options \
+           $vfilter_option $vfilter_settings \
+           $audio_record_codec \
+           -codec:v $video_record_codec \
+           $fixed_length_options \
+           -metadata "$metadata" \
+           -y \
+           "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    then 
+        unset vfilter_option
+        unset vfilter_settings
+        
+        set_watermark
+        
+        # enable fade effect if chosen by user (-e/--fade)
+        if [ "$fade" != 'none' ] 
+        then
+            videofade
+            [ "$watermark" = 'false' ] && vfilter_option='-vf'
+            vfilter_settings="${vfilter_settings:+"${vfilter_settings},${fade_options}"}"
+            vfilter_settings="${vfilter_settings:-"${fade_options}"}"
+        fi
+        
+        set_vaapi_qsv
+        
+        print_good 'encoding'
+        notify 'normal' '3000' 'media-playback-stop' 'encoding...'
+        
+        # encode the recorded lossless video file
+        if ffmpeg \
+               $audio_channel_layout \
+               $vaapi_device \
+               -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
+               $watermark_input \
+               $vfilter_option $vfilter_settings \
+               $volume_options \
+               $audio_encode_codec \
+               -codec:v $video_encode_codec \
+               -pix_fmt $pixel_format \
+               -metadata "$metadata" \
+               $faststart \
+               -map 0 \
+               -y \
+               "${savedir}/${output_file}"
+        then
+            finish
+        else
+            encoding_error
+        fi
+    else
+        recording_error
+    fi
+}
+
 #########################################
 #            program start              #
 #########################################
@@ -2142,123 +2646,12 @@ fi
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
 
-# enable webcam overlay if chosen by user
-if [ "$webcam_overlay" = 'true' ] 
+# do a live streaming if chosen by user (-L/--live-streaming)
+if [ "$streaming" = 'true' ] 
 then
-    check_ffmpeg_format 'video4linux2,v4l2' 'Video4Linux2 device grab' || exit 1
-    [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
-    webcam_options="$webcam_general_options ${webcam_options} -video_size $webcam_size -i $webcam_input"
-    vfilter_option='-filter_complex'
-    vfilter_settings="overlay=${webcam_position},format=bgr0,fps=${video_rate}"
-    map_option='-map 0'
-else
-    vfilter_option='-vf'
-    vfilter_settings="fps=${video_rate}"
-fi
+    live_streaming
 
-# some preparations before recording
-rndstr_video="$(randomstr '20')" # random string for tmp video filename
-print_good 'recording'
-notify 'normal' '1700' 'media-record' 'recording...'
-
-# record screen to a lossless video
-if ffmpeg \
-       $audio_general_options \
-       $audio_input \
-       $video_general_options \
-       -framerate $video_rate \
-       -video_size $video_size \
-       -i :0.0+${video_position} \
-       $webcam_options \
-       $vfilter_option $vfilter_settings \
-       $audio_record_codec \
-       -codec:v $video_record_codec \
-       $fixed_length_options \
-       -metadata "$metadata" \
-       $map_option \
-       -y \
-       "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
-then 
-    unset vfilter_option
-    unset vfilter_settings
-    
-    # enable watermark effect if chosen by user (-w/--watermark)
-    if [ "$watermark" = 'true' ] 
-    then
-        if create_watermark
-        then
-            vfilter_option='-filter_complex'
-            vfilter_settings="$watermark_options"
-            [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
-        fi
-    fi
-    
-    # enable fade effect if chosen by user (-e/--fade)
-    if [ "$fade" != 'none' ] 
-    then
-        videofade
-        [ "$watermark" = 'false' ] && vfilter_option='-vf'
-        vfilter_settings="${vfilter_settings:+"${vfilter_settings},${fade_options}"}"
-        vfilter_settings="${vfilter_settings:-"${fade_options}"}"
-    fi
-    
-    # set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
-    case "$video_encoder" in
-        *_vaapi)
-            [ "$watermark" = 'false' ] && vfilter_option='-vf'
-            vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
-            vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
-            vaapi_device="-vaapi_device ${vaapi_device}"
-            pixel_format='vaapi_vld'
-            ;;
-        *_qsv)
-            pixel_format='nv12'
-            ;;
-    esac
-    
-    # set output filename
-    if [ "$auto_filename" = 'true' ] 
-    then
-        output_file="screencast-$(date +%Y-%m-%d_%H.%M.%S).${format}"
-    else
-        output_file="$(basename "$1")"
-    fi
-    
-    print_good 'encoding'
-    notify 'normal' '3000' 'media-playback-stop' 'encoding...'
-    
-    # encode the recorded lossless video file
-    if ffmpeg \
-           $audio_channel_layout \
-           $vaapi_device \
-           -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
-           $watermark_input \
-           $vfilter_option $vfilter_settings \
-           $volume_options \
-           $audio_encode_codec \
-           -codec:v $video_encode_codec \
-           -pix_fmt $pixel_format \
-           -metadata "$metadata" \
-           $faststart \
-           -map 0 \
-           -y \
-           "${savedir}/${output_file}"
-    then
-        print_good 'finish'
-        notify 'normal' '3000' 'mail-mark-notjunk' 'finish'
-        
-        # play a sound after finish if requirements are present
-        if command -v paplay >/dev/null 2>&1
-        then
-            [ -f "$finish_sound" ] && paplay "$finish_sound"
-        fi
-    else
-        print_error 'encoding error!'
-        notify 'critical' '5000' 'process-stop' 'encoding error!'
-        exit 1
-    fi
+# record offline if live streaming is not chosen by user
 else
-    print_error 'recording error!'
-    notify 'critical' '5000' 'process-stop' 'recording error!'
-    exit 1
+    record_offline
 fi

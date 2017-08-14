@@ -309,6 +309,21 @@ with the \fB\-W\fR option.
 default: device default
 .RE
 .TP
+\fB\-L\fR, \fB\-\-live\-streaming\fR=\fIURL\fR
+.RS
+Do a live streaming to the server address specified in \fIURL\fR. Please make
+sure to have a working connection to the specified server address and
+sufficient upload bandwidth to send the video data to the server. Note that
+the higher the video size (resolution) and framerate (fps), the higher will be
+the needed upload bandwidth. Use the \fB\-K\fR option if you want to save a
+local copy of the live streamed video. \fBscreencast\fR will record offline
+when this option is not specified. This option cannot be used with the
+\fB\-e\fR (fade effect) option. It has been tested only with \fIYouTube\fR
+live streaming service.
+.PP
+default: disabled
+.RE
+.TP
 \fB\-x\fR, \fB\-\-fixed\fR=\fIN\fR
 .RS
 Set the video to have a fixed length of \fIN\fR seconds. When setted to \fI0\fR
@@ -361,9 +376,10 @@ the specified directory.
 default: /tmp
 .RE
 .TP
-\fB\-K\fR, \fB\-\-keep\-tmpvideo\fR
+\fB\-K\fR, \fB\-\-keep\fR
 .RS
-Keep (don\'t delete) the temporary video.
+When doing a live streaming it will keep (save) the live streamed video. When
+recording offline it will keep (don\'t delete) the temporary video.
 .RE
 .TP
 \fB\-u\fR, \fB\-\-auto\-filename\fR

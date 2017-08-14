@@ -26,12 +26,13 @@ screencast
     - [`-P, --webcam-position=N,N`](#-p---webcam-positionpre---webcam-positionnn)
     - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--webcam-position=PRE`](#-p---webcam-positionpre---webcam-positionnn)
     - [`-R, --webcam-fps=N`](#-r---webcam-fpsn)
+    - [`-L, --live-streaming=URL`](#-l---live-streamingurl)
     - [`-x, --fixed=N`](#-x---fixedn)
     - [`-n, --no-notifications`](#-n---no-notifications)
     - [`-g, --png-optimizer=NAME`](#-g---png-optimizername)
     - [`-o, --output-dir=DIR`](#-o---output-dirdir)
     - [`-t, --tmp-dir=DIR`](#-t---tmp-dirdir)
-    - [`-K, --keep-tmpvideo`](#-k---keep-tmpvideo)
+    - [`-K, --keep`](#-k---keep)
     - [`-u, --auto-filename`](#-u---auto-filename)
     - [`-l, --list`](#-l---list)
     - [`-h, --help`](#-h---help)
@@ -221,6 +222,12 @@ Set webcam framerate (fps). To get a list of supported framerates for your webca
 
 default: device default
 
+#### `-L, --live-streaming=URL`
+
+Do a live streaming to the server address specified in *URL*. Please make sure to have a working connection to the specified server address and sufficient upload bandwidth to send the video data to the server. Note that the higher the video size (resolution) and framerate (fps), the higher will be the needed upload bandwidth. Use the [`-K`](#-k---keep) option if you want to save a local copy of the live streamed video. **screencast** will record offline when this option is not specified. This option cannot be used with the [`-e`](#-e---fadetype) (fade effect) option. It has been tested only with [YouTube](https://www.youtube.com/) live streaming service.
+
+default: disabled
+
 #### `-x, --fixed=N`
 
 Set the video to have a fixed length of *N* seconds. When setted to `0` this is disabled, meaning a indefinite video length that will be recorded until the user stops it by presing the **q** key in the terminal window.
@@ -251,9 +258,9 @@ Set temporary files to be placed in *DIR*. By default, the `/tmp` directory will
 
 default: `/tmp`
 
-#### `-K, --keep-tmpvideo`
+#### `-K, --keep`
 
-Keep (don't delete) the temporary video.
+When doing a live streaming it will keep (save) the live streamed video. When recording offline it will keep (don't delete) the temporary video.
 
 #### `-u, --auto-filename`
 
