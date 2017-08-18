@@ -43,7 +43,9 @@ video_encoder_setted='false' # if video encoder  was setted by cmd line with -v
 vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
 video_size_setted='false'    # if video size     was setted by cmd line with -s
 video_posi_setted='false'    # if video position was setted by cmd line with -p
+video_rate_setted='false'    # if video rate/fps was setted by cmd line with -r
 format_setted='false'        # if video format   was setted by cmd line with -f
+fade_setted='false'          # if fade effect    was setted by cmd line with -e
 volume_factor_setted='false' # if volume factor  was setted by cmd line with -m
 wmark_size_setted='false'    # if wmark size     was setted by cmd line with -z
 wmark_posi_setted='false'    # if wmark position was setted by cmd line with -k
@@ -52,6 +54,7 @@ webcam_input_setted='false'  # if webcam input   was setted by cmd line with -I
 webcam_size_setted='false'   # if webcam size    was setted by cmd line with -Z
 webcam_posi_setted='false'   # if wcam position  was setted by cmd line with -P
 webcam_rate_setted='false'   # if webcam fps     was setted by cmd line with -R
+fixed_length_setted='false'  # if fixed length   was setted by cmd line with -x
 pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
 outputdir_setted='false'     # if output dir     was setted by cmd line with -o
 
@@ -506,6 +509,7 @@ get_cmd_line() {
                         command_error '--fps (-r)'
                     else
                         video_rate="$2"
+                        video_rate_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -514,6 +518,7 @@ get_cmd_line() {
                 ;;
             --fps=?*)
                 video_rate="${1#*=}"
+                video_rate_setted='true'
                 ;;
             --fps=)
                 command_error '--fps (-r)'
@@ -640,6 +645,7 @@ get_cmd_line() {
                         command_error '--fade (-e)'
                     else
                         fade="$2"
+                        fade_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -648,6 +654,7 @@ get_cmd_line() {
                 ;;
             --fade=?*)
                 fade="${1#*=}"
+                fade_setted='true'
                 ;;
             --fade=)
                 command_error '--fade (-e)'
@@ -895,6 +902,7 @@ get_cmd_line() {
                         command_error '--fixed (-x)'
                     else
                         fixed_length="$2"
+                        fixed_length_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -903,6 +911,7 @@ get_cmd_line() {
                 ;;
             --fixed=?*)
                 fixed_length="${1#*=}"
+                fixed_length_setted='true'
                 ;;
             --fixed=)
                 command_error '--fixed (-x)'
@@ -1295,27 +1304,36 @@ check_cmd_line() {
         [ "$video_size_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --size (-s) option'
         [ "$video_posi_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --position (-p) option'
     else
-        # check for a valid video size format (NxN) (-s/--size)
-        printf '%s' "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${video_size}' is not a valid video size format"
-        
-        # check for a valid screen position format to record (N,N) (-p/--position)
-        printf '%s' "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' || exit_program "'${video_position}' is not a valid screen position format"
-        
         # preparations for check_dimension() and check_screen()
         video_position_x="$(printf '%s' "$video_position" | cut -d ',' -f1)"
         video_position_y="$(printf '%s' "$video_position" | cut -d ',' -f2)"
         video_width="$(     printf '%s' "$video_size"     | cut -d 'x' -f1)"
         video_height="$(    printf '%s' "$video_size"     | cut -d 'x' -f2)"
         
-        # check if video width and height are a multiple of 8
-        check_dimension "$video_width"  || exit_program "$(dimension_msg 'width')"
-        check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
+        if [ "$video_size_setted" = 'true' ] 
+        then
+            # check for a valid video size format (NxN) (-s/--size)
+            printf '%s' "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${video_size}' is not a valid video size format"
+            
+            # check if video width and height are a multiple of 8
+            check_dimension "$video_width"  || exit_program "$(dimension_msg 'width')"
+            check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
+        fi
+        
+        if [ "$video_posi_setted" = 'true' ] 
+        then
+            # check for a valid screen position format to record (N,N) (-p/--position)
+            printf '%s' "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' || exit_program "'${video_position}' is not a valid screen position format"
+        fi
         
         check_screen
     fi
     
-    # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
-    printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+    if [ "$video_rate_setted" = 'true' ] 
+    then
+        # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
+        printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+    fi
     
     # checks and settings based on usage of the '-u' option
     if [ "$auto_filename" = 'false' ] 
@@ -1400,8 +1418,10 @@ check_cmd_line() {
         fi
     fi
     
-    # check if a valid container format was selected
-    # auto choose audio/video encoder (if needed) if user specified only the format without the encoders
+    # container format checks and settings:
+    #   - check if a valid container format was selected
+    #   - set some special options for mp4 and mov
+    #   - auto choose audio/video encoder (if needed) if user specified only the format without the encoders
     case "$format" in
         # no need to auto choose encoders (default settings are for mp4; mov is very similar)
         mp4|mov)
@@ -1458,7 +1478,10 @@ check_cmd_line() {
     
     ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
     
-    # check for a valid audio encoder and set recording and encoding options accordingly
+    # audio encoder checks and settings:
+    #   - check if user entered a valid video encoder
+    #   - check if the detect ffmpeg build has support for the selected audio encoder
+    #   - set recording and encoding options accordingly
     case "$audio_encoder" in
         aac)
             if check_ffmpeg_encoder aac libfdk_aac
@@ -1501,7 +1524,10 @@ check_cmd_line() {
             ;;
     esac
     
-    # check for a video encoder and set recording and encoding options accordingly
+    # video encoder checks and settings:
+    #   - check if user entered a valid video encoder
+    #   - check if the detect ffmpeg build has support for the selected video encoder
+    #   - set recording and encoding options accordingly
     case "$video_encoder" in
         x264)
             check_ffmpeg_encoder h264 libx264 || exit 1
@@ -1590,15 +1616,21 @@ check_cmd_line() {
     esac
     
     # check if a valid fade effect was entered (-e/--fade)
-    case "$fade" in
-        in|out|both|none)
-            # do not allow to use fade effect with live streaming
-            [ "$fade" != 'none' ] && [ "$streaming" = 'true' ] && exit_program 'fade effect cannot be used with live streaming'
-            ;;
-        *)
-            exit_program "'${fade}' is not a valid fade effect"
-            ;;
-    esac
+    if [ "$fade_setted" = 'true' ] 
+    then
+        case "$fade" in
+            none)
+                :
+                ;;
+            in|out|both)
+                # do not allow to use fade effect with live streaming
+                [ "$streaming" = 'true' ] && exit_program 'fade effect cannot be used with live streaming'
+                ;;
+            *)
+                exit_program "'${fade}' is not a valid fade effect"
+                ;;
+        esac
+    fi
     
     # do not allow to use -m option when -i or -a are setted to 'none'
     if [ "$audio_encoder" = 'none' ] && [ "$volume_factor_setted" = 'true' ] 
@@ -1607,22 +1639,66 @@ check_cmd_line() {
     fi
     
     # check if the entered volume factor is a valid integer/float number (-m)
-    if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+    if [ "$volume_factor_setted" = 'true' ] 
     then
-        # enable volume increase effect if chosen by user
-        # (a value different than '1.0' or '0.0')
-        if ! { printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
-               printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ; }
+        if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
         then
-            volume_options="-af volume=${volume_factor}"
+            # enable volume increase effect if chosen by user
+            # (a value different than '1.0' or '0.0')
+            if ! {
+                     printf '%s' "$volume_factor" | grep -Eq '^[0]+(\.[0]+)?$' ||
+                     printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ;
+                 }
+            then
+                volume_options="-af volume=${volume_factor}"
+            fi
+        else
+            exit_program "'${volume_factor}' is not a valid number for volume increase effect"
         fi
-    else
-        exit_program "'${volume_factor}' is not a valid number for volume increase effect"
     fi
     
-    # do not allow to use -z, -k, -c or -g options without -w option
-    if [ "$watermark" = 'false' ] 
+    # watermark checks and settings
+    if [ "$watermark" = 'true' ] 
     then
+        # check for a valid watermark size format (NxN) (-z/--wmark-size)
+        printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${watermark_size}' is not a valid watermark size format"
+        
+        # check for a valid watermark position format ('N,N' or 'PRE') (-k/--wmark-position)
+        if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
+        then
+            # translate watermark position to what is really used in ffmpeg command
+            watermark_position="$(printf '%s' "$watermark_position" | tr ',' ':')"
+        else
+            # check for a valid watermark special position value
+            if check_special_position "$watermark_position"
+            then
+                # translate watermark position to what is really used in ffmpeg command
+                watermark_corner="$watermark_position" # save for comparing watermark and webcam overlay corners
+                watermark_position="$special_position"
+                unset special_position
+                
+                # translate a possible alias to the full corner position name (for comparing with webcam overlay corner)
+                case "$watermark_corner" in
+                    tr)
+                        watermark_corner='topright'
+                        ;;
+                    br)
+                        watermark_corner='bottomright'
+                        ;;
+                    tl)
+                        watermark_corner='topleft'
+                        ;;
+                    bl)
+                        watermark_corner='bottomleft'
+                        ;;
+                esac
+            else
+                exit_program "'${watermark_position}' is not a valid watermark position format"
+            fi
+        fi
+    
+    # do not allow to use -z, -k, -c or -g options without -w option
+    else
         msg='option can be used only with --watermark (-w) option'
         [ "$wmark_size_setted"   = 'true' ] && exit_program "--wmark-size (-z) ${msg}"
         [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
@@ -1631,9 +1707,51 @@ check_cmd_line() {
         unset msg
     fi
     
-    # do not allow to use -Z, -I, or -P options without -W option
-    if [ "$webcam_overlay" = 'false' ] 
+    # webcam overlay checks and settings
+    if [ "$webcam_overlay" = 'true' ] 
     then
+        # check for a valid webcam input device
+        [ -c "$webcam_input" ] || exit_program "'${webcam_input}' is not a valid webcam input device on this system"
+        
+        # check for a valid webcam size format (NxN) (-Z/--webcam-size)
+        printf '%s' "$webcam_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${webcam_size}' is not a valid webcam size format"
+        
+        # check for a valid webcam position format ('N,N' or 'PRE') (-P/--webcam-position)
+        if printf '%s' "$webcam_position" | grep -Eq '^[0-9]+,[0-9]+$'
+        then
+            # translate webcam position to what is really used in ffmpeg command
+            webcam_position="$(printf '%s' "$webcam_position" | tr ',' ':')"
+        else
+            # check for a valid webcam special position value
+            if check_special_position "$webcam_position"
+            then
+                # translate webcam position to what is really used in ffmpeg command
+                webcam_corner="$webcam_position" # save for comparing watermark and webcam overlay corners
+                webcam_position="$special_position"
+                unset special_position
+                
+                # translate a possible alias to the full corner position name (for comparing with watermark corner)
+                case "$webcam_corner" in
+                    tr)
+                        webcam_corner='topright'
+                        ;;
+                    br)
+                        webcam_corner='bottomright'
+                        ;;
+                    tl)
+                        webcam_corner='topleft'
+                        ;;
+                    bl)
+                        webcam_corner='bottomleft'
+                        ;;
+                esac
+            else
+                exit_program "'${webcam_position}' is not a valid webcam position format"
+            fi
+        fi
+    
+    # do not allow to use -Z, -I, or -P options without -W option
+    else
         msg='option can be used only with --webcam (-W) option'
         [ "$webcam_size_setted"  = 'true' ] && exit_program "--webcam-size (-Z) ${msg}"
         [ "$webcam_input_setted" = 'true' ] && exit_program "--webcam-input (-I) ${msg}"
@@ -1642,271 +1760,73 @@ check_cmd_line() {
         unset msg
     fi
     
-    # check for a valid watermark size format (NxN) (-z/--wmark-size)
-    printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${watermark_size}' is not a valid watermark size format"
-    
-    # check for a valid watermark position format ('N,N' or 'PRE') (-k/--wmark-position)
-    if printf '%s' "$watermark_position" | grep -Eq '^[0-9]+,[0-9]+$'
-    then
-        # translate watermark position to what is really used in ffmpeg command
-        watermark_position="$(printf '%s' "$watermark_position" | tr ',' ':')"
-    else
-        # check for a valid watermark special position value
-        if check_special_position "$watermark_position"
-        then
-            # translate watermark position to what is really used in ffmpeg command
-            watermark_corner="$watermark_position" # save for comparing watermark and webcam overlay corners
-            watermark_position="$special_position"
-            unset special_position
-        else
-            exit_program "'${watermark_position}' is not a valid watermark position format"
-        fi
-    fi
-    
-    # check for a valid webcam input device
-    [ -c "$webcam_input" ] || exit_program "'${webcam_input}' is not a valid webcam input device on this system"
-    
-    # check for a valid webcam size format (NxN) (-Z/--webcam-size)
-    printf '%s' "$webcam_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${webcam_size}' is not a valid webcam size format"
-    
-    # check for a valid webcam position format ('N,N' or 'PRE') (-P/--webcam-position)
-    if printf '%s' "$webcam_position" | grep -Eq '^[0-9]+,[0-9]+$'
-    then
-        # translate webcam position to what is really used in ffmpeg command
-        webcam_position="$(printf '%s' "$webcam_position" | tr ',' ':')"
-    else
-        # check for a valid webcam special position value
-        if check_special_position "$webcam_position"
-        then
-            # translate webcam position to what is really used in ffmpeg command
-            webcam_corner="$webcam_position" # save for comparing watermark and webcam overlay corners
-            webcam_position="$special_position"
-            unset special_position
-        else
-            exit_program "'${webcam_position}' is not a valid webcam position format"
-        fi
-    fi
-    
     # do not allow watermark and webcam overlay to be placed in the same video corner (only works with predefined special values)
-    case "$watermark_corner" in
-        tr)
-            watermark_corner='topright'
-            ;;
-        br)
-            watermark_corner='bottomright'
-            ;;
-        tl)
-            watermark_corner='topleft'
-            ;;
-        bl)
-            watermark_corner='bottomleft'
-            ;;
-    esac
-    case "$webcam_corner" in
-        tr)
-            webcam_corner='topright'
-            ;;
-        br)
-            webcam_corner='bottomright'
-            ;;
-        tl)
-            webcam_corner='topleft'
-            ;;
-        bl)
-            webcam_corner='bottomleft'
-            ;;
-    esac
-    [ "$watermark_corner" = "$webcam_corner" ] &&
+    [ "$watermark" = 'true' ] && [ "$webcam_overlay" = 'true' ] && [ "$watermark_corner" = "$webcam_corner" ] &&
         exit_program "watermark and webcam overlay cannot be placed in the same '$webcam_corner' video corner"
     
     # check if the entered fixed video length is a valid integer/float number (-x)
-    if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+    if [ "$fixed_length_setted" = 'true' ] 
     then
-        # enable fixed video length if chosen by user (a value different than '0')
-        printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || fixed_length_options="-t ${fixed_length}"
-    else
-        exit_program "'${fixed_length}' is not a valid number for fixed video length"
+        if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+        then
+            # enable fixed video length if chosen by user (a value different than '0')
+            printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || fixed_length_options="-t ${fixed_length}"
+        else
+            exit_program "'${fixed_length}' is not a valid number for fixed video length"
+        fi
     fi
     
     # check for invalid combination of audio encoder and container format
-    if {
-           # note: opus support in mp4 is currently experimental in ffmpeg
-           [ "$format" = 'mp4' ] &&
-           {
-               [ "$audio_encoder" = 'opus' ] ||
-               [ "$audio_encoder" = 'wma'  ] ;
-           } ;
-       } ||
-       {
-           [ "$format" = 'webm' ] &&
-           {
-               [ "$audio_encoder" = 'aac'     ] ||
-               [ "$audio_encoder" = 'mp3lame' ] ||
-               [ "$audio_encoder" = 'shine'   ] ||
-               [ "$audio_encoder" = 'wma'     ] ;
-           } ;
-       } ||
-       {
-           {
-               [ "$format" = 'ogg' ] ||
-               [ "$format" = 'ogv' ] ;
-           } &&
-           {
-               [ "$audio_encoder" = 'aac'     ] ||
-               [ "$audio_encoder" = 'mp3lame' ] ||
-               [ "$audio_encoder" = 'shine'   ] ||
-               [ "$audio_encoder" = 'wma'     ] ;
-           } ;
-       } ||
-       {
-           [ "$format" = 'flv' ] &&
-           {
-               [ "$audio_encoder" = 'opus'   ] ||
-               [ "$audio_encoder" = 'vorbis' ] ||
-               [ "$audio_encoder" = 'wma'    ] ;
-           } ;
-       } ||
-       {
-           {
-               [ "$format" = 'wmv' ] ||
-               [ "$format" = 'asf' ] ||
-               [ "$format" = 'avi' ] ||
-               [ "$format" = 'mov' ] ;
-           } &&
-           [ "$audio_encoder" = 'opus' ] ;
-       }
+    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
     then
-        msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
-        
-        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-        then
-           msg="${msg}
-                      (did you forget to select the container format?)"
-        fi
-        
-        show_settings
-        exit_program "$msg"
-    fi
-    
-    # check for invalid combination of video encoder and container format
-    if {
-           [ "$format" = 'mp4' ] &&
-           {
-               [ "$video_encoder" = 'theora'    ] ||
-               [ "$video_encoder" = 'vp8'       ] ||
-               [ "$video_encoder" = 'vp8_vaapi' ] ||
-               [ "$video_encoder" = 'wmv'       ] ;
-           } ;
-       } ||
-       {
-           [ "$format" = 'webm' ] &&
-           {
-               [ "$video_encoder" = 'x264'       ] ||
-               [ "$video_encoder" = 'h264_nvenc' ] ||
-               [ "$video_encoder" = 'h264_vaapi' ] ||
-               [ "$video_encoder" = 'h264_qsv'   ] ||
-               [ "$video_encoder" = 'x265'       ] ||
-               [ "$video_encoder" = 'kvazaar'    ] ||
-               [ "$video_encoder" = 'hevc_nvenc' ] ||
-               [ "$video_encoder" = 'hevc_vaapi' ] ||
-               [ "$video_encoder" = 'hevc_qsv'   ] ||
-               [ "$video_encoder" = 'theora'     ] ||
-               [ "$video_encoder" = 'wmv'        ] ;
-           } ;
-       } ||
-       {
-           {
-               [ "$format" = 'ogg' ] ||
-               [ "$format" = 'ogv' ] ;
-           } &&
-           {
-               [ "$video_encoder" = 'x264'       ] ||
-               [ "$video_encoder" = 'h264_nvenc' ] ||
-               [ "$video_encoder" = 'h264_vaapi' ] ||
-               [ "$video_encoder" = 'h264_qsv'   ] ||
-               [ "$video_encoder" = 'x265'       ] ||
-               [ "$video_encoder" = 'kvazaar'    ] ||
-               [ "$video_encoder" = 'hevc_nvenc' ] ||
-               [ "$video_encoder" = 'hevc_vaapi' ] ||
-               [ "$video_encoder" = 'hevc_qsv'   ] ||
-               [ "$video_encoder" = 'vp9'        ] ||
-               [ "$video_encoder" = 'vp9_vaapi'  ] ||
-               [ "$video_encoder" = 'wmv'        ] ;
-           } ;
-       } ||
-       {
-           [ "$format" = 'flv' ] &&
-           {
-               [ "$video_encoder" = 'x265'       ] ||
-               [ "$video_encoder" = 'kvazaar'    ] ||
-               [ "$video_encoder" = 'hevc_nvenc' ] ||
-               [ "$video_encoder" = 'hevc_vaapi' ] ||
-               [ "$video_encoder" = 'hevc_qsv'   ] ||
-               [ "$video_encoder" = 'theora'     ] ||
-               [ "$video_encoder" = 'vp8'        ] ||
-               [ "$video_encoder" = 'vp8_vaapi'  ] ||
-               [ "$video_encoder" = 'vp9'        ] ||
-               [ "$video_encoder" = 'vp9_vaapi'  ] ||
-               [ "$video_encoder" = 'wmv'        ] ;
-           } ;
-       } ||
-       {
-           {
-               [ "$format" = 'wmv' ] ||
-               [ "$format" = 'asf' ] ;
-           } &&
-           {
-               [ "$video_encoder" = 'x265'       ] ||
-               [ "$video_encoder" = 'kvazaar'    ] ||
-               [ "$video_encoder" = 'hevc_nvenc' ] ||
-               [ "$video_encoder" = 'hevc_vaapi' ] ||
-               [ "$video_encoder" = 'hevc_qsv'   ] ;
-           } ;
-       } ||
-       {
-           [ "$format" = 'mov' ] &&
-           {
-               [ "$video_encoder" = 'vp9'       ] ||
-               [ "$video_encoder" = 'vp9_vaapi' ] ;
-           } ;
-       }
-    then
-        msg="container format '${format}' does not support '${video_encoder}' video encoder"
-        
-        if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-        then
-           msg="${msg}
-                      (did you forget to select the container format?)"
-        fi
-        
-        show_settings
-        exit_program "$msg"
-    fi
-    
-    # special condition check: mp4 + vp9
-    # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-    if [ "$format" = 'mp4' ] &&
-       {
-           [ "$video_encoder" = 'vp9'       ] ||
-           [ "$video_encoder" = 'vp9_vaapi' ] ;
-       }
-    then
-        ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
-        
         if {
-               printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
-               ! {
-                     [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
-                     [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
-                 } ;
+               # note: opus support in mp4 is currently experimental in ffmpeg
+               [ "$format" = 'mp4' ] &&
+               {
+                   [ "$audio_encoder" = 'opus' ] ||
+                   [ "$audio_encoder" = 'wma'  ] ;
+               } ;
            } ||
            {
-               printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-               ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+               [ "$format" = 'webm' ] &&
+               {
+                   [ "$audio_encoder" = 'aac'     ] ||
+                   [ "$audio_encoder" = 'mp3lame' ] ||
+                   [ "$audio_encoder" = 'shine'   ] ||
+                   [ "$audio_encoder" = 'wma'     ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'ogg' ] ||
+                   [ "$format" = 'ogv' ] ;
+               } &&
+               {
+                   [ "$audio_encoder" = 'aac'     ] ||
+                   [ "$audio_encoder" = 'mp3lame' ] ||
+                   [ "$audio_encoder" = 'shine'   ] ||
+                   [ "$audio_encoder" = 'wma'     ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'flv' ] &&
+               {
+                   [ "$audio_encoder" = 'opus'   ] ||
+                   [ "$audio_encoder" = 'vorbis' ] ||
+                   [ "$audio_encoder" = 'wma'    ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'wmv' ] ||
+                   [ "$format" = 'asf' ] ||
+                   [ "$format" = 'avi' ] ||
+                   [ "$format" = 'mov' ] ;
+               } &&
+               [ "$audio_encoder" = 'opus' ] ;
            }
         then
-            msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
-                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
             
             if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
             then
@@ -1916,6 +1836,140 @@ check_cmd_line() {
             
             show_settings
             exit_program "$msg"
+        fi
+    fi
+    
+    # check for invalid combination of video encoder and container format
+    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
+    then
+        if {
+               [ "$format" = 'mp4' ] &&
+               {
+                   [ "$video_encoder" = 'theora'    ] ||
+                   [ "$video_encoder" = 'vp8'       ] ||
+                   [ "$video_encoder" = 'vp8_vaapi' ] ||
+                   [ "$video_encoder" = 'wmv'       ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'webm' ] &&
+               {
+                   [ "$video_encoder" = 'x264'       ] ||
+                   [ "$video_encoder" = 'h264_nvenc' ] ||
+                   [ "$video_encoder" = 'h264_vaapi' ] ||
+                   [ "$video_encoder" = 'h264_qsv'   ] ||
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'theora'     ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'ogg' ] ||
+                   [ "$format" = 'ogv' ] ;
+               } &&
+               {
+                   [ "$video_encoder" = 'x264'       ] ||
+                   [ "$video_encoder" = 'h264_nvenc' ] ||
+                   [ "$video_encoder" = 'h264_vaapi' ] ||
+                   [ "$video_encoder" = 'h264_qsv'   ] ||
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'vp9'        ] ||
+                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'flv' ] &&
+               {
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'theora'     ] ||
+                   [ "$video_encoder" = 'vp8'        ] ||
+                   [ "$video_encoder" = 'vp8_vaapi'  ] ||
+                   [ "$video_encoder" = 'vp9'        ] ||
+                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'wmv' ] ||
+                   [ "$format" = 'asf' ] ;
+               } &&
+               {
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'mov' ] &&
+               {
+                   [ "$video_encoder" = 'vp9'       ] ||
+                   [ "$video_encoder" = 'vp9_vaapi' ] ;
+               } ;
+           }
+        then
+            msg="container format '${format}' does not support '${video_encoder}' video encoder"
+            
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+            then
+                msg="${msg}
+                      (did you forget to select the container format?)"
+            fi
+            
+            show_settings
+            exit_program "$msg"
+        fi
+        
+        # special condition check: mp4 + vp9
+        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+        if [ "$format" = 'mp4' ] &&
+           {
+               [ "$video_encoder" = 'vp9'       ] ||
+               [ "$video_encoder" = 'vp9_vaapi' ] ;
+           }
+        then
+            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
+            
+            if {
+                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
+                   ! {
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                     } ;
+               } ||
+               {
+                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
+                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+               }
+            then
+                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                then
+                    msg="${msg}
+                      (did you forget to select the container format?)"
+                fi
+                
+                show_settings
+                exit_program "$msg"
+            fi
         fi
     fi
     
