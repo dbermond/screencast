@@ -247,7 +247,7 @@ show_help() {
     printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
     printf '%s\n' '  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]'
     printf '%s\n' "  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]"
-    printf '%s\n' '  -K, --keep                keep the live streaming or the temporary video'
+    printf '%s\n' '  -K, --keep                keep the temporary video or the live streaming'
     printf '%s\n' '  -u, --auto-filename       auto choose output filename based on date/time'
     printf '%s\n' '  -l, --list                list arguments supported by these options'
     printf '%s\n' '  -h, --help                this help screen'
