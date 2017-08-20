@@ -1977,7 +1977,7 @@ check_cmd_line() {
     if [ "$streaming" = 'true' ] 
     then
         # check for invalid audio encoder with the flv cotainer format
-        # (flv is will used internally by ffmpeg to send live straming to the server)
+        # (flv will be used internally by ffmpeg to send live straming to the server)
         if [ "$audio_encoder" = 'opus'   ] ||
            [ "$audio_encoder" = 'vorbis' ] ||
            [ "$audio_encoder" = 'wma'    ] 
@@ -1988,7 +1988,7 @@ check_cmd_line() {
         [ "$audio_encoder" = 'none' ] && exit_program 'live streaming cannot be sent without audio'
         
         # check for invalid video encoder with the flv cotainer format
-        # (flv is will used internally by ffmpeg to send live straming to the server)
+        # (flv will be used internally by ffmpeg to send live straming to the server)
         if [ "$video_encoder" = 'x265'       ] ||
            [ "$video_encoder" = 'kvazaar'    ] ||
            [ "$video_encoder" = 'hevc_nvenc' ] ||
@@ -2335,6 +2335,7 @@ fix_pass_duration() {
 }
 
 # set_vaapi_qsv function: set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
+#                         if they are chosen by the user
 # arguments: none
 # return value: none
 # return code (status): not relevant
