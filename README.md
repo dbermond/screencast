@@ -50,7 +50,7 @@ screencast
 ------------------------------------------------------------------------
 
 ## DESCRIPTION
-**screencast** is a command line interface to record a X11 desktop using FFmpeg. It’s designed to make desktop recording a simple task, eliminating the somewhat complex FFmpeg command line arguments and the need of multiple commands. It uses predefined encoder settings that should be suitable for most needs. The default settings provides a quick and affordable way to record the desktop and is YouTube ready, letting the user to be focused on just specifying the desired video size (resolution) and position. If the user doesn’t want to stick with the default settings it is possible to choose among a set of supported encoders and container formats.
+**screencast** is a command line interface to record a X11 desktop using FFmpeg. It's designed to make desktop recording a simple task, eliminating the somewhat complex FFmpeg command line arguments and the need of multiple commands. It uses predefined encoder settings that should be suitable for most needs. The default settings provides a quick and affordable way to record the desktop and is YouTube ready, letting the user to be focused on just specifying the desired video size (resolution) and position. If the user doesn't want to stick with the default settings it is possible to choose among a set of supported encoders and container formats.
 
 **screencast** not only provides an easy way to record your desktop, but it also has options to automatically add some effects to the recordings, like video fade-in / fade-out, text watermarking, webcam overlay and volume increase.
 
@@ -319,7 +319,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ```
 
 ## REQUIREMENTS
-- The minimum requirements are a POSIX-compatible shell, a running X session, a recent *FFmpeg* version and *xdpyinfo*. It’s advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and **screencast** packages at the [LINKS](#links) section.
+- The minimum requirements are a POSIX-compatible shell, a running X session, a recent *FFmpeg* version and *xdpyinfo*. It's advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and **screencast** packages at the [LINKS](#links) section.
 
 - When recording audio ([`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for [`-i`](#-i---audio-inputname) option requires *FFmpeg* to be compiled with support for PulseAudio (libpulse). When using webcam overlay effect ([`-W`](#-w---webcam)option) *FFmpeg* must have been compiled with support for Video4Linux2.
 
@@ -342,7 +342,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REMARKS
 - **screencast** is written in pure POSIX shell code and has been tested in bash, dash, yash, ksh and zsh.
 
-- **screencast** uses a two step recording process. Firstly the audio and video are recorded to a lossless format and at a second stage it is encoded to produce the output video. That’s why you see a desktop notification saying ’*encoding...*’. This mechanism allows a better video and avoids problems.
+- When recording offline, **screencast** uses a two step process. Firstly the audio and video are recorded to a lossless format, and at a second stage it is encoded to produce the output video. That's why you see a desktop notification saying '*encoding...*'. This mechanism produces a better video, avoids problems and allows to use fade effect. When live streaming, **screencast** uses a one step process, with recording and encoding at the same time. Live streaming does not support fade effect.
 
 - When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
 

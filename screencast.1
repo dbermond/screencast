@@ -492,11 +492,13 @@ for PNG (watermark) optimization (\fB\-g\fR option).
 \fBscreencast\fR is written in pure POSIX shell code and has been tested in
 bash, dash, yash, ksh and zsh.
 .PP
-\fBscreencast\fR uses a two step recording process. Firstly the audio and
-video are recorded to a lossless format and at a second stage it is encoded
-to produce the output video. That\'s why you see a desktop notification
-saying \'encoding...\'. This two step mechanism allows a better video and
-avoids problems.
+When recording offline, \fBscreencast\fR uses a two step process. Firstly the
+audio and video are recorded to a lossless format, and at a second stage it is
+encoded to produce the output video. That\'s why you see a desktop notification
+saying \'encoding...\'. This mechanism produces a better video, avoids problems
+and allows to use fade effect. When live streaming, \fBscreencast\fR uses a one
+step process, with recording and encoding at the same time. Live streaming does
+not support fade effect.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
