@@ -1222,8 +1222,8 @@ adjust_dimension() {
 # note: needs $video_width, $video_position_x, $video_height and $video_position_y
 check_screen() {
     screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
-    screen_width="$( printf '%s' "$screen_size" | cut -d 'x' -f1)"
-    screen_height="$(printf '%s' "$screen_size" | cut -d 'x' -f2)"
+    screen_width="$( printf '%s' "$screen_size" | cut -d'x' -f1)"
+    screen_height="$(printf '%s' "$screen_size" | cut -d'x' -f2)"
     
     if [ "$((video_width + video_position_x))" -gt "$screen_width"  ] 
     then
@@ -1305,10 +1305,10 @@ check_cmd_line() {
         [ "$video_posi_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --position (-p) option'
     else
         # preparations for check_dimension() and check_screen()
-        video_position_x="$(printf '%s' "$video_position" | cut -d ',' -f1)"
-        video_position_y="$(printf '%s' "$video_position" | cut -d ',' -f2)"
-        video_width="$(     printf '%s' "$video_size"     | cut -d 'x' -f1)"
-        video_height="$(    printf '%s' "$video_size"     | cut -d 'x' -f2)"
+        video_position_x="$(printf '%s' "$video_position" | cut -d',' -f1)"
+        video_position_y="$(printf '%s' "$video_position" | cut -d',' -f2)"
+        video_width="$(     printf '%s' "$video_size"     | cut -d'x' -f1)"
+        video_height="$(    printf '%s' "$video_size"     | cut -d'x' -f2)"
         
         if [ "$video_size_setted" = 'true' ] 
         then
@@ -2102,10 +2102,10 @@ get_region() {
         exit_program 'slop returned wrong values'
     fi
     
-    video_position_x="$(printf '%s' "$screen_region" | cut -d ' ' -f1)"
-    video_position_y="$(printf '%s' "$screen_region" | cut -d ' ' -f2)"
-    video_width="$(     printf '%s' "$screen_region" | cut -d ' ' -f3)"
-    video_height="$(    printf '%s' "$screen_region" | cut -d ' ' -f4)"
+    video_position_x="$(printf '%s' "$screen_region" | cut -d' ' -f1)"
+    video_position_y="$(printf '%s' "$screen_region" | cut -d' ' -f2)"
+    video_width="$(     printf '%s' "$screen_region" | cut -d' ' -f3)"
+    video_height="$(    printf '%s' "$screen_region" | cut -d' ' -f4)"
     
     # change video width and height if not a multiple of 8
     check_dimension "$video_width"  || adjust_dimension 'width'
