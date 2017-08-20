@@ -2296,8 +2296,10 @@ set_watermark() {
     then
         if create_watermark
         then
+            vfilter_option='-filter_complex'
             vfilter_settings="${vfilter_settings:+"${vfilter_settings},${watermark_options}"}"
             vfilter_settings="${vfilter_settings:-"$watermark_options"}"
+            
             [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
         fi
     fi
@@ -2311,8 +2313,12 @@ set_webcam() {
     if [ "$webcam_overlay" = 'true' ] 
     then
         check_ffmpeg_format 'video4linux2,v4l2' 'Video4Linux2 device grab' || exit 1
+        
         [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
+        
         webcam_options="${webcam_general_options} ${webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
+        
+        vfilter_option='-filter_complex'
         vfilter_settings="${vfilter_settings:+"${vfilter_settings},overlay=${webcam_position},format=bgr0"}"
         vfilter_settings="${vfilter_settings:-"overlay=${webcam_position},format=bgr0"}"
     fi
@@ -2323,6 +2329,7 @@ set_webcam() {
 # return value: none
 # return code (status): not relevant
 fix_pass_duration() {
+    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && vfilter_option='-vf'
     vfilter_settings="${vfilter_settings:+"${vfilter_settings},fps=${video_rate}"}"
     vfilter_settings="${vfilter_settings:-"fps=${video_rate}"}"
 }
@@ -2334,9 +2341,10 @@ fix_pass_duration() {
 set_vaapi_qsv() {
     case "$video_encoder" in
         *_vaapi)
-            [ "$streaming" = 'false' ] && [ "$watermark" = 'false' ] && vfilter_option='-vf'
+            [ "$streaming" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none' ] && vfilter_option='-vf'
             vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
             vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
+            
             vaapi_device="-vaapi_device ${vaapi_device}"
             pixel_format='vaapi_vld'
             ;;
@@ -2475,16 +2483,6 @@ live_streaming() {
     
     video_encode_codec="${video_encode_codec} -g $((video_rate * 2))" # set gop size
     
-    # set ffmpeg video filter option
-    if   [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] 
-    then
-        vfilter_option='-vf'
-        
-    elif [ "$webcam_overlay" = 'true'  ] || [ "$watermark" = 'true'  ] 
-    then
-        vfilter_option='-filter_complex'
-    fi
-    
     set_watermark
     set_webcam
     fix_pass_duration
@@ -2560,13 +2558,7 @@ live_streaming() {
 # return code (status): not relevant
 # note: it will make the program exit with error if a recording or encoding error occurs
 record_offline() {
-    # set ffmpeg video filter option
-    if [ "$webcam_overlay" = 'true' ] 
-    then
-        vfilter_option='-filter_complex'
-    else
-        vfilter_option='-vf'
-    fi
+    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && vfilter_option='-vf'
     
     set_webcam
     fix_pass_duration
@@ -2594,7 +2586,6 @@ record_offline() {
         unset vfilter_option
         unset vfilter_settings
         
-        [ "$watermark" = 'true' ] && vfilter_option='-filter_complex'
         set_watermark
         
         # enable fade effect if chosen by user (-e/--fade)
