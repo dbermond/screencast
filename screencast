@@ -1331,8 +1331,28 @@ check_cmd_line() {
     
     if [ "$video_rate_setted" = 'true' ] 
     then
-        # check if entered framerate (fps) is a valid integer/float number (-r/--fps)
-        printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' || exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+        # check if the entered framerate (fps) is a valid integer number (-r/--fps)
+        # (when live streaming, the video framerate (fps) cannot be a floating point number
+        #  because it will be multiplied by two to obtain the gop value. This multiplication
+        #  will be done using the shell simple aritmetic operator, which does not support floats.
+        #  This will make bc to be required only when using fade effect.)
+        if [ "$streaming" = 'true' ] 
+        then
+            if ! printf '%s' "$video_rate" | grep -Eq '^[0-9]+$'
+            then
+                if printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
+                then
+                    exit_program 'when live streaming, the video framerate (fps) cannot a floating point value'
+                else
+                    exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+                fi
+            fi
+        
+        # check if the entered framerate (fps) is a valid integer/float number (-r/--fps)
+        else
+            printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$' ||
+                exit_program "'${video_rate}' is not a valid video framerate (fps) format"
+        fi
     fi
     
     # checks and settings based on usage of the '-u' option
