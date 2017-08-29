@@ -27,6 +27,7 @@ savedir="$(pwd)"             # path to save output files
 tmpdir='/tmp'                # path for temporary files
 queue_size='3096'            # ffmpeg thread queue size
 finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
+ok_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 
 # control settings (controls various aspects)
 select_region='false'        # mouse screen region selection (true, false)
@@ -367,7 +368,7 @@ check_requirements() {
                 printf '%s%s\n' '                      ' \
                           "please install ${installname}" >&2
                 [ "$requirement" != 'notify-send' ] &&
-                    notify 'critical' '5000' 'process-stop' "$msg"
+                    notify 'critical' '5000' 'dialog-error' "$msg"
                 exit 1
             fi
         fi
@@ -382,7 +383,7 @@ check_requirements() {
 command_error() {
     msg='option requires an argument'
     print_error "${1} ${msg}"
-    notify 'critical' '5000' 'process-stop' "error: ${1} ${msg}"
+    notify 'critical' '5000' 'dialog-error' "error: ${1} ${msg}"
     exit 1
 }
 
@@ -393,7 +394,7 @@ command_error() {
 # return code (status): not relevant
 exit_program() {
     print_error "${1}"
-    notify 'critical' '5000' 'process-stop' "error: ${1}"
+    notify 'critical' '5000' 'dialog-error' "error: ${1}"
     exit 1
 }
 
@@ -1097,7 +1098,7 @@ ffmpeg_msg() {
     print_error "the detected ffmpeg build has no support for '${1}'"
     printf '%s%s\n'   '                      ' \
                       "please install a ffmpeg build with support for '${1}'" >&2
-    notify 'critical' '5000' 'process-stop' "error: ${1} is not supported by your ffmpeg build"
+    notify 'critical' '5000' 'dialog-error' "error: ${1} is not supported by your ffmpeg build"
 }
 
 # check_ffmpeg_format function: check if detected ffmpeg build has support
@@ -2381,7 +2382,15 @@ set_vaapi_qsv() {
 # return code (status): not relevant
 finish() {
     print_good 'finish'
-    notify 'normal' '3000' 'mail-mark-notjunk' 'finish'
+    
+    if [ -f "$ok_icon" ] 
+    then
+        finish_icon="$ok_icon"
+    else
+        finish_icon='video-x-generic'
+    fi
+    
+    notify 'normal' '3000' "$finish_icon" 'finish'
     
     # play a sound after finish if requirements are present
     if command -v paplay >/dev/null 2>&1
@@ -2396,7 +2405,7 @@ finish() {
 # return code (status): not relevant
 recording_error() {
     print_error 'recording error!'
-    notify 'critical' '5000' 'process-stop' 'recording error!'
+    notify 'critical' '5000' 'dialog-error' 'recording error!'
     exit 1
 }
 
@@ -2406,7 +2415,7 @@ recording_error() {
 # return code (status): not relevant
 encoding_error() {
     print_error 'encoding error!'
-    notify 'critical' '5000' 'process-stop' 'encoding error!'
+    notify 'critical' '5000' 'dialog-error' 'encoding error!'
     exit 1
 }
 

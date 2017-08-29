@@ -325,8 +325,6 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 
 - *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the [`-n`](#-n---no-notifications) option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the [`-n`](#-n---no-notifications) option will result in error.
 
-- *Oxygen* icon names are used for displaying desktop notifications. Although not a requirement, *Oxygen* icons are recommended to be installed for a better visual integration.
-
 - **screencast** will try to play a notification sound when the encoding process is finished. For this, it will use *paplay* (from PulseAudio) and a sound file from the freedesktop sound theme (usually a package called *sound-theme-freedesktop* in most Linux distributions). Although not a requirement, they are recommended to be installed for a better user experience.
 
 - Other requirements are needed according to additional options that may be specified by the user:
