@@ -2404,7 +2404,7 @@ recording_error() {
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
-recording_error() {
+encoding_error() {
     print_error 'encoding error!'
     notify 'critical' '5000' 'process-stop' 'encoding error!'
     exit 1
