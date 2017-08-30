@@ -2390,7 +2390,7 @@ finish() {
     # play a sound after finish if requirements are present
     if command -v paplay >/dev/null 2>&1
     then
-        [ -f "$finish_sound" ] && paplay "$finish_sound"
+        [ -f "$finish_sound" ] && paplay "$finish_sound" &
     fi
 }
 
