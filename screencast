@@ -27,7 +27,7 @@ savedir="$(pwd)"             # path to save output files
 tmpdir='/tmp'                # path for temporary files
 queue_size='3096'            # ffmpeg thread queue size
 finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
-ok_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
+finish_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 
 # control settings (controls various aspects)
 select_region='false'        # mouse screen region selection (true, false)
@@ -2383,12 +2383,7 @@ set_vaapi_qsv() {
 finish() {
     print_good 'finish'
     
-    if [ -f "$ok_icon" ] 
-    then
-        finish_icon="$ok_icon"
-    else
-        finish_icon='video-x-generic'
-    fi
+    ! [ -f "$finish_icon" ] && finish_icon='video-x-generic'
     
     notify 'normal' '3000' "$finish_icon" 'finish'
     
