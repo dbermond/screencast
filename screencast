@@ -66,7 +66,8 @@ audio_encoder='aac'          # audio encoder
 volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
 audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
-audio_record_codec='-codec:a pcm_s16le -ar 48000 -ac 2'
+codec_pcm_s16le='-codec:a pcm_s16le -ar 48000 -ac 2'
+codec_flac='-codec:a flac -ab 392k -ar 48000 -ac 2'
 codec_fdkaac='-codec:a libfdk_aac -ab 128k -ar 44100 -ac 2'
 codec_aac='-codec:a aac -ab 128k -ar 44100 -ac 2'
 codec_vorbis='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
@@ -86,8 +87,9 @@ video_rate='25'                    # video framerate (fps)
 corner_padding='10'                # video corner padding (for watermark and webcam effects)
 vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
 video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
-video_record_codec='ffv1 -level 3 -slicecrc 1'
-video_record_codec_vp8="${video_record_codec} -pix_fmt yuv420p"
+codec_ffv1='ffv1 -level 3 -slicecrc 1'
+codec_ffvhuff='ffvhuff'
+codec_huffyuv='huffyuv'
 codec_x264='libx264 -crf 21 -preset veryslow'
 codec_h264_nvenc='h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150'
 codec_h264_vaapi='h264_vaapi -qp 18'
@@ -1562,6 +1564,21 @@ check_cmd_line() {
     # audio input checks and adjustments
     if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
     then
+        # check if the detected ffmpeg build has support for a lossless audio encoder for recording
+        if check_ffmpeg_encoder 'pcm_s16le' 'PCM signed 16-bit little-endian'
+        then
+            audio_record_codec="$codec_pcm_s16le"
+        else
+            if check_ffmpeg_encoder 'pcm_s16le' 'PCM signed 16-bit little-endian'
+            then
+                print_warn "no 'pcm_s16le' support in ffmpeg, falling back to 'flac' encoder for recording"
+                audio_record_codec="$codec_flac"
+            else
+                ffmpeg_msg 'pcm_s16le or flac'
+                exit 1
+            fi
+        fi
+        
         # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA is not available)
         if ! check_ffmpeg_format 'alsa' 'ALSA audio'
         then
@@ -1639,8 +1656,6 @@ check_cmd_line() {
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
         
     fi # end: [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ]
-    
-    ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
     
     # audio encoder checks and settings:
     #   - check if user entered a valid audio encoder
@@ -1747,7 +1762,7 @@ check_cmd_line() {
             ;;
         vp8)
             check_ffmpeg_encoder vp8 libvpx || exit 1
-            video_record_codec="$video_record_codec_vp8"
+            video_record_codec="${video_record_codec} -pix_fmt yuv420p"
             video_encode_codec="$codec_vp8"
             ;;
         vp8_vaapi)
@@ -2839,6 +2854,30 @@ check_requirements
 # check if the detected ffmpeg build has support for basic screen recording format
 ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format 'x11grab' 'X11' || exit 1
+
+# check if the detected ffmpeg build has support for a lossless video encoder for recording
+ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
+if check_ffmpeg_encoder 'ffv1' 'FFmpeg video codec #1'
+then
+    video_record_codec="$codec_ffv1"
+else
+    if check_ffmpeg_encoder 'ffvhuff' 'Huffyuv FFmpeg variant'
+    then
+        print_warn "no 'ffv1' support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
+        print_warn "'ffvhuff' will produce an extra-huge temporary video, consider changing the tmp directory"
+        video_record_codec="$codec_ffvhuff"
+    else
+        if check_ffmpeg_encoder 'huffyuv' 'HuffYUV'
+        then
+            print_warn "no 'ffv1' and 'ffvhuff' support in ffmpeg, falling back to 'huffyuv' encoder for recording"
+            print_warn "'huffyuv' will produce an extra-huge temporary video, consider changing the tmp directory"
+            video_record_codec="$codec_huffyuv"
+        else
+            ffmpeg_msg 'ffv1, ffvhuff or huffyuv'
+            exit 1
+        fi
+    fi
+fi
 
 check_cmd_line "$@"
 check_dirs
