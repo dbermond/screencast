@@ -39,6 +39,7 @@ webcam_overlay='false'       # webcam overlay effect (true, false)
 streaming='false'            # live streaming (true, false)
 fixed_length='0'             # fixed length video in seconds (0 disable)
 notifications='true'         # desktop notifications (true, false)
+audio_input_setted='false'   # if audio input    was setted by cmd line with -i
 audio_encoder_setted='false' # if audio encoder  was setted by cmd line with -a
 video_encoder_setted='false' # if video encoder  was setted by cmd line with -v
 vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
@@ -556,6 +557,7 @@ get_cmd_line() {
                         command_error '--audio-input (-i)'
                     else
                         audio_input="${2}"
+                        audio_input_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -564,6 +566,7 @@ get_cmd_line() {
                 ;;
             --audio-input=?*)
                 audio_input="${1#*=}"
+                audio_input_setted='true'
                 ;;
             --audio-input=)
                 command_error '--audio-input (-i)'
@@ -1112,7 +1115,7 @@ ffmpeg_msg() {
 check_ffmpeg_format() {
     if ! printf '%s' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
-        ffmpeg_msg "$1"
+        [ "$1" != 'alsa' ] && [ "$1" != 'pulse' ] && ffmpeg_msg "$1"
         return 1
     fi
 }
@@ -1477,7 +1480,7 @@ check_cmd_line() {
             ;;
     esac
     
-    # some audio adjustments and checks
+    # audio checks and adjustments
     if [ "$audio_input" = 'none' ] 
     then
         # video without audio stream (audio will not be recorded)
@@ -1486,16 +1489,43 @@ check_cmd_line() {
         # check if the detected ffmpeg build has support for basic audio recording formats
         if [ "$audio_encoder" != 'none' ] 
         then
-            check_ffmpeg_format 'alsa' 'ALSA audio' || exit 1
-            
-            if [ "$audio_input" = 'pulse' ] 
+            # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA not available)
+            if ! check_ffmpeg_format 'alsa' 'ALSA audio'
             then
-                check_ffmpeg_format 'pulse' 'Pulse audio' || exit 1
-            fi
+                if check_ffmpeg_format 'pulse' 'Pulse audio'
+                then
+                    audio_general_options="$(printf '%s' "$audio_general_options" | sed 's/alsa/pulse/')"
+                    
+                    print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
+                    
+                    if [ "$audio_input_setted" = 'false' ] 
+                    then
+                        audio_input='default'
+                        print_warn "auto setting audio input device to 'default'"
+                    fi
+                else
+                    ffmpeg_msg 'ALSA or PulseAudio'
+                    exit 1
+                fi
+            else
+                if [ "$audio_input" = 'pulse' ] 
+                then
+                    if ! check_ffmpeg_format 'pulse' 'Pulse audio'
+                    then
+                        print_error "'pulse' input device is setted but the detected ffmpeg build has no support for 'PulseAudio'"
+                        printf '%s%s\n'   '                       ' \
+                                          "please install a ffmpeg build with support for 'PulseAudio'" >&2
+                        notify 'critical' '5000' 'dialog-error' \
+                               "error: 'pulse' input device is setted but PulseAudio is not supported by your ffmpeg build"
+                        exit 1
+                    fi
+                fi
+            fi # end: else clause of: if ! check_ffmpeg_format 'alsa' 'ALSA audio'
             
             audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
-        fi
-    fi
+            
+        fi # end: if [ "$audio_encoder" != 'none' ]
+    fi # end: else clause of: if [ "$audio_input" = 'none' ]
     
     ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
     

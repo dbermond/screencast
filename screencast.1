@@ -106,7 +106,7 @@ supported types: mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi
 .TP
 \fB\-i\fR, \fB\-\-audio\-input\fR=\fINAME\fR
 .RS
-ALSA audio input device. To determine possible audio input device names please
+ALSA audio input device name. To determine possible audio input device names please
 see:
 .nf
 <https://trac.ffmpeg.org/wiki/Capture/ALSA>
@@ -124,6 +124,13 @@ be present)
 .RE
 .PP
 default: pulse
+.PP
+\fBnote:\fR the default audio recording backend used by \fBscreencast\fR is
+ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use
+the PulseAudio backend (a warning message will be displayed), and in this case
+you can use this option to specify a PulseAudio input device name. To
+determine possible PulseAudio input device names you can use the \fBpactl\fR
+utility (\'$ \fBpactl list sources\fR\').
 .RE
 .TP
 \fB\-a\fR, \fB\-\-audio\-encoder\fR=\fINAME\fR
@@ -451,11 +458,9 @@ recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use
 for x11grab (libxcb) and the desired encoders.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
-\fInone\fR) \fIFFmpeg\fR must have been compiled with support for ALSA audio.
-The default \fIpulse\fR setting for \fB\-i\fR option requires \fIFFmpeg\fR to
-be compiled with support for PulseAudio (libpulse). When using webcam overlay
-effect (\fB-W\fR option) \fIFFmpeg\fR must have been compiled with support for
-Video4Linux2.
+\fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA  or
+PulseAudio. When using webcam overlay effect (\fB-W\fR option), \fIFFmpeg\fR
+must have been compiled with support for Video4Linux2.
 .PP
 \fInotify\-send\fR (libnotify) is needed for desktop notifications. Note that
 desktop notifications are enabled by default. They can be disabled by using
@@ -528,9 +533,6 @@ streaming websites like \fIYouTube\fR.
 .PP
 The default settings for container format and audio/video encoders will produce
 a video that is ready to be uploaded to \fIYouTube\fR.
-.PP
-The default \fIpulse\fR audio input setting (\fB\-i\fR option) will be suitable
-for most users, as long as FFmpeg was compiled with ALSA and PulseAudio support.
 .SH LIMITATIONS
 \fBscreencast\fR currently records only display \fI0\fR and screen \fI0\fR
 (\fIDISPLAY\fR value of \fI:0.0\fR \- or \fI:0\fR), which is sufficient for

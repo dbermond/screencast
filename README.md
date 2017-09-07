@@ -104,7 +104,7 @@ supported types: `mp4`, `mov`, `mkv`, `webm`, `ogg`, `ogv`, `flv`, `nut`, `wmv`,
 
 #### `-i, --audio-input=NAME`
 
-ALSA audio input device. To determine possible audio input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
+ALSA audio input device name. To determine possible ALSA input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
 
 - Some special values that can be used:
     - `none`: audio will be disabled (video without audio, only video stream will be present)
@@ -112,6 +112,8 @@ ALSA audio input device. To determine possible audio input device names please s
     - `pulse`: the default PulseAudio device
 
 default: `pulse`
+
+**note**: the default audio recording backend used by **screencast** is ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use the PulseAudio backend (a warning message will be displayed), and in this case you can use this option to specify a PulseAudio input device name. To determine possible PulseAudio input device names you can use the `pactl` utility (`$ pactl list sources`).
 
 #### `-a, --audio-encoder=NAME`
 
@@ -321,7 +323,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REQUIREMENTS
 - The minimum requirements are a POSIX-compatible shell, a running X session, a recent *FFmpeg* version and *xdpyinfo*. It's advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders. You can see a *FFmpeg* compilation guide and **screencast** packages at the [LINKS](#links) section.
 
-- When recording audio ([`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options not setted to `none`) *FFmpeg* must have been compiled with support for ALSA audio. The default `pulse` setting for [`-i`](#-i---audio-inputname) option requires *FFmpeg* to be compiled with support for PulseAudio (libpulse). When using webcam overlay effect ([`-W`](#-w---webcam)option) *FFmpeg* must have been compiled with support for Video4Linux2.
+- When recording audio ([`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options not setted to `none`), *FFmpeg* must have been compiled with support for ALSA or PulseAudio. When using webcam overlay effect ([`-W`](#-w---webcam)option), *FFmpeg* must have been compiled with support for Video4Linux2.
 
 - *notify-send* (libnotify) is needed for desktop notifications. Note that desktop notifications are enabled by default. They can be disabled by using the [`-n`](#-n---no-notifications) option, eliminating the need of *notify-send*. Running **screencast** in a system without *notify-send* and without using the [`-n`](#-n---no-notifications) option will result in error.
 
@@ -353,8 +355,6 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 - When using the `mp4` container format, the moov atom will be automatically moved to the beginning of the output video file. This is the same as running *qt-faststart* in the output video and is useful for uploading to streaming websites like [YouTube](https://www.youtube.com/).
 
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
-
-- The default `pulse` audio input setting ([`-i`](#-i---audio-inputname) option) will be suitable for most users, as long as FFmpeg was compiled with ALSA and PulseAudio support.
 
 ## LIMITATIONS
 **screencast** currently records only display `0` and screen `0` (`DISPLAY` value of `:0.0` - or `:0`), which is sufficient for single monitor environments. It may not produce the expected results when using a multi-monitor environment depending on your settings.
