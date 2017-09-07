@@ -1600,7 +1600,7 @@ check_cmd_line() {
                         else
                             print_error "'pactl' was not found after falling back to PulseAudio backend"
                             printf '%s%s\n' '                       ' \
-                                            "please install 'pactl' (libpulse)" >&2
+                                            "please install 'pactl'" >&2
                             exit 1
                         fi
                         ;;
