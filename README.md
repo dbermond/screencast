@@ -104,16 +104,16 @@ supported types: `mp4`, `mov`, `mkv`, `webm`, `ogg`, `ogv`, `flv`, `nut`, `wmv`,
 
 #### `-i, --audio-input=NAME`
 
-ALSA audio input device name. To determine possible ALSA input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
+ALSA audio input device name. Make sure to have a working ALSA configuration, for example, by a having properly configured `~/.asoundrc` file. To determine possible ALSA input device names please see the [FFmpeg ALSA capture guide](https://trac.ffmpeg.org/wiki/Capture/ALSA).
 
 - Some special values that can be used:
     - `none`: audio will be disabled (video without audio, only video stream will be present)
     - `default`: the default ALSA device
     - `pulse`: the default PulseAudio device
 
-default: `pulse`
+default: `default`
 
-**note**: the default audio recording backend used by **screencast** is ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use the PulseAudio backend (a warning message will be displayed), and in this case you can use this option to specify a PulseAudio input device name. To determine possible PulseAudio input device names you can use the `pactl` utility (`$ pactl list sources`).
+**note**: the default audio recording backend used by **screencast** is ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use the PulseAudio backend (a warning message will be displayed), and in this case you can use this option to specify a PulseAudio input source name. To determine possible PulseAudio input source names you can use the `pactl` utility (`$ pactl list sources`).
 
 #### `-a, --audio-encoder=NAME`
 

@@ -61,7 +61,7 @@ pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
 outputdir_setted='false'     # if output dir     was setted by cmd line with -o
 
 # audio settings
-audio_input='pulse'          # audio input
+audio_input='default'        # audio input
 audio_encoder='aac'          # audio encoder
 volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'

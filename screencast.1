@@ -106,8 +106,9 @@ supported types: mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi
 .TP
 \fB\-i\fR, \fB\-\-audio\-input\fR=\fINAME\fR
 .RS
-ALSA audio input device name. To determine possible audio input device names please
-see:
+ALSA audio input device name. Make sure to have a working ALSA configuration,
+for example, by having a properly configured \fI~/.asoundrc\fR file. To
+determine possible audio input device names please see:
 .nf
 <https://trac.ffmpeg.org/wiki/Capture/ALSA>
 .fi
@@ -123,13 +124,13 @@ be present)
 \fIpulse\fR: the default PulseAudio device
 .RE
 .PP
-default: pulse
+default: default
 .PP
 \fBnote:\fR the default audio recording backend used by \fBscreencast\fR is
 ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use
 the PulseAudio backend (a warning message will be displayed), and in this case
-you can use this option to specify a PulseAudio input device name. To
-determine possible PulseAudio input device names you can use the \fBpactl\fR
+you can use this option to specify a PulseAudio input source name. To
+determine possible PulseAudio input source names you can use the \fBpactl\fR
 utility (\'$ \fBpactl list sources\fR\').
 .RE
 .TP
