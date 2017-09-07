@@ -1665,7 +1665,13 @@ check_cmd_line() {
             then
                 audio_encode_codec="$codec_fdkaac"
             else
-                audio_encode_codec="$codec_aac"
+                if check_ffmpeg_encoder aac
+                then
+                    audio_encode_codec="$codec_aac"
+                else
+                    ffmpeg_msg 'aac'
+                    exit 1
+                fi
             fi
             ;;
         vorbis)
