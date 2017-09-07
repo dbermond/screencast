@@ -1124,16 +1124,14 @@ check_ffmpeg_format() {
 
 # check_ffmpeg_encoder function: check if detected ffmpeg build has support
 #                                for a given encoder
-# arguments: $1 - encoder generic name
-# arguments: $2 - encoder specific name
+# arguments: $1 - encoder name
 # return value: not relevant
 # reutrn code (status): 0 - ffmpeg build has support for desired encoder
 #                       1 - ffmpeg build has no support for desired encoder
 # note: needs $ffmpeg_encoders - ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
 check_ffmpeg_encoder() {
-    if ! printf '%s' "$ffmpeg_encoders" | grep -q ".*E.*${1}.*${2}.*"
+    if ! printf '%s' "$ffmpeg_encoders" | grep -Eq "^[[:space:]].{6}[[:space:]]+${1}[[:space:]]+"
     then
-        [ "$2" != 'libfdk_aac' ] && ffmpeg_msg "$2"
         return 1
     fi
 }
@@ -1565,11 +1563,11 @@ check_cmd_line() {
     if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
     then
         # check if the detected ffmpeg build has support for a lossless audio encoder for recording
-        if check_ffmpeg_encoder 'pcm_s16le' 'PCM signed 16-bit little-endian'
+        if check_ffmpeg_encoder pcm_s16le
         then
             audio_record_codec="$codec_pcm_s16le"
         else
-            if check_ffmpeg_encoder 'pcm_s16le' 'PCM signed 16-bit little-endian'
+            if check_ffmpeg_encoder flac
             then
                 print_warn "no 'pcm_s16le' support in ffmpeg, falling back to 'flac' encoder for recording"
                 audio_record_codec="$codec_flac"
@@ -1663,7 +1661,7 @@ check_cmd_line() {
     #   - set recording and encoding options accordingly
     case "$audio_encoder" in
         aac)
-            if check_ffmpeg_encoder aac libfdk_aac
+            if check_ffmpeg_encoder libfdk_aac
             then
                 audio_encode_codec="$codec_fdkaac"
             else
@@ -1671,23 +1669,23 @@ check_cmd_line() {
             fi
             ;;
         vorbis)
-            check_ffmpeg_encoder vorbis libvorbis || exit 1
+            check_ffmpeg_encoder libvorbis || exit 1
             audio_encode_codec="$codec_vorbis"
             ;;
         opus)
-            check_ffmpeg_encoder opus libopus || exit 1
+            check_ffmpeg_encoder libopus || exit 1
             audio_encode_codec="$codec_opus"
             ;;
         mp3lame)
-            check_ffmpeg_encoder mp3 libmp3lame || exit 1
+            check_ffmpeg_encoder libmp3lame || exit 1
             audio_encode_codec="$codec_mp3lame"
             ;;
         shine)
-            check_ffmpeg_encoder mp3 libshine || exit 1
+            check_ffmpeg_encoder libshine || exit 1
             audio_encode_codec="$codec_shine"
             ;;
         wma)
-            check_ffmpeg_encoder wmav2 'Windows Media Audio 2' || exit 1
+            check_ffmpeg_encoder wmav2 || exit 1
             audio_encode_codec="$codec_wma"
             ;;
         none)
@@ -1714,7 +1712,7 @@ check_cmd_line() {
     #   - set recording and encoding options accordingly
     case "$video_encoder" in
         x264)
-            check_ffmpeg_encoder h264 libx264 || exit 1
+            check_ffmpeg_encoder libx264 || exit 1
             if [ "$streaming" = 'true' ] 
             then
                 video_encode_codec="$codec_streaming_x264"
@@ -1723,64 +1721,64 @@ check_cmd_line() {
             fi
             ;;
         h264_nvenc)
-            check_ffmpeg_encoder h264 h264_nvenc || exit 1
+            check_ffmpeg_encoder h264_nvenc || exit 1
             video_encode_codec="$codec_h264_nvenc"
             ;;
         h264_vaapi)
-            check_ffmpeg_encoder h264 h264_vaapi || exit 1
+            check_ffmpeg_encoder h264_vaapi || exit 1
             check_vaapi_device
             video_encode_codec="$codec_h264_vaapi"
             ;;
         h264_qsv)
-            check_ffmpeg_encoder h264 h264_qsv || exit 1
+            check_ffmpeg_encoder h264_qsv || exit 1
             video_encode_codec="$codec_h264_qsv"
             ;;
         x265)
-            check_ffmpeg_encoder hevc libx265 || exit 1
+            check_ffmpeg_encoder libx265 || exit 1
             video_encode_codec="$codec_x265"
             ;;
         kvazaar)
-            check_ffmpeg_encoder hevc libkvazaar || exit 1
+            check_ffmpeg_encoder libkvazaar || exit 1
             video_encode_codec="$codec_kvazaar"
             ;;
         hevc_nvenc)
-            check_ffmpeg_encoder hevc hevc_nvenc || exit 1
+            check_ffmpeg_encoder hevc_nvenc || exit 1
             video_encode_codec="$codec_hevc_nvenc"
             ;;
         hevc_vaapi)
-            check_ffmpeg_encoder hevc hevc_vaapi || exit 1
+            check_ffmpeg_encoder hevc_vaapi || exit 1
             check_vaapi_device
             video_encode_codec="$codec_hevc_vaapi"
             ;;
         hevc_qsv)
-            check_ffmpeg_encoder hevc hevc_qsv || exit 1
+            check_ffmpeg_encoder hevc_qsv || exit 1
             video_encode_codec="$codec_hevc_qsv"
             ;;
         theora)
-            check_ffmpeg_encoder theora libtheora || exit 1
+            check_ffmpeg_encoder libtheora || exit 1
             video_encode_codec="$codec_theora"
             ;;
         vp8)
-            check_ffmpeg_encoder vp8 libvpx || exit 1
+            check_ffmpeg_encoder libvpx || exit 1
             video_record_codec="${video_record_codec} -pix_fmt yuv420p"
             video_encode_codec="$codec_vp8"
             ;;
         vp8_vaapi)
-            check_ffmpeg_encoder vp8 vp8_vaapi || exit 1
+            check_ffmpeg_encoder vp8_vaapi || exit 1
             check_vaapi_device
             video_encode_codec="$codec_vp8_vaapi"
             ;;
         vp9)
-            check_ffmpeg_encoder vp9 libvpx-vp9 || exit 1
+            check_ffmpeg_encoder libvpx-vp9 || exit 1
             video_encode_codec="$codec_vp9"
             ;;
         vp9_vaapi)
-            check_ffmpeg_encoder vp9 vp9_vaapi || exit 1
+            check_ffmpeg_encoder vp9_vaapi || exit 1
             check_vaapi_device
             video_encode_codec="$codec_vp9_vaapi"
             ;;
         wmv)
-            check_ffmpeg_encoder wmv2 'Windows Media Video 8' || exit 1
+            check_ffmpeg_encoder wmv2 || exit 1
             video_encode_codec="$codec_wmv"
             ;;
         *)
@@ -2856,18 +2854,18 @@ ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_ffmpeg_format 'x11grab' 'X11' || exit 1
 
 # check if the detected ffmpeg build has support for a lossless video encoder for recording
-ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
-if check_ffmpeg_encoder 'ffv1' 'FFmpeg video codec #1'
+ffmpeg_encoders="$(ffmpeg -encoders -v quiet)"
+if check_ffmpeg_encoder ffv1
 then
     video_record_codec="$codec_ffv1"
 else
-    if check_ffmpeg_encoder 'ffvhuff' 'Huffyuv FFmpeg variant'
+    if check_ffmpeg_encoder ffvhuff
     then
         print_warn "no 'ffv1' support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
         print_warn "'ffvhuff' will produce an extra-huge temporary video, consider changing the tmp directory"
         video_record_codec="$codec_ffvhuff"
     else
-        if check_ffmpeg_encoder 'huffyuv' 'HuffYUV'
+        if check_ffmpeg_encoder huffyuv
         then
             print_warn "no 'ffv1' and 'ffvhuff' support in ffmpeg, falling back to 'huffyuv' encoder for recording"
             print_warn "'huffyuv' will produce an extra-huge temporary video, consider changing the tmp directory"
