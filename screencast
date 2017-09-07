@@ -1277,6 +1277,85 @@ check_special_position() {
     esac
 }
 
+# check_alsa_long_name function: check for a valid ALSA input device long name
+# arguments: none
+# return value: none
+# return code (status): 0 - a valid ALSA input device long name was entered
+#                       1 - an invalid ALSA input device long name was entered
+# note: it will make the program exit with error user selects the 'null' input device
+check_alsa_long_name() {
+    arecord="$(arecord -L)"
+    
+    # check if user has entered allowed variations of long device name
+    if ! printf '%s' "$arecord" | grep -q  "^${audio_input}$"  &&
+       ! printf '%s' "$arecord" | grep -Eq "^${audio_input}:?" &&
+       ! printf '%s' "$arecord" | grep -Eq "^${audio_input%:*}:(CARD=)?${audio_input#*:}"
+    then
+        return 1
+    fi
+}
+
+# check_alsa_short_name function: check for a valid ALSA input device short name
+# arguments: none
+# return value: none
+# return code (status): 0 - a valid ALSA input device short name was entered
+#                       1 - an invalid ALSA input device short name was entered
+check_alsa_short_name() {
+    arecord="$(arecord -l)"
+    
+    # format: [plug]hw:card
+    if printf '%s' "$audio_input" | grep -Eq '^(plug)?+hw:[0-9]+$'
+    then
+        alsa_card="$(printf '%s' "$audio_input" | sed 's/.*hw://')"
+        
+        if ! printf '%s' "$arecord" | grep -q "card[[:space:]]${alsa_card}:"
+        then
+            return 1
+        fi
+        
+    # format: [plug]hw:card,device
+    elif printf '%s' "$audio_input" | grep -Eq '^(plug)?+hw:[0-9],[0-9]+$'
+    then
+        alsa_card="$(  printf '%s' "$audio_input" | sed 's/.*hw://;s/,.*//')"
+        alsa_device="$(printf '%s' "$audio_input" | sed 's/.*hw://;s/.*,//')"
+        
+        if ! printf '%s' "$arecord" | grep "card[[:space:]]${alsa_card}:" | grep -q "device[[:space:]]${alsa_device}:"
+        then
+            return 1
+        fi
+        
+    # format: [plug]hw:card,device,subdevice
+    elif printf '%s' "$audio_input" | grep -Eq '^(plug)?+hw:[0-9],[0-9]+,[0-9]+$'
+    then
+        alsa_card="$(     printf '%s' "$audio_input" | sed 's/.*hw://;s/,.*//')"
+        alsa_device="$(   printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\+,//;s/,.*//')"
+        alsa_subdevice="$(printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\+,//;s/.*,//')"
+        
+        if printf '%s' "$arecord" | grep "card[[:space:]]${alsa_card}:" | grep -q "device[[:space:]]${alsa_device}:"
+        then
+            # find line number of specified card and device
+            card_line="$(printf '%s' "$arecord" | sed -n "/card[[:space:]]${alsa_card}:.*device[[:space:]]${alsa_device}:.*/=")"
+            
+            # find how many subdevices this card/device have
+            # ($card_line + 1 to match Subdevices: 1/1, Subdevices: 2/2, ...)
+            subdevices="$(printf '%s' "$arecord" | sed -n "$((card_line + 1))p" | sed 's@.*/@@')"
+            
+            [ "$subdevices" = '1' ] && subdevices='0' # no need to extend line range if there is only one subdevice
+            
+            # grep for subdevice number in specific line range after $card_line
+            if ! printf '%s' "$arecord" | sed -n "$((card_line + 2)),$((card_line + 2 + subdevices))p" | grep -q "Subdevice[[:space:]]#${alsa_subdevice}:"
+            then
+                return 1
+            fi
+            
+        else
+            return 1
+        fi
+    else
+        return 1
+    fi
+}
+
 # check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
 #                              (will exit with error if an invalid png optimizer is chosen)
 # arguments: none
@@ -1480,57 +1559,91 @@ check_cmd_line() {
             ;;
     esac
     
-    # audio checks and adjustments
-    if [ "$audio_input" = 'none' ] 
+    # audio input checks and adjustments
+    if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
     then
-        # video without audio stream (audio will not be recorded)
-        audio_encoder='none' # trigger adjustments during $audio_encoder checks bellow
-    else
-        # check if the detected ffmpeg build has support for basic audio recording formats
-        if [ "$audio_encoder" != 'none' ] 
+        # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA is not available)
+        if ! check_ffmpeg_format 'alsa' 'ALSA audio'
         then
-            # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA not available)
-            if ! check_ffmpeg_format 'alsa' 'ALSA audio'
+            # check for PulseAudio support in ffmpeg
+            if check_ffmpeg_format 'pulse' 'Pulse audio'
             then
-                if check_ffmpeg_format 'pulse' 'Pulse audio'
-                then
-                    audio_general_options="$(printf '%s' "$audio_general_options" | sed 's/alsa/pulse/')"
-                    
-                    print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
-                    
-                    if [ "$audio_input_setted" = 'false' ] 
-                    then
-                        audio_input='default'
-                        print_warn "auto setting audio input device to 'default'"
-                    fi
-                else
-                    ffmpeg_msg 'ALSA or PulseAudio'
-                    exit 1
-                fi
+                audio_general_options="$(printf '%s' "$audio_general_options" | sed 's/alsa/pulse/')"
+                
+                print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             else
-                if [ "$audio_input" = 'pulse' ] 
-                then
-                    if ! check_ffmpeg_format 'pulse' 'Pulse audio'
-                    then
-                        print_error "'pulse' input device is setted but the detected ffmpeg build has no support for 'PulseAudio'"
-                        printf '%s%s\n'   '                       ' \
-                                          "please install a ffmpeg build with support for 'PulseAudio'" >&2
-                        notify 'critical' '5000' 'dialog-error' \
-                               "error: 'pulse' input device is setted but PulseAudio is not supported by your ffmpeg build"
-                        exit 1
-                    fi
-                fi
-            fi # end: else clause of: if ! check_ffmpeg_format 'alsa' 'ALSA audio'
+                ffmpeg_msg 'ALSA or PulseAudio'
+                exit 1
+            fi
             
-            audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
-            
-        fi # end: if [ "$audio_encoder" != 'none' ]
-    fi # end: else clause of: if [ "$audio_input" = 'none' ]
+            if [ "$audio_input_setted" = 'false' ] 
+            then
+                audio_input='default'
+                print_warn "auto setting audio input device to 'default'"
+            else
+                # check if user entered a valid PulseAudio input source
+                case "$audio_input" in
+                    default)
+                        :
+                        ;;
+                    *)
+                        if command -v pactl >/dev/null 2>&1
+                        then
+                            if ! printf '%s' "$(pactl list sources |
+                                                 grep '[Nn]ame:'   |
+                                                 grep 'input'      |
+                                                 sed  's/[[:space:]]*[Nn]ame:[[:space:]]//;s/^<//;s/>$//'
+                                               )" | grep -q "^${audio_input}$"
+                            then
+                                exit_program "'${audio_input}' is not a valid PulseAudio input source on this system"
+                            fi
+                        else
+                            print_error "'pactl' was not found after falling back to PulseAudio backend"
+                            printf '%s%s\n' '                       ' \
+                                            "please install 'pactl' (libpulse)" >&2
+                            exit 1
+                        fi
+                        ;;
+                esac
+            fi
+        else
+            # check if user entered a valid ALSA input device name
+            if [ "$audio_input_setted" = 'true' ] 
+            then
+                case "$audio_input" in
+                    pulse|default)
+                        :
+                        ;;
+                    # do not allow 'null' ALSA input device
+                    null)
+                        exit_program "the use of 'null' ALSA input device causes problems and is not allowed"
+                        ;;
+                    *)
+                        if command -v arecord >/dev/null 2>&1
+                        then
+                            if ! check_alsa_long_name && ! check_alsa_short_name
+                            then
+                                exit_program "'${audio_input}' is not a valid ALSA input device name on this system"
+                            fi
+                        else
+                            print_error "'arecord' was not found"
+                            printf '%s%s\n' '                       ' \
+                                            "please install 'arecord' (alsa-utils)" >&2
+                            exit 1
+                        fi
+                        ;;
+                esac
+            fi
+        fi # end: else clause of: if ! check_ffmpeg_format 'alsa' 'ALSA audio'
+        
+        audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
+        
+    fi # end: [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ]
     
     ffmpeg_encoders="$(ffmpeg -codecs -v quiet)" # preparation for check_ffmpeg_encoder()
     
     # audio encoder checks and settings:
-    #   - check if user entered a valid video encoder
+    #   - check if user entered a valid audio encoder
     #   - check if the detect ffmpeg build has support for the selected audio encoder
     #   - set recording and encoding options accordingly
     case "$audio_encoder" in
@@ -1562,18 +1675,23 @@ check_cmd_line() {
             check_ffmpeg_encoder wmav2 'Windows Media Audio 2' || exit 1
             audio_encode_codec="$codec_wma"
             ;;
-        # video without audio stream (audio will not be recorded)
         none)
-            unset audio_input
-            unset audio_channel_layout
-            unset audio_general_options
-            audio_record_codec='-an'
-            audio_encode_codec='-an'
+            :
             ;;
         *)
             exit_program "'${audio_encoder}' is not a valid audio encoder for this program"
             ;;
     esac
+    
+    # adjust settings if user is not recording audio (video without audio stream)
+    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
+    then
+        unset audio_input
+        unset audio_channel_layout
+        unset audio_general_options
+        audio_record_codec='-an'
+        audio_encode_codec='-an'
+    fi
     
     # video encoder checks and settings:
     #   - check if user entered a valid video encoder

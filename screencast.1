@@ -458,9 +458,15 @@ recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use
 for x11grab (libxcb) and the desired encoders.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
-\fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA  or
-PulseAudio. When using webcam overlay effect (\fB-W\fR option), \fIFFmpeg\fR
-must have been compiled with support for Video4Linux2.
+\fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA (or
+PulseAudio) (ALSA is preferred, PulseAudio will be used only as an
+auto-fallback backend if FFmpeg has no ALSA support). \fIarecord\fR
+(alsa-utils) will be required for ALSA when specifying a short or long ALSA
+input device name with the \fB\-i\fR option. If the PulseAudio backend is
+being used in the auto-fallback situation, \fIpactl\fR will be required when
+specifying a PulseAudio input source name with with the \fB\-i\fR option. When
+using webcam overlay effect (\fB-W\fR option), \fIFFmpeg\fR must have been
+compiled with support for Video4Linux2.
 .PP
 \fInotify\-send\fR (libnotify) is needed for desktop notifications. Note that
 desktop notifications are enabled by default. They can be disabled by using
