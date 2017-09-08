@@ -323,7 +323,7 @@ You can acomplish this by doing:
 ```
 $ chmod +x screencast
 $ sudo mv screencast /usr/local/bin
-$ gzip -9 screencast.1
+$ gzip -9 -n screencast.1
 $ sudo mv screencast.1.gz /usr/share/man/man1
 ```
 
