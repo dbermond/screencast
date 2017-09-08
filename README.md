@@ -226,7 +226,14 @@ default: device default
 
 #### `-L, --live-streaming=URL`
 
-Do a live streaming to the server address specified in *URL*. Please make sure to have a working connection to the specified server address and sufficient upload bandwidth to send the video data to the server. Note that the higher the video size (resolution) and framerate (fps), the higher will be the needed upload bandwidth. Use the [`-K`](#-k---keep) option if you want to save a local copy of the live streamed video. **screencast** will record offline when this option is not specified. This option cannot be used in the following situations: with the [`-e`](#-e---fadetype) (fade effect) option and when recording without audio (when [`-i`](#-i---audio-inputname) or [`-a`](#-a---audio-encodername) are setted to `none`). It has been tested only with the [YouTube](https://www.youtube.com/) live streaming service.
+Do a live streaming to the server address specified in *URL*. Please make sure to have a working connection to the specified server address and sufficient upload bandwidth to send the data. Note that the higher the video size (resolution) and framerate (fps), the higher will be the needed upload bandwidth. Use the [`-K`](#-k---keep) option if you want to save a local copy of the live streamed video. **screencast** will record offline when this option is not specified. It has been tested only with the [YouTube](https://www.youtube.com/) live streaming service.
+
+- Some restrictions apply:
+    - can be used only with audio encoders: `aac`, `mp3lame` and `shine`
+    - can be used only with video encoders: `x264`, `h264_nvenc`, `h264_vaapi` and `h264_qsv`
+    - can be used only with container formats (when saving the live streamed video with [`-K`](#-k---keep) option): `mp4`, `mov`, `mkv`, `flv`, `nut`, `wmv`, `asf` and `avi`
+    - cannot be used with fade effect ([`-e`](#-e---fadetype) option)
+    - must be recorded with audio ([`-i`](#-i---audio-inputname) and [`-a`](#-a---audio-encodername) options cannot be setted to `none`)
 
 default: disabled
 
@@ -342,7 +349,7 @@ $ sudo mv screencast.1.gz /usr/share/man/man1
 ## REMARKS
 - **screencast** is written in pure POSIX shell code and has been tested in bash, dash, yash, ksh and zsh.
 
-- When recording offline, **screencast** uses a two step process. Firstly the audio and video are recorded to a lossless format, and at a second stage it is encoded to produce the output video. That's why you see a desktop notification saying '*encoding...*'. This mechanism produces a better video, avoids problems and allows to use fade effect. When live streaming, **screencast** uses a one step process, with recording and encoding at the same time. Live streaming does not support fade effect.
+- When recording offline, **screencast** uses a two step process. Firstly the audio and video are recorded to a lossless format, and at a second stage it is encoded to produce the output video. That's why you see a desktop notification saying '*encoding...*'. This mechanism produces a better video, avoids problems and allows to use fade effect. When live streaming, **screencast** uses a one step process, with recording and encoding at the same time.
 
 - When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
 

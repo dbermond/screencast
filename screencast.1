@@ -321,14 +321,29 @@ default: device default
 .RS
 Do a live streaming to the server address specified in \fIURL\fR. Please make
 sure to have a working connection to the specified server address and
-sufficient upload bandwidth to send the video data to the server. Note that
-the higher the video size (resolution) and framerate (fps), the higher will be
-the needed upload bandwidth. Use the \fB\-K\fR option if you want to save a
-local copy of the live streamed video. \fBscreencast\fR will record offline
-when this option is not specified. This option cannot be used in the following
-situations: with the \fB\-e\fR (fade effect) option and when recording without
-audio (when \fB\-i\fR or \fB\-a\fR are setted to \fInone\fR). It has been
-tested only with the \fIYouTube\fR live streaming service.
+sufficient upload bandwidth to send the data. Note that the higher the video
+size (resolution) and framerate (fps), the higher will be the needed upload
+bandwidth. Use the \fB\-K\fR option if you want to save a local copy of the
+live streamed video. \fBscreencast\fR will record offline when this option is
+not specified. It has been tested only with the \fIYouTube\fR live streaming
+service.
+.PP
+Some restrictions apply:
+.RS
+.PP
+can be used only with audio encoders: aac, mp3lame and shine
+.PP
+can be used only with video encoders: x264, h264_nvenc, h264_vaapi and
+h264_qsv
+.PP
+can be used only with container formats (when saving the live streamed video
+with \fB-K\fR option): mp4, mov, mkv, flv, nut, wmv, asf and avi
+.PP
+cannot be used with fade effect (\fB-e\fR option)
+.PP
+must be recorded with audio (\fB-i\fR and \fB-a\fR options cannot be setted to
+\fInone\fR)
+.RE
 .PP
 default: disabled
 .RE
@@ -510,8 +525,7 @@ audio and video are recorded to a lossless format, and at a second stage it is
 encoded to produce the output video. That\'s why you see a desktop notification
 saying \'encoding...\'. This mechanism produces a better video, avoids problems
 and allows to use fade effect. When live streaming, \fBscreencast\fR uses a one
-step process, with recording and encoding at the same time. Live streaming does
-not support fade effect.
+step process, with recording and encoding at the same time.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
