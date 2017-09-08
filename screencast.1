@@ -456,15 +456,20 @@ end the recording.
 The minimum requirements are a POSIX-compatible shell, a running X session, a
 recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use
 \fIFFmpeg\fR version git master. \fIFFmpeg\fR needs to be compiled with support
-for x11grab (libxcb) and the desired encoders.
+for x11grab (libxcb) and the desired encoders and muxers. When recording
+offline, \fIFFmpeg\fR needs to be compiled with support for ffv1 encoder, ffv1
+decoder and matroska muxer (\fBscreencast\fR will try to auto-fallback to
+ffvhuff or huffyuv encoder/decoder if ffv1 is not supported and to nut muxer
+if matroska is not supported, but ffv1 and matroska are preferred). When live
+streaming, *FFmpeg* needs to compiled with support for flv muxer.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
-\fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA (or
-PulseAudio) (ALSA is preferred, PulseAudio will be used only as an
-auto-fallback backend if FFmpeg has no ALSA support). \fIarecord\fR
-(alsa-utils) will be required for ALSA when specifying a short or long ALSA
-input device name with the \fB\-i\fR option. If the PulseAudio backend is
-being used in the auto-fallback situation, \fIpactl\fR will be required when
+\fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA
+demuxer (\fBscreencast\fR will try to auto-fallback to PulseAudio demuxer if
+ALSA is not supported, but ALSA is preferred). \fIarecord\fR (alsa-utils) will
+be required for ALSA when specifying a short or long ALSA input device name
+with the \fB\-i\fR option. If the PulseAudio demuxer is being used in the
+described auto-fallback situation, \fIpactl\fR will be required when
 specifying a PulseAudio input source name with with the \fB\-i\fR option. When
 using webcam overlay effect (\fB-W\fR option), \fIFFmpeg\fR must have been
 compiled with support for Video4Linux2.

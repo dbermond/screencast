@@ -79,7 +79,6 @@ codec_wma='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
 # video settings
 video_encoder='x264'               # video encoder
 pixel_format='yuv420p'             # pixel format
-rec_extension='mkv'                # container format (file extension) for recording
 format='mp4'                       # container format (file extension) for output
 video_position='0,0' #200,234      # X and Y screen coordinates to record video from
 video_size='640x480'               # video size (resolution)
@@ -1096,7 +1095,7 @@ show_settings() {
 # component_error function: print an error message and show an error notification
 #                           about a not found ffmpeg component and exit the program
 # arguments: $1 - the not found ffmpeg component
-#            $2 - ffmpeg component type (optional) (example: encoder)
+#            $2 - ffmpeg component type (optional) (encoder, decoder, muxer, demuxer)
 # return value: not relevant
 # return code (status): not relevant
 component_error() {
@@ -1107,34 +1106,46 @@ component_error() {
     exit 1
 }
 
-# check_ffmpeg_format function: check if detected ffmpeg build has support
-#                               for a given format
-# arguments: $1 - format generic name
-# arguments: $2 - format specific name
+# check_component function: check if the detected ffmpeg build has support for a given component
+# arguments: $1 - component name
+# arguments: $2 - component type (encoder, decoder, muxer, demuxer)
 # return value: not relevant
-# reutrn code (status): 0 - ffmpeg build has support for desired format
-#                       1 - ffmpeg build has no support for desired format
-# note: needs $ffmpeg_formats - ffmpeg_formats="$(ffmpeg -formats -v quiet)"
-check_ffmpeg_format() {
-    if ! printf '%s' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
-    then
-        [ "$1" != 'alsa' ] && [ "$1" != 'pulse' ] && component_error "$1" 'format'
-        return 1
-    fi
-}
-
-# check_ffmpeg_encoder function: check if detected ffmpeg build has support
-#                                for a given encoder
-# arguments: $1 - encoder name
-# return value: not relevant
-# reutrn code (status): 0 - ffmpeg build has support for desired encoder
-#                       1 - ffmpeg build has no support for desired encoder
-# note: needs $ffmpeg_encoders - ffmpeg_encoders="$(ffmpeg -codecs -v quiet)"
-check_ffmpeg_encoder() {
-    if ! printf '%s' "$ffmpeg_encoders" | grep -Eq "^[[:space:]].{6}[[:space:]]+${1}[[:space:]]+"
-    then
-        return 1
-    fi
+# reutrn code (status): 0 - ffmpeg build has support for the desired component
+#                       1 - ffmpeg build has no support for the desired component
+# note1: needs $ffmpeg_codecs for encoders and decoders - ffmpeg_codecs="$(ffmpeg -codecs -v quiet)"
+# note2: needs $ffmpeg_formats for muxers and demuxers - ffmpeg_formats="$(ffmpeg -formats -v quiet)"
+check_component() {
+    case "$2" in
+        encoder)
+            if ! printf '%s' "$ffmpeg_codecs" | grep -q "(encoders:.*${1}" &&
+               ! printf '%s' "$ffmpeg_codecs" | grep -q "^[[:space:]].E.\{4\}[[:space:]]${1}[[:space:]]"
+            then
+                return 1
+            fi
+            ;;
+        decoder)
+            if ! printf '%s' "$ffmpeg_codecs" | grep -q "(decoders:.*${1}" &&
+               ! printf '%s' "$ffmpeg_codecs" | grep -q "^[[:space:]]D.\{5\}[[:space:]]${1}[[:space:]]"
+            then
+                return 1
+            fi
+            ;;
+        muxer)
+            if ! printf '%s' "$ffmpeg_formats" | grep -q "^[[:space:]].E[[:space:]]${1}[[:space:]]"
+            then
+                return 1
+            fi
+            ;;
+        demuxer)
+            if ! printf '%s' "$ffmpeg_formats" | grep -q "^[[:space:]]D.[[:space:]]${1}[[:space:]]"
+            then
+                return 1
+            fi
+            ;;
+        *)
+            exit_program "check_component(): invalid component type '${2}'"
+            ;;
+    esac
 }
 
 # dimension_msg function: create an error/warning message to use with
@@ -1524,11 +1535,14 @@ check_cmd_line() {
     
     # container format checks and settings:
     #   - check if a valid container format was selected
+    #   - check if the detected ffmpeg build has support for the chosen muxer
+    #   - auto choose audio/video encoder if needed (if user specified only the format without the encoders)
     #   - set some special options for mp4 and mov
-    #   - auto choose audio/video encoder (if needed) if user specified only the format without the encoders
     case "$format" in
-        # no need to auto choose encoders (default settings are for mp4; mov is very similar)
         mp4|mov)
+            check_component "$format" muxer || component_error "$format" muxer
+            
+            # move the moov atom to the beginning of the file
             if [ "$streaming"  = 'true' ] 
             then
                 faststart='[movflags=+faststart]'
@@ -1537,16 +1551,45 @@ check_cmd_line() {
             fi
             ;;
         webm)
+            check_component "$format" muxer || component_error "$format" muxer
+            
+            # auto choose audio/video encoder if needed
             [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
             [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
             ;;
         ogg|ogv)
+            check_component "$format" muxer || component_error "$format" muxer
+            
+            # auto choose audio/video encoder if needed
             [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
             [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
             ;;
-        # no need to auto choose encoders (these container formats accept the default audio and video encoders)
-        mkv|flv|nut|wmv|asf|avi)
-            :
+        mkv)
+            if [ "$rec_extension" != "$format" ] 
+            then
+                check_component matroska muxer || component_error matroska muxer
+            fi
+            ;;
+        flv)
+            # check for muxer support only if recording offline
+            # (flv muxer will be checked later when live streaming)
+            if [ "$streaming" != 'false' ] 
+            then
+                check_component "$format" muxer || component_error "$format" muxer
+            fi
+            ;;
+        nut)
+            if [ "$rec_extension" != "$format" ] 
+            then
+                check_component "$format" muxer || component_error "$format" muxer
+            fi
+            ;;
+        asf|avi)
+            check_component "$format" muxer || component_error "$format" muxer
+            ;;
+        wmv)
+            # asf muxer is used for wmv (and wma) container format
+            check_component asf muxer || component_error asf muxer
             ;;
         *)
             if [ "$streaming" = 'false' ] ||
@@ -1563,14 +1606,16 @@ check_cmd_line() {
     # audio input checks and adjustments
     if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
     then
-        # check if the detected ffmpeg build has support for a lossless audio encoder for recording
-        if check_ffmpeg_encoder pcm_s16le
+        # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
+        if check_component pcm_s16le encoder
         then
+            check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder'
             audio_record_codec="$codec_pcm_s16le"
         else
-            if check_ffmpeg_encoder flac
+            if check_component flac encoder
             then
-                print_warn "no 'pcm_s16le' support in ffmpeg, falling back to 'flac' encoder for recording"
+                print_warn "no 'pcm_s16le' encoder support in ffmpeg, falling back to 'flac' encoder for recording"
+                check_component flac decoder || component_error flac 'audio decoder'
                 audio_record_codec="$codec_flac"
             else
                 component_error 'pcm_s16le or flac' 'audio encoder'
@@ -1578,10 +1623,10 @@ check_cmd_line() {
         fi
         
         # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA is not available)
-        if ! check_ffmpeg_format 'alsa' 'ALSA audio'
+        if ! check_component alsa demuxer
         then
             # check for PulseAudio support in ffmpeg
-            if check_ffmpeg_format 'pulse' 'Pulse audio'
+            if check_component pulse demuxer
             then
                 audio_general_options="$(printf '%s' "$audio_general_options" | sed 's/alsa/pulse/')"
                 
@@ -1648,7 +1693,7 @@ check_cmd_line() {
                         ;;
                 esac
             fi
-        fi # end: else clause of: if ! check_ffmpeg_format 'alsa' 'ALSA audio'
+        fi # end: else clause of: if ! check_component alsa demuxer
         
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
         
@@ -1660,32 +1705,32 @@ check_cmd_line() {
     #   - set recording and encoding options accordingly
     case "$audio_encoder" in
         aac)
-            if check_ffmpeg_encoder libfdk_aac
+            if check_component libfdk_aac encoder
             then
                 audio_encode_codec="$codec_fdkaac"
             else
-                check_ffmpeg_encoder aac    || component_error aac        'audio encoder'
+                check_component aac encoder    || component_error aac        'audio encoder'
                 audio_encode_codec="$codec_aac"
             fi
             ;;
         vorbis)
-            check_ffmpeg_encoder libvorbis  || component_error libvorbis  'audio encoder'
+            check_component libvorbis encoder  || component_error libvorbis  'audio encoder'
             audio_encode_codec="$codec_vorbis"
             ;;
         opus)
-            check_ffmpeg_encoder libopus    || component_error libopus    'audio encoder'
+            check_component libopus encoder    || component_error libopus    'audio encoder'
             audio_encode_codec="$codec_opus"
             ;;
         mp3lame)
-            check_ffmpeg_encoder libmp3lame || component_error libmp3lame 'audio encoder'
+            check_component libmp3lame encoder || component_error libmp3lame 'audio encoder'
             audio_encode_codec="$codec_mp3lame"
             ;;
         shine)
-            check_ffmpeg_encoder libshine   || component_error libshine   'audio encoder'
+            check_component libshine encoder   || component_error libshine   'audio encoder'
             audio_encode_codec="$codec_shine"
             ;;
         wma)
-            check_ffmpeg_encoder wmav2      || component_error wmav2      'audio encoder'
+            check_component wmav2 encoder      || component_error wmav2      'audio encoder'
             audio_encode_codec="$codec_wma"
             ;;
         none)
@@ -1712,7 +1757,7 @@ check_cmd_line() {
     #   - set recording and encoding options accordingly
     case "$video_encoder" in
         x264)
-            check_ffmpeg_encoder libx264    || component_error libx264    'video encoder'
+            check_component libx264 encoder    || component_error libx264    'video encoder'
             if [ "$streaming" = 'true' ] 
             then
                 video_encode_codec="$codec_streaming_x264"
@@ -1721,64 +1766,64 @@ check_cmd_line() {
             fi
             ;;
         h264_nvenc)
-            check_ffmpeg_encoder h264_nvenc || component_error libx264    'video encoder'
+            check_component h264_nvenc encoder || component_error libx264    'video encoder'
             video_encode_codec="$codec_h264_nvenc"
             ;;
         h264_vaapi)
-            check_ffmpeg_encoder h264_vaapi || component_error h264_vaapi 'video encoder'
+            check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_h264_vaapi"
             ;;
         h264_qsv)
-            check_ffmpeg_encoder h264_qsv   || component_error h264_qsv   'video encoder'
+            check_component h264_qsv encoder   || component_error h264_qsv   'video encoder'
             video_encode_codec="$codec_h264_qsv"
             ;;
         x265)
-            check_ffmpeg_encoder libx265    || component_error libx265    'video encoder'
+            check_component libx265 encoder    || component_error libx265    'video encoder'
             video_encode_codec="$codec_x265"
             ;;
         kvazaar)
-            check_ffmpeg_encoder libkvazaar || component_error libkvazaar 'video encoder'
+            check_component libkvazaar encoder || component_error libkvazaar 'video encoder'
             video_encode_codec="$codec_kvazaar"
             ;;
         hevc_nvenc)
-            check_ffmpeg_encoder hevc_nvenc || component_error hevc_nvenc 'video encoder'
+            check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder'
             video_encode_codec="$codec_hevc_nvenc"
             ;;
         hevc_vaapi)
-            check_ffmpeg_encoder hevc_vaapi || component_error hevc_vaapi 'video encoder'
+            check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_hevc_vaapi"
             ;;
         hevc_qsv)
-            check_ffmpeg_encoder hevc_qsv   || component_error hevc_qsv   'video encoder'
+            check_component hevc_qsv encoder   || component_error hevc_qsv   'video encoder'
             video_encode_codec="$codec_hevc_qsv"
             ;;
         theora)
-            check_ffmpeg_encoder libtheora  || component_error libtheora  'video encoder'
+            check_component libtheora encoder  || component_error libtheora  'video encoder'
             video_encode_codec="$codec_theora"
             ;;
         vp8)
-            check_ffmpeg_encoder libvpx     || component_error libvpx     'video encoder'
+            check_component libvpx encoder     || component_error libvpx     'video encoder'
             video_record_codec="${video_record_codec} -pix_fmt yuv420p"
             video_encode_codec="$codec_vp8"
             ;;
         vp8_vaapi)
-            check_ffmpeg_encoder vp8_vaapi  || component_error vp8_vaapi  'video encoder'
+            check_component vp8_vaapi encoder  || component_error vp8_vaapi  'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_vp8_vaapi"
             ;;
         vp9)
-            check_ffmpeg_encoder libvpx-vp9 || component_error libvpx-vp9 'video encoder'
+            check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder'
             video_encode_codec="$codec_vp9"
             ;;
         vp9_vaapi)
-            check_ffmpeg_encoder vp9_vaapi  || component_error vp9_vaapi  'video encoder'
+            check_component vp9_vaapi encoder  || component_error vp9_vaapi  'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_vp9_vaapi"
             ;;
         wmv)
-            check_ffmpeg_encoder wmv2       || component_error wmv2       'video encoder'
+            check_component wmv2 encoder       || component_error wmv2       'video encoder'
             video_encode_codec="$codec_wmv"
             ;;
         *)
@@ -2158,8 +2203,12 @@ check_cmd_line() {
     # check for invalid audio encoder, video encoder and container format if live streaming is chosen by user
     if [ "$streaming" = 'true' ] 
     then
-        # check for invalid audio encoder with the flv cotainer format
-        # (flv will be used internally by ffmpeg to send live straming to the server)
+        # check if the detected ffmpeg build has support for flv muxer (flv is used for live streaming)
+        check_component flv muxer || component_error flv muxer
+        
+        [ "$audio_encoder" = 'none' ] && exit_program 'live streaming cannot be sent without audio'
+        
+        # check for invalid audio encoder with the flv muxer
         if [ "$audio_encoder" = 'opus'   ] ||
            [ "$audio_encoder" = 'vorbis' ] ||
            [ "$audio_encoder" = 'wma'    ] 
@@ -2167,10 +2216,7 @@ check_cmd_line() {
             exit_program "live streaming cannot be sent with '${audio_encoder}' audio encoder"
         fi
         
-        [ "$audio_encoder" = 'none' ] && exit_program 'live streaming cannot be sent without audio'
-        
-        # check for invalid video encoder with the flv cotainer format
-        # (flv will be used internally by ffmpeg to send live straming to the server)
+        # check for invalid video encoder with the flv muxer
         if [ "$video_encoder" = 'x265'       ] ||
            [ "$video_encoder" = 'kvazaar'    ] ||
            [ "$video_encoder" = 'hevc_nvenc' ] ||
@@ -2494,7 +2540,7 @@ set_watermark() {
 set_webcam() {
     if [ "$webcam_overlay" = 'true' ] 
     then
-        check_ffmpeg_format 'video4linux2,v4l2' 'Video4Linux2 device grab' || exit 1
+        check_component video4linux2,v4l2 demuxer || component_error ideo4linux2,v4l2 demuxer
         
         [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
         
@@ -2851,27 +2897,51 @@ check_requirements
 
 # check if the detected ffmpeg build has support for basic screen recording format
 ffmpeg_formats="$(ffmpeg -formats -v quiet)"
-check_ffmpeg_format 'x11grab' 'X11' || exit 1
+check_component x11grab demuxer || component_error x11grab demuxer
 
-# check if the detected ffmpeg build has support for a lossless video encoder for recording
-ffmpeg_encoders="$(ffmpeg -encoders -v quiet)"
-if check_ffmpeg_encoder ffv1
+# check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
+ffmpeg_codecs="$(ffmpeg -codecs -v quiet)"
+if check_component ffv1 encoder
 then
+    check_component ffv1 decoder || component_error ffv1 'video decoder'
     video_record_codec="$codec_ffv1"
 else
-    if check_ffmpeg_encoder ffvhuff
+    if check_component ffvhuff encoder
     then
-        print_warn "no 'ffv1' support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
-        print_warn "'ffvhuff' will produce an extra-huge temporary video, consider changing the tmp directory"
+        print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
+        check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
+        
+        print_warn "'ffvhuff' encoder will produce an extra-large temporary video, consider changing the tmp directory"
         video_record_codec="$codec_ffvhuff"
     else
-        if check_ffmpeg_encoder huffyuv
+        if check_component huffyuv encoder
         then
-            print_warn "no 'ffv1' and 'ffvhuff' support in ffmpeg, falling back to 'huffyuv' encoder for recording"
-            print_warn "'huffyuv' will produce an extra-huge temporary video, consider changing the tmp directory"
+            print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
+            check_component huffyuv decoder || component_error huffyuv 'video decoder'
+            
+            print_warn "'huffyuv' encoder will produce an extra-large temporary video, consider changing the tmp directory"
             video_record_codec="$codec_huffyuv"
         else
             component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
+        fi
+    fi
+fi
+
+# check if the detected ffmpeg build has support for a basic muxer and demuxer for recording
+if [ "$streaming" = 'false' ] 
+then
+    if check_component matroska muxer
+    then
+        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer
+        rec_extension='mkv'
+    else
+        if check_component nut muxer
+        then
+            check_component nut demuxer || component_error nut demuxer
+            print_warn "no 'matroska' muxer support in ffmpeg, falling back to 'nut' muxer for recording"
+            rec_extension='nut'
+        else
+            component_error 'matroska or nut' muxer
         fi
     fi
 fi
