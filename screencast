@@ -1533,6 +1533,44 @@ check_cmd_line() {
         fi
     fi
     
+    # check for valid live streaming settings
+    if [ "$streaming" = 'true' ] 
+    then
+        # check if the detected ffmpeg build has support for flv muxer (used for live streaming)
+        check_component flv muxer || component_error flv muxer
+        
+        # do not allow live streaming without recording audio (YouTube seems to refuse it)
+        if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
+        then
+            exit_program 'live streaming cannot be sent without audio'
+        fi
+        
+        # check for an invalid container format if saving the live stream
+        # (supported audio/video encoders in the flv muxer that have restrictions in specific container formats)
+        if [ "$keep_video" = 'true' ] 
+        then
+            case "$format" in
+                ogg|ogv|webm)
+                    exit_program "live streaming cannot be saved to the '${format}' container format"
+                    ;;
+            esac
+        fi
+        
+        # check for an invalid audio encoder for live streaming (flv muxer restrictions)
+        case "$audio_encoder" in
+            opus|vorbis|wma)
+                exit_program "live streaming cannot be made with the '${audio_encoder}' audio encoder"
+                ;;
+        esac
+        
+        # check for an invalid video encoder for live streaming (flv muxer restrictions)
+        case "$video_encoder" in
+            x265|kvazaar|hevc_nvenc|hevc_vaapi|hevc_qsv|vp8|vp8_vaapi|vp9|vp9_vaapi|theora|wmv)
+                exit_program "live streaming cannot be made with the '${video_encoder}' video encoder"
+                ;;
+        esac
+    fi
+    
     # container format checks and settings:
     #   - check if a valid container format was selected
     #   - check if the detected ffmpeg build has support for the chosen muxer
@@ -1540,14 +1578,21 @@ check_cmd_line() {
     #   - set some special options for mp4 and mov
     case "$format" in
         mp4|mov)
-            check_component "$format" muxer || component_error "$format" muxer
-            
-            # move the moov atom to the beginning of the file
-            if [ "$streaming"  = 'true' ] 
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
             then
-                faststart='[movflags=+faststart]'
-            else
-                faststart='-movflags +faststart'
+                check_component "$format" muxer || component_error "$format" muxer
+                
+                # move the moov atom to the beginning of the file
+                if [ "$streaming"  = 'true' ] 
+                then
+                    faststart='[movflags=+faststart]'
+                else
+                    faststart='-movflags +faststart'
+                fi
             fi
             ;;
         webm)
@@ -1565,41 +1610,62 @@ check_cmd_line() {
             [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
             ;;
         mkv)
-            if [ "$rec_extension" != "$format" ] 
-            then
-                check_component matroska muxer || component_error matroska muxer
-            fi
-            ;;
-        flv)
-            # check for muxer support only if recording offline
-            # (flv muxer will be checked later when live streaming)
-            if [ "$streaming" != 'false' ] 
-            then
-                check_component "$format" muxer || component_error "$format" muxer
-            fi
-            ;;
-        nut)
-            if [ "$rec_extension" != "$format" ] 
-            then
-                check_component "$format" muxer || component_error "$format" muxer
-            fi
-            ;;
-        asf|avi)
-            check_component "$format" muxer || component_error "$format" muxer
-            ;;
-        wmv)
-            # asf muxer is used for wmv (and wma) container format
-            check_component asf muxer || component_error asf muxer
-            ;;
-        *)
             if [ "$streaming" = 'false' ] ||
                {
                    [ "$streaming"  = 'true' ] &&
                    [ "$keep_video" = 'true' ] ;
                }
             then
-                exit_program "'${format}' is not a valid container format for this program"
+                if [ "$rec_extension" != "$format" ] 
+                then
+                    check_component matroska muxer || component_error matroska muxer
+                fi
             fi
+            ;;
+        flv)
+            # check for flv muxer support only if recording offline
+            # (flv muxer support in ffmpeg is already checked during live streaming checks)
+            if [ "$streaming" != 'false' ] 
+            then
+                check_component "$format" muxer || component_error "$format" muxer
+            fi
+            ;;
+        nut)
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
+            then
+                if [ "$rec_extension" != "$format" ] 
+                then
+                    check_component "$format" muxer || component_error "$format" muxer
+                fi
+            fi
+            ;;
+        asf|avi)
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
+            then
+                check_component "$format" muxer || component_error "$format" muxer
+            fi
+            ;;
+        wmv)
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
+            then
+                # asf muxer is used for wmv (and wma) container format
+                check_component asf muxer || component_error asf muxer
+            fi
+            ;;
+        *)
+            exit_program "'${format}' is not a valid container format for this program"
             ;;
     esac
     
@@ -2198,47 +2264,6 @@ check_cmd_line() {
                 exit_program "$msg"
             fi
         fi
-    fi
-    
-    # check for valid live streaming settings
-    if [ "$streaming" = 'true' ] 
-    then
-        # check if the detected ffmpeg build has support for flv muxer (used for live streaming)
-        check_component flv muxer || component_error flv muxer
-        
-        # do not allow live streaming without recording audio (YouTube seems to refuse it)
-        if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
-        then
-            exit_program 'live streaming cannot be sent without audio'
-        fi
-        
-        # check for a valid container format if saving the live stream
-        # (supported audio/video encoders in the flv muxer that have restrictions in specific container formats)
-        if [ "$keep_video" = 'true' ] 
-        then
-            case "$format" in
-                ogg|ogv|webm)
-                    exit_program "live streaming cannot be saved to the '$format' container format"
-                    ;;
-            esac
-        fi
-        
-        # check for a valid audio encoder for live streaming (flv muxer restrictions)
-        case "$audio_encoder" in
-            opus|vorbis|wma)
-                exit_program "live streaming cannot be made with the '$audio_encoder' audio encoder"
-                ;;
-        esac
-        
-        # check for a valid video encoder for live streaming (flv muxer restrictions)
-        case "$video_encoder" in
-            x264|h264_nvenc|h264_vaapi|h264_qsv)
-                :
-                ;;
-            *)
-                exit_program "live streaming cannot be made with the '$video_encoder' video encoder"
-                ;;
-        esac
     fi
 }
 
