@@ -1836,6 +1836,21 @@ check_cmd_line() {
             ;;
     esac
     
+    # do not allow to use '-i none' with an '-a' argument different than 'none'
+    if [ "$audio_input_setted"   = 'true' ] && [ "$audio_input"    = 'none' ] &&
+       [ "$audio_encoder_setted" = 'true' ] && [ "$audio_encoder" != 'none' ] 
+    then
+        exit_program "'-i none' cannot be used with an '-a' argument different than 'none'"
+    fi
+    
+    # do not allow to use '-a none' with an '-i' argument different than 'none'
+    if [ "$audio_encoder_setted" = 'true' ] && [ "$audio_encoder"  = 'none' ] &&
+       [ "$audio_input_setted"   = 'true' ] && [ "$audio_input"   != 'none' ] 
+       
+    then
+        exit_program "'-a none' cannot be used with an '-i' argument different than 'none'"
+    fi
+    
     # adjust settings if user is not recording audio (video without audio stream)
     if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
     then
