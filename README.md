@@ -50,7 +50,7 @@ screencast
 ------------------------------------------------------------------------
 
 ## DESCRIPTION
-**screencast** is a command line interface to record a X11 desktop using FFmpeg. It's designed to make desktop recording a simple task, eliminating the somewhat complex FFmpeg command line arguments and the need of multiple commands. It uses predefined encoder settings that should be suitable for most needs. The default settings provides a quick and affordable way to record the desktop and is YouTube ready, letting the user to be focused on just specifying the desired video size (resolution) and position. If the user doesn't want to stick with the default settings it is possible to choose among a set of supported encoders and container formats.
+**screencast** is a command line interface to record a X11 desktop using FFmpeg, having support for offline recording and live streaming. It's designed to make desktop recording a simple task, eliminating the somewhat complex FFmpeg command line arguments and the need of multiple commands. It uses predefined encoder settings that should be suitable for most needs. The default settings provides a quick and affordable way to record the desktop and is YouTube ready, letting the user to be focused on just specifying the desired video size (resolution) and position. If the user doesn't want to stick with the default settings, it is possible to choose among a set of supported encoders and container formats.
 
 **screencast** not only provides an easy way to record your desktop, but it also has options to automatically add some effects to the recordings, like video fade-in / fade-out, text watermarking, webcam overlay and volume increase.
 
