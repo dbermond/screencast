@@ -1794,6 +1794,209 @@ check_cmd_line() {
         
     fi # end: [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ]
     
+    # check for invalid combination of audio encoder and container format
+    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
+    then
+        if {
+               # note: opus support in mp4 is currently experimental in ffmpeg
+               [ "$format" = 'mp4' ] &&
+               {
+                   [ "$audio_encoder" = 'opus' ] ||
+                   [ "$audio_encoder" = 'wma'  ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'webm' ] &&
+               {
+                   [ "$audio_encoder" = 'aac'     ] ||
+                   [ "$audio_encoder" = 'mp3lame' ] ||
+                   [ "$audio_encoder" = 'shine'   ] ||
+                   [ "$audio_encoder" = 'wma'     ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'ogg' ] ||
+                   [ "$format" = 'ogv' ] ;
+               } &&
+               {
+                   [ "$audio_encoder" = 'aac'     ] ||
+                   [ "$audio_encoder" = 'mp3lame' ] ||
+                   [ "$audio_encoder" = 'shine'   ] ||
+                   [ "$audio_encoder" = 'wma'     ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'flv' ] &&
+               {
+                   [ "$audio_encoder" = 'opus'   ] ||
+                   [ "$audio_encoder" = 'vorbis' ] ||
+                   [ "$audio_encoder" = 'wma'    ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'wmv' ] ||
+                   [ "$format" = 'asf' ] ||
+                   [ "$format" = 'avi' ] ||
+                   [ "$format" = 'mov' ] ;
+               } &&
+               [ "$audio_encoder" = 'opus' ] ;
+           }
+        then
+            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
+            
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+            then
+                msg="${msg}
+                      (did you forget to select the container format?)"
+            fi
+            
+            show_settings
+            exit_program "$msg"
+        
+        fi # end: if { <complex multi-line fomat and video encoder combination check>
+    
+    fi # end: [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
+    
+    # check for invalid combination of video encoder and container format
+    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
+    then
+        if {
+               [ "$format" = 'mp4' ] &&
+               {
+                   [ "$video_encoder" = 'theora'    ] ||
+                   [ "$video_encoder" = 'vp8'       ] ||
+                   [ "$video_encoder" = 'vp8_vaapi' ] ||
+                   [ "$video_encoder" = 'wmv'       ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'webm' ] &&
+               {
+                   [ "$video_encoder" = 'x264'       ] ||
+                   [ "$video_encoder" = 'h264_nvenc' ] ||
+                   [ "$video_encoder" = 'h264_vaapi' ] ||
+                   [ "$video_encoder" = 'h264_qsv'   ] ||
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'theora'     ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'ogg' ] ||
+                   [ "$format" = 'ogv' ] ;
+               } &&
+               {
+                   [ "$video_encoder" = 'x264'       ] ||
+                   [ "$video_encoder" = 'h264_nvenc' ] ||
+                   [ "$video_encoder" = 'h264_vaapi' ] ||
+                   [ "$video_encoder" = 'h264_qsv'   ] ||
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'vp9'        ] ||
+                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'flv' ] &&
+               {
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ||
+                   [ "$video_encoder" = 'theora'     ] ||
+                   [ "$video_encoder" = 'vp8'        ] ||
+                   [ "$video_encoder" = 'vp8_vaapi'  ] ||
+                   [ "$video_encoder" = 'vp9'        ] ||
+                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
+                   [ "$video_encoder" = 'wmv'        ] ;
+               } ;
+           } ||
+           {
+               {
+                   [ "$format" = 'wmv' ] ||
+                   [ "$format" = 'asf' ] ;
+               } &&
+               {
+                   [ "$video_encoder" = 'x265'       ] ||
+                   [ "$video_encoder" = 'kvazaar'    ] ||
+                   [ "$video_encoder" = 'hevc_nvenc' ] ||
+                   [ "$video_encoder" = 'hevc_vaapi' ] ||
+                   [ "$video_encoder" = 'hevc_qsv'   ] ;
+               } ;
+           } ||
+           {
+               [ "$format" = 'mov' ] &&
+               {
+                   [ "$video_encoder" = 'vp9'       ] ||
+                   [ "$video_encoder" = 'vp9_vaapi' ] ;
+               } ;
+           }
+        then
+            msg="container format '${format}' does not support '${video_encoder}' video encoder"
+            
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+            then
+                msg="${msg}
+                      (did you forget to select the container format?)"
+            fi
+            
+            show_settings
+            exit_program "$msg"
+        
+        fi # end: if { <complex multi-line fomat and audio encoder combination check>
+        
+        # special condition check: mp4 + vp9
+        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+        if [ "$format" = 'mp4' ] &&
+           {
+               [ "$video_encoder" = 'vp9'       ] ||
+               [ "$video_encoder" = 'vp9_vaapi' ] ;
+           }
+        then
+            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
+            
+            if {
+                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
+                   ! {
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                     } ;
+               } ||
+               {
+                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
+                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+               }
+            then
+                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                then
+                    msg="${msg}
+                      (did you forget to select the container format?)"
+                fi
+                
+                show_settings
+                exit_program "$msg"
+            
+            fi # end: if { <complex multi-line ffmpeg version check>
+        
+        fi # end: [ "$format" = 'mp4' ] &&
+    
+    fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
+    
     # audio encoder checks and settings:
     #   - check if user entered a valid audio encoder
     #   - check if the detect ffmpeg build has support for the selected audio encoder
@@ -2110,203 +2313,6 @@ check_cmd_line() {
             printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || fixed_length_options="-t ${fixed_length}"
         else
             exit_program "'${fixed_length}' is not a valid number for fixed video length"
-        fi
-    fi
-    
-    # check for invalid combination of audio encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
-    then
-        if {
-               # note: opus support in mp4 is currently experimental in ffmpeg
-               [ "$format" = 'mp4' ] &&
-               {
-                   [ "$audio_encoder" = 'opus' ] ||
-                   [ "$audio_encoder" = 'wma'  ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'webm' ] &&
-               {
-                   [ "$audio_encoder" = 'aac'     ] ||
-                   [ "$audio_encoder" = 'mp3lame' ] ||
-                   [ "$audio_encoder" = 'shine'   ] ||
-                   [ "$audio_encoder" = 'wma'     ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'ogg' ] ||
-                   [ "$format" = 'ogv' ] ;
-               } &&
-               {
-                   [ "$audio_encoder" = 'aac'     ] ||
-                   [ "$audio_encoder" = 'mp3lame' ] ||
-                   [ "$audio_encoder" = 'shine'   ] ||
-                   [ "$audio_encoder" = 'wma'     ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'flv' ] &&
-               {
-                   [ "$audio_encoder" = 'opus'   ] ||
-                   [ "$audio_encoder" = 'vorbis' ] ||
-                   [ "$audio_encoder" = 'wma'    ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'wmv' ] ||
-                   [ "$format" = 'asf' ] ||
-                   [ "$format" = 'avi' ] ||
-                   [ "$format" = 'mov' ] ;
-               } &&
-               [ "$audio_encoder" = 'opus' ] ;
-           }
-        then
-            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        fi
-    fi
-    
-    # check for invalid combination of video encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
-    then
-        if {
-               [ "$format" = 'mp4' ] &&
-               {
-                   [ "$video_encoder" = 'theora'    ] ||
-                   [ "$video_encoder" = 'vp8'       ] ||
-                   [ "$video_encoder" = 'vp8_vaapi' ] ||
-                   [ "$video_encoder" = 'wmv'       ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'webm' ] &&
-               {
-                   [ "$video_encoder" = 'x264'       ] ||
-                   [ "$video_encoder" = 'h264_nvenc' ] ||
-                   [ "$video_encoder" = 'h264_vaapi' ] ||
-                   [ "$video_encoder" = 'h264_qsv'   ] ||
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'theora'     ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'ogg' ] ||
-                   [ "$format" = 'ogv' ] ;
-               } &&
-               {
-                   [ "$video_encoder" = 'x264'       ] ||
-                   [ "$video_encoder" = 'h264_nvenc' ] ||
-                   [ "$video_encoder" = 'h264_vaapi' ] ||
-                   [ "$video_encoder" = 'h264_qsv'   ] ||
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'vp9'        ] ||
-                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'flv' ] &&
-               {
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'theora'     ] ||
-                   [ "$video_encoder" = 'vp8'        ] ||
-                   [ "$video_encoder" = 'vp8_vaapi'  ] ||
-                   [ "$video_encoder" = 'vp9'        ] ||
-                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'wmv' ] ||
-                   [ "$format" = 'asf' ] ;
-               } &&
-               {
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'mov' ] &&
-               {
-                   [ "$video_encoder" = 'vp9'       ] ||
-                   [ "$video_encoder" = 'vp9_vaapi' ] ;
-               } ;
-           }
-        then
-            msg="container format '${format}' does not support '${video_encoder}' video encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        fi
-        
-        # special condition check: mp4 + vp9
-        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-        if [ "$format" = 'mp4' ] &&
-           {
-               [ "$video_encoder" = 'vp9'       ] ||
-               [ "$video_encoder" = 'vp9_vaapi' ] ;
-           }
-        then
-            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
-            
-            if {
-                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
-                   ! {
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
-                     } ;
-               } ||
-               {
-                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
-               }
-            then
-                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
-                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
-                
-                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-                then
-                    msg="${msg}
-                      (did you forget to select the container format?)"
-                fi
-                
-                show_settings
-                exit_program "$msg"
-            fi
         fi
     fi
 }
