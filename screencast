@@ -2200,68 +2200,45 @@ check_cmd_line() {
         fi
     fi
     
-    # check for invalid audio encoder, video encoder and container format if live streaming is chosen by user
+    # check for valid live streaming settings
     if [ "$streaming" = 'true' ] 
     then
-        # check if the detected ffmpeg build has support for flv muxer (flv is used for live streaming)
+        # check if the detected ffmpeg build has support for flv muxer (used for live streaming)
         check_component flv muxer || component_error flv muxer
         
-        [ "$audio_encoder" = 'none' ] && exit_program 'live streaming cannot be sent without audio'
-        
-        # check for invalid audio encoder with the flv muxer
-        if [ "$audio_encoder" = 'opus'   ] ||
-           [ "$audio_encoder" = 'vorbis' ] ||
-           [ "$audio_encoder" = 'wma'    ] 
+        # do not allow live streaming without recording audio (YouTube seems to refuse it)
+        if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
         then
-            exit_program "live streaming cannot be sent with '${audio_encoder}' audio encoder"
+            exit_program 'live streaming cannot be sent without audio'
         fi
         
-        # check for invalid video encoder with the flv muxer
-        if [ "$video_encoder" = 'x265'       ] ||
-           [ "$video_encoder" = 'kvazaar'    ] ||
-           [ "$video_encoder" = 'hevc_nvenc' ] ||
-           [ "$video_encoder" = 'hevc_vaapi' ] ||
-           [ "$video_encoder" = 'hevc_qsv'   ] ||
-           [ "$video_encoder" = 'theora'     ] ||
-           [ "$video_encoder" = 'vp8'        ] ||
-           [ "$video_encoder" = 'vp8_vaapi'  ] ||
-           [ "$video_encoder" = 'vp9'        ] ||
-           [ "$video_encoder" = 'vp9_vaapi'  ] ||
-           [ "$video_encoder" = 'wmv'        ] 
-        then
-            exit_program "live streaming cannot be sent with '${video_encoder}' video encoder"
-        fi
-        
-        # check for valid combination of container format and audio/video encoders if saving the live stream
+        # check for a valid container format if saving the live stream
+        # (supported audio/video encoders in the flv muxer that have restrictions in specific container formats)
         if [ "$keep_video" = 'true' ] 
         then
             case "$format" in
                 ogg|ogv|webm)
                     exit_program "live streaming cannot be saved to the '$format' container format"
                     ;;
-                *)
-                    :
-                    ;;
-            esac
-            
-            case "$audio_encoder" in
-                opus|vorbis|wma)
-                    exit_program "live streaming cannot be saved with the '$audio_encoder' audio encoder"
-                    ;;
-                *)
-                    :
-                    ;;
-            esac
-            
-            case "$video_encoder" in
-                x264|h264_nvenc|h264_vaapi|h264_qsv)
-                    :
-                    ;;
-                *)
-                    exit_program "live streaming cannot be saved with the '$video_encoder' video encoder"
-                    ;;
             esac
         fi
+        
+        # check for a valid audio encoder for live streaming (flv muxer restrictions)
+        case "$audio_encoder" in
+            opus|vorbis|wma)
+                exit_program "live streaming cannot be made with the '$audio_encoder' audio encoder"
+                ;;
+        esac
+        
+        # check for a valid video encoder for live streaming (flv muxer restrictions)
+        case "$video_encoder" in
+            x264|h264_nvenc|h264_vaapi|h264_qsv)
+                :
+                ;;
+            *)
+                exit_program "live streaming cannot be made with the '$video_encoder' video encoder"
+                ;;
+        esac
     fi
 }
 
