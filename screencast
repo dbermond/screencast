@@ -67,12 +67,12 @@ volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
 audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
 codec_pcm_s16le='-codec:a pcm_s16le -ar 48000 -ac 2'
-codec_flac='-codec:a flac -ab 392k -ar 48000 -ac 2'
-codec_fdkaac='-codec:a libfdk_aac -ab 128k -ar 44100 -ac 2'
-codec_aac='-codec:a aac -ab 128k -ar 44100 -ac 2'
+codec_flac='-codec:a flac -b:a 392k -ar 48000 -ac 2'
+codec_fdkaac='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
+codec_aac='-codec:a aac -b:a 128k -ar 44100 -ac 2'
 codec_vorbis='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
-codec_opus='-codec:a libopus -ab 128k -ar 48000 -ac 2'
-codec_mp3lame='-codec:a libmp3lame -ab 128k -ar 44100 -ac 2'
+codec_opus='-codec:a libopus -b:a 128k -ar 48000 -ac 2'
+codec_mp3lame='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
 codec_shine='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
 codec_wma='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
 
