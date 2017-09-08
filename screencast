@@ -1093,17 +1093,18 @@ show_settings() {
     print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
 }
 
-# ffmpeg_msg function: print an error message and show an error notification
-#                      about a not found ffmpeg component (to be used with 
-#                      check_ffmpeg_format() and check_ffmpeg_encoder())
-# arguments: $1 - string with the not found ffmpeg component
+# component_error function: print an error message and show an error notification
+#                           about a not found ffmpeg component and exit the program
+# arguments: $1 - the not found ffmpeg component
+#            $2 - ffmpeg component type (optional) (example: encoder)
 # return value: not relevant
 # return code (status): not relevant
-ffmpeg_msg() {
-    print_error "the detected ffmpeg build has no support for '${1}'"
+component_error() {
+    print_error "the detected ffmpeg build has no support for '${1}' ${2}"
     printf '%s%s\n'   '                      ' \
-                      "please install a ffmpeg build with support for '${1}'" >&2
-    notify 'critical' '5000' 'dialog-error' "error: ${1} is not supported by your ffmpeg build"
+                      "please install a ffmpeg build with support for '${1}' ${2}" >&2
+    notify 'critical' '5000' 'dialog-error' "error: the detected ffmpeg build has no support for '${1}' ${2}"
+    exit 1
 }
 
 # check_ffmpeg_format function: check if detected ffmpeg build has support
@@ -1117,7 +1118,7 @@ ffmpeg_msg() {
 check_ffmpeg_format() {
     if ! printf '%s' "$ffmpeg_formats" | grep -q ".*${1}[[:space:]]*${2}.*"
     then
-        [ "$1" != 'alsa' ] && [ "$1" != 'pulse' ] && ffmpeg_msg "$1"
+        [ "$1" != 'alsa' ] && [ "$1" != 'pulse' ] && component_error "$1" 'format'
         return 1
     fi
 }
@@ -1572,8 +1573,7 @@ check_cmd_line() {
                 print_warn "no 'pcm_s16le' support in ffmpeg, falling back to 'flac' encoder for recording"
                 audio_record_codec="$codec_flac"
             else
-                ffmpeg_msg 'pcm_s16le or flac'
-                exit 1
+                component_error 'pcm_s16le or flac' 'audio encoder'
             fi
         fi
         
@@ -1587,8 +1587,7 @@ check_cmd_line() {
                 
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             else
-                ffmpeg_msg 'ALSA or PulseAudio'
-                exit 1
+                component_error 'ALSA or PulseAudio' 'backend'
             fi
             
             if [ "$audio_input_setted" = 'false' ] 
@@ -1665,33 +1664,28 @@ check_cmd_line() {
             then
                 audio_encode_codec="$codec_fdkaac"
             else
-                if check_ffmpeg_encoder aac
-                then
-                    audio_encode_codec="$codec_aac"
-                else
-                    ffmpeg_msg 'aac'
-                    exit 1
-                fi
+                check_ffmpeg_encoder aac    || component_error aac        'audio encoder'
+                audio_encode_codec="$codec_aac"
             fi
             ;;
         vorbis)
-            check_ffmpeg_encoder libvorbis || exit 1
+            check_ffmpeg_encoder libvorbis  || component_error libvorbis  'audio encoder'
             audio_encode_codec="$codec_vorbis"
             ;;
         opus)
-            check_ffmpeg_encoder libopus || exit 1
+            check_ffmpeg_encoder libopus    || component_error libopus    'audio encoder'
             audio_encode_codec="$codec_opus"
             ;;
         mp3lame)
-            check_ffmpeg_encoder libmp3lame || exit 1
+            check_ffmpeg_encoder libmp3lame || component_error libmp3lame 'audio encoder'
             audio_encode_codec="$codec_mp3lame"
             ;;
         shine)
-            check_ffmpeg_encoder libshine || exit 1
+            check_ffmpeg_encoder libshine   || component_error libshine   'audio encoder'
             audio_encode_codec="$codec_shine"
             ;;
         wma)
-            check_ffmpeg_encoder wmav2 || exit 1
+            check_ffmpeg_encoder wmav2      || component_error wmav2      'audio encoder'
             audio_encode_codec="$codec_wma"
             ;;
         none)
@@ -1718,7 +1712,7 @@ check_cmd_line() {
     #   - set recording and encoding options accordingly
     case "$video_encoder" in
         x264)
-            check_ffmpeg_encoder libx264 || exit 1
+            check_ffmpeg_encoder libx264    || component_error libx264    'video encoder'
             if [ "$streaming" = 'true' ] 
             then
                 video_encode_codec="$codec_streaming_x264"
@@ -1727,64 +1721,64 @@ check_cmd_line() {
             fi
             ;;
         h264_nvenc)
-            check_ffmpeg_encoder h264_nvenc || exit 1
+            check_ffmpeg_encoder h264_nvenc || component_error libx264    'video encoder'
             video_encode_codec="$codec_h264_nvenc"
             ;;
         h264_vaapi)
-            check_ffmpeg_encoder h264_vaapi || exit 1
+            check_ffmpeg_encoder h264_vaapi || component_error h264_vaapi 'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_h264_vaapi"
             ;;
         h264_qsv)
-            check_ffmpeg_encoder h264_qsv || exit 1
+            check_ffmpeg_encoder h264_qsv   || component_error h264_qsv   'video encoder'
             video_encode_codec="$codec_h264_qsv"
             ;;
         x265)
-            check_ffmpeg_encoder libx265 || exit 1
+            check_ffmpeg_encoder libx265    || component_error libx265    'video encoder'
             video_encode_codec="$codec_x265"
             ;;
         kvazaar)
-            check_ffmpeg_encoder libkvazaar || exit 1
+            check_ffmpeg_encoder libkvazaar || component_error libkvazaar 'video encoder'
             video_encode_codec="$codec_kvazaar"
             ;;
         hevc_nvenc)
-            check_ffmpeg_encoder hevc_nvenc || exit 1
+            check_ffmpeg_encoder hevc_nvenc || component_error hevc_nvenc 'video encoder'
             video_encode_codec="$codec_hevc_nvenc"
             ;;
         hevc_vaapi)
-            check_ffmpeg_encoder hevc_vaapi || exit 1
+            check_ffmpeg_encoder hevc_vaapi || component_error hevc_vaapi 'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_hevc_vaapi"
             ;;
         hevc_qsv)
-            check_ffmpeg_encoder hevc_qsv || exit 1
+            check_ffmpeg_encoder hevc_qsv   || component_error hevc_qsv   'video encoder'
             video_encode_codec="$codec_hevc_qsv"
             ;;
         theora)
-            check_ffmpeg_encoder libtheora || exit 1
+            check_ffmpeg_encoder libtheora  || component_error libtheora  'video encoder'
             video_encode_codec="$codec_theora"
             ;;
         vp8)
-            check_ffmpeg_encoder libvpx || exit 1
+            check_ffmpeg_encoder libvpx     || component_error libvpx     'video encoder'
             video_record_codec="${video_record_codec} -pix_fmt yuv420p"
             video_encode_codec="$codec_vp8"
             ;;
         vp8_vaapi)
-            check_ffmpeg_encoder vp8_vaapi || exit 1
+            check_ffmpeg_encoder vp8_vaapi  || component_error vp8_vaapi  'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_vp8_vaapi"
             ;;
         vp9)
-            check_ffmpeg_encoder libvpx-vp9 || exit 1
+            check_ffmpeg_encoder libvpx-vp9 || component_error libvpx-vp9 'video encoder'
             video_encode_codec="$codec_vp9"
             ;;
         vp9_vaapi)
-            check_ffmpeg_encoder vp9_vaapi || exit 1
+            check_ffmpeg_encoder vp9_vaapi  || component_error vp9_vaapi  'video encoder'
             check_vaapi_device
             video_encode_codec="$codec_vp9_vaapi"
             ;;
         wmv)
-            check_ffmpeg_encoder wmv2 || exit 1
+            check_ffmpeg_encoder wmv2       || component_error wmv2       'video encoder'
             video_encode_codec="$codec_wmv"
             ;;
         *)
@@ -2877,8 +2871,7 @@ else
             print_warn "'huffyuv' will produce an extra-huge temporary video, consider changing the tmp directory"
             video_record_codec="$codec_huffyuv"
         else
-            ffmpeg_msg 'ffv1, ffvhuff or huffyuv'
-            exit 1
+            component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
         fi
     fi
 fi
