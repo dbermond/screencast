@@ -1095,14 +1095,43 @@ show_settings() {
 # component_error function: print an error message and show an error notification
 #                           about a not found ffmpeg component and exit the program
 # arguments: $1 - the not found ffmpeg component
-#            $2 - ffmpeg component type (optional) (encoder, decoder, muxer, demuxer)
+#            $2 - ffmpeg component type (optional)
+#                 ([audio/video ]encoder, [audio/video ]decoder, muxer, demuxer)
 # return value: not relevant
 # return code (status): not relevant
 component_error() {
     print_error "the detected ffmpeg build has no support for '${1}' ${2}"
     printf '%s%s\n'   '                      ' \
                       "please install a ffmpeg build with support for '${1}' ${2}" >&2
-    notify 'critical' '5000' 'dialog-error' "error: the detected ffmpeg build has no support for '${1}' ${2}"
+                      
+    notify 'critical' '5000' 'dialog-error' \
+           "error: the detected ffmpeg build has no support for '${1}' ${2}"
+    
+    if printf '%s' "$2" | grep -q '.*encoder$'
+    then
+        case "$2" in
+            ffv1|ffvhuff|huffyuv|pcm_s16le|flac)
+                :
+                ;;
+            *)
+                printf '%s%s\n'   '                      ' \
+                                  "(or try a different ${2})" >&2
+                ;;
+        esac
+                      
+    elif printf '%s' "$2" | grep -q 'muxer'
+    then
+        case "$2" in
+            matroska|nut)
+                :
+                ;;
+            *)
+                printf '%s%s\n'   '                      ' \
+                                  "(or try a different ${2}/format)" >&2
+                ;;
+        esac
+    fi
+    
     exit 1
 }
 
