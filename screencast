@@ -37,6 +37,7 @@ fade='none'                  # fade effect (in, out, both, none)
 watermark='false'            # watermark effect (true, false)
 webcam_overlay='false'       # webcam overlay effect (true, false)
 streaming='false'            # live streaming (true, false)
+one_step='false'             # one step process (true, false)
 fixed_length='0'             # fixed length video in seconds (0 disable)
 notifications='true'         # desktop notifications (true, false)
 audio_input_setted='false'   # if audio input    was setted by cmd line with -i
@@ -107,6 +108,11 @@ codec_wmv='wmv2 -qscale:v 3'
 
 # live streaming settings
 codec_streaming_x264='libx264 -preset fast'
+
+# one step process settings
+codec_onestep_x264="$codec_streaming_x264"
+codec_onestep_x265='libx265 -crf 25 -preset fast'
+codec_onestep_kvazaar='libkvazaar -kvazaar-params preset=fast'
 
 # metadata settings
 metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}")"
@@ -245,6 +251,7 @@ show_help() {
     printf '%s\n' "      --webcam-position=PRE   or a predefined special value) [${webcam_position}]"
     printf '%s\n' '  -R, --webcam-fps=N        webcam framerate (fps) [device default]'
     printf '%s\n' '  -L, --live-streaming=URL  enable live streaming, setting url to URL [disabled]'
+    printf '%s\n' '  -1, --one-step            one step (record and encode at same time) [disabled]'
     printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
     printf '%s\n' '  -n, --no-notifications    disable desktop notifications'
     printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
@@ -920,6 +927,10 @@ get_cmd_line() {
                 ;;
             --fixed=)
                 command_error '--fixed (-x)'
+                ;;
+            
+            -1|--one-step)  # option without argument
+                one_step='true'
                 ;;
             
             -n|--no-notifications)  # option without argument
@@ -2079,11 +2090,17 @@ check_cmd_line() {
     case "$video_encoder" in
         x264)
             check_component libx264 encoder    || component_error libx264    'video encoder'
+            
             if [ "$streaming" = 'true' ] 
             then
                 video_encode_codec="$codec_streaming_x264"
             else
-                video_encode_codec="$codec_x264"
+                if [ "$one_step" = 'false' ] 
+                then
+                    video_encode_codec="$codec_x264"
+                else
+                    video_encode_codec="$codec_onestep_x264"
+                fi
             fi
             ;;
         h264_nvenc)
@@ -2101,11 +2118,23 @@ check_cmd_line() {
             ;;
         x265)
             check_component libx265 encoder    || component_error libx265    'video encoder'
-            video_encode_codec="$codec_x265"
+            
+            if [ "$one_step" = 'false' ] 
+            then
+                video_encode_codec="$codec_x265"
+            else
+                video_encode_codec="$codec_onestep_x265"
+            fi
             ;;
         kvazaar)
             check_component libkvazaar encoder || component_error libkvazaar 'video encoder'
-            video_encode_codec="$codec_kvazaar"
+            
+            if [ "$one_step" = 'false' ] 
+            then
+                video_encode_codec="$codec_kvazaar"
+            else
+                video_encode_codec="$codec_onestep_kvazaar"
+            fi
             ;;
         hevc_nvenc)
             check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder'
@@ -2171,8 +2200,11 @@ check_cmd_line() {
                 :
                 ;;
             in|out|both)
-                # do not allow to use fade effect with live streaming
-                [ "$streaming" = 'true' ] && exit_program 'fade effect cannot be used with live streaming'
+                # do not allow to use fade effect with live streaming (-L/--live-streaming)
+                [ "$streaming" = 'true' ] && exit_program 'fade effect (-e) cannot be used with live streaming (-L)'
+                
+                # do not allow to use fade effect when using a one step process (-1/--one-step)
+                [ "$one_step" = 'true' ] && exit_program 'fade effect (-e) cannot be used when using a one step process (-1)'
                 ;;
             *)
                 exit_program "'${fade}' is not a valid fade effect"
@@ -2630,7 +2662,13 @@ fix_pass_duration() {
 set_vaapi_qsv() {
     case "$video_encoder" in
         *_vaapi)
-            [ "$streaming" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none' ] && vfilter_option='-vf'
+            if [ "$one_step" = 'false' ] 
+            then
+                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && vfilter_option='-vf'
+            else
+                [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && vfilter_option='-vf'
+            fi
+            
             vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
             vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
             
@@ -2844,12 +2882,55 @@ live_streaming() {
     fi
 }
 
-# record_offline function: record offline (without live streaming)
+# record_offline_1step function: record offline (without live streaming) using one step
+#                                (recording and encoding at the same time).
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# note: it will make the program exit with error if a recording error occurs
+record_offline_1step() {
+    set_watermark
+    set_webcam
+    fix_pass_duration
+    set_vaapi_qsv
+    
+    print_good 'recording (one step)'
+    notify 'normal' '1700' 'media-record' 'recording (one step)...'
+    
+    # record screen and encode in one step
+    if ffmpeg \
+           $audio_general_options \
+           $audio_input \
+           $vaapi_device \
+           $video_general_options \
+           -framerate $video_rate \
+           -video_size $video_size \
+           -i :0.0+${video_position} \
+           $watermark_input \
+           $webcam_options \
+           $vfilter_option $vfilter_settings \
+           $volume_options \
+           $audio_encode_codec \
+           -codec:v $video_encode_codec \
+           $fixed_length_options \
+           -pix_fmt $pixel_format \
+           -metadata "$metadata" \
+           -y \
+           "${savedir}/${output_file}"
+    then
+        finish
+    else
+        recording_error
+    fi
+}
+
+# record_offline_2steps function: record offline (without live streaming) using two steps
+#                                 (1st step: lossless recording. 2nd step: encoding).
 # arguments: none
 # return value: none
 # return code (status): not relevant
 # note: it will make the program exit with error if a recording or encoding error occurs
-record_offline() {
+record_offline_2steps() {
     [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && vfilter_option='-vf'
     
     set_webcam
@@ -2874,7 +2955,7 @@ record_offline() {
            -metadata "$metadata" \
            -y \
            "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
-    then 
+    then
         unset vfilter_option
         unset vfilter_settings
         
@@ -3040,5 +3121,10 @@ then
 
 # record offline if live streaming is not chosen by user
 else
-    record_offline
+    if [ "$one_step" = 'false' ] 
+    then
+        record_offline_2steps
+    else
+        record_offline_1step
+    fi
 fi

@@ -325,8 +325,9 @@ sure to have a working connection to the specified server address and
 sufficient upload bandwidth to send the data. Note that the higher the video
 size (resolution) and framerate (fps), the higher will be the needed upload
 bandwidth. Use the \fB\-K\fR option if you want to save a local copy of the
-live streamed video. \fBscreencast\fR will record offline when this option is
-not specified. It has been tested only with the \fIYouTube\fR live streaming
+live streamed video. It uses a one step process (record and encode at the
+same time). \fBscreencast\fR will record offline when this option is not
+specified. It has been tested only with the \fIYouTube\fR live streaming
 service.
 .PP
 Some restrictions apply:
@@ -345,6 +346,26 @@ cannot be used with fade effect (\fB-e\fR option)
 must be recorded with audio (\fB-i\fR and \fB-a\fR options cannot be setted to
 \fInone\fR)
 .RE
+.PP
+default: disabled
+.RE
+.TP
+\fB\-1\fR, \fB\-\-one\-step\fR
+.RS
+Enable recording in a one step process (record and encode at the same time,
+without a second encoding step). It will produce a larger video filesize,
+take less time and require less CPU power when compared to recording in two
+steps (CPU power comparison is when not using a hardware accelerated encoder).
+Regarding to filesize and CPU power, this option affects only the \fIx264\fR,
+\fIx265\fR and \fIkvazaar\fR video encoders. This option cannot be used with
+fade effect (\fB\-e\fR option). This option is worth to be used with a
+hardware accelerated encoder, like the NVENC or VAAPI ones, or when using
+CPU-intensive tasks accompanied by one of the affected software-based encoders
+that were mentioned (and not needing the fade effect). You do not need to
+specify this option when doing a live streaming (\fB\-L\fR option) because it
+already works in a one step process. Note that the default \fBscreencast\fR
+behavior is to record in a two step process (1st step: lossless recording. 2nd
+step: encoding).
 .PP
 default: disabled
 .RE
@@ -521,12 +542,14 @@ for PNG (watermark) optimization (\fB\-g\fR option).
 \fBscreencast\fR is written in pure POSIX shell code and has been tested in
 bash, dash, yash, ksh and zsh.
 .PP
-When recording offline, \fBscreencast\fR uses a two step process. Firstly the
-audio and video are recorded to a lossless format, and at a second stage it is
-encoded to produce the output video. That\'s why you see a desktop notification
-saying \'encoding...\'. This mechanism produces a better video, avoids problems
-and allows to use fade effect. When live streaming, \fBscreencast\fR uses a one
-step process, with recording and encoding at the same time.
+When recording offline, the default \fBscreencast\fR behavior is to use a two
+step process: firstly the audio and video are recorded to a lossless format,
+and at a second step it is encoded to produce the final output video. That\'s
+why you see a desktop notification saying \'encoding...\'. This mechanism
+produces a better video, avoids problems and allows to use fade effect. When
+live streaming or when using the \fB\-1\fR/\fB\-\-one\-step\fR option,
+\fBscreencast\fR uses a one step process, with recording and encoding at the
+same time.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
