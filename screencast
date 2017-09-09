@@ -1694,7 +1694,15 @@ check_cmd_line() {
             fi
             ;;
         *)
-            exit_program "'${format}' is not a valid container format for this program"
+            # the following if statement will avoid and error when live streaming and not saving the video
+            if [ "$streaming" = 'false' ] ||
+               {
+                   [ "$streaming"  = 'true' ] &&
+                   [ "$keep_video" = 'true' ] ;
+               }
+            then
+                exit_program "'${format}' is not a valid container format for this program"
+            fi
             ;;
     esac
     
