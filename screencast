@@ -2840,6 +2840,7 @@ live_streaming() {
                -pix_fmt $pixel_format \
                -metadata "$metadata" \
                -f flv \
+               -y \
                "$streaming_url"
         then
             finish
