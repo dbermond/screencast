@@ -1614,25 +1614,20 @@ check_cmd_line() {
     # container format checks and settings:
     #   - check if a valid container format was selected
     #   - check if the detected ffmpeg build has support for the chosen muxer
-    #   - auto choose audio/video encoder if needed (if user specified only the format without the encoders)
+    #   - auto choose audio/video encoder if needed to avoid an error:
+    #       - if user specified only the format without the encoders, and the entered format does not support the default encoders
+    #       - currently only needed for webm and ogg/ogv formats
     #   - set some special options for mp4 and mov
     case "$format" in
         mp4|mov)
-            if [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               }
+            check_component "$format" muxer || component_error "$format" muxer
+            
+            # move the moov atom to the beginning of the file
+            if [ "$streaming"  = 'true' ] 
             then
-                check_component "$format" muxer || component_error "$format" muxer
-                
-                # move the moov atom to the beginning of the file
-                if [ "$streaming"  = 'true' ] 
-                then
-                    faststart='[movflags=+faststart]'
-                else
-                    faststart='-movflags +faststart'
-                fi
+                faststart='[movflags=+faststart]'
+            else
+                faststart='-movflags +faststart'
             fi
             ;;
         webm)
@@ -1650,16 +1645,9 @@ check_cmd_line() {
             [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
             ;;
         mkv)
-            if [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               }
+            if [ "$rec_extension" != "$format" ] 
             then
-                if [ "$rec_extension" != "$format" ] 
-                then
-                    check_component matroska muxer || component_error matroska muxer
-                fi
+                check_component matroska muxer || component_error matroska muxer
             fi
             ;;
         flv)
@@ -1671,38 +1659,17 @@ check_cmd_line() {
             fi
             ;;
         nut)
-            if [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               }
-            then
-                if [ "$rec_extension" != "$format" ] 
-                then
-                    check_component "$format" muxer || component_error "$format" muxer
-                fi
-            fi
-            ;;
-        asf|avi)
-            if [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               }
+            if [ "$rec_extension" != "$format" ] 
             then
                 check_component "$format" muxer || component_error "$format" muxer
             fi
             ;;
+        asf|avi)
+            check_component "$format" muxer || component_error "$format" muxer
+            ;;
         wmv)
-            if [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               }
-            then
-                # asf muxer is used for wmv (and wma) container format
-                check_component asf muxer || component_error asf muxer
-            fi
+            # asf muxer is used for wmv (and wma) container format
+            check_component asf muxer || component_error asf muxer
             ;;
         *)
             # the following if statement will avoid and error when live streaming and not saving the video
@@ -3036,41 +3003,17 @@ shift "$shift_count" # destroy all arguments except a possible output filename
 check_pngoptimizer
 check_requirements
 
+# prepartions for various checks: get the components supported by the detected ffmpeg build
+ffmpeg_formats="$(ffmpeg -formats -v quiet)" # muxers   and demuxers (formats)
+ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
+
 # check if the detected ffmpeg build has support for basic screen recording format
-ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_component x11grab demuxer || component_error x11grab demuxer
 
-# check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
-ffmpeg_codecs="$(ffmpeg -codecs -v quiet)"
-if check_component ffv1 encoder
+# check for the needed ffmpeg components when using a two step process
+if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
 then
-    check_component ffv1 decoder || component_error ffv1 'video decoder'
-    video_record_codec="$codec_ffv1"
-else
-    if check_component ffvhuff encoder
-    then
-        print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
-        check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
-        
-        print_warn "'ffvhuff' encoder will produce an extra-large temporary video, consider changing the tmp directory"
-        video_record_codec="$codec_ffvhuff"
-    else
-        if check_component huffyuv encoder
-        then
-            print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
-            check_component huffyuv decoder || component_error huffyuv 'video decoder'
-            
-            print_warn "'huffyuv' encoder will produce an extra-large temporary video, consider changing the tmp directory"
-            video_record_codec="$codec_huffyuv"
-        else
-            component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
-        fi
-    fi
-fi
-
-# check if the detected ffmpeg build has support for a basic muxer and demuxer for recording
-if [ "$streaming" = 'false' ] 
-then
+    # check if the detected ffmpeg build has support for a basic muxer and demuxer for the lossless recording
     if check_component matroska muxer
     then
         check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer
@@ -3085,7 +3028,37 @@ then
             component_error 'matroska or nut' muxer
         fi
     fi
-fi
+
+    # check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
+    if check_component ffv1 encoder
+    then
+        check_component ffv1 decoder || component_error ffv1 'video decoder'
+        video_record_codec="$codec_ffv1"
+    else
+        if check_component ffvhuff encoder
+        then
+            print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
+            check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
+            
+            print_warn "'ffvhuff' encoder will produce an extra-large temporary video, consider changing the tmp directory"
+            video_record_codec="$codec_ffvhuff"
+        else
+            if check_component huffyuv encoder
+            then
+                print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
+                check_component huffyuv decoder || component_error huffyuv 'video decoder'
+                
+                print_warn "'huffyuv' encoder will produce an extra-large temporary video, consider changing the tmp directory"
+                video_record_codec="$codec_huffyuv"
+            else
+                component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
+            fi
+            
+        fi # end: check_component ffvhuff encoder
+        
+    fi # end: check_component ffv1 encoder
+    
+fi # end: [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
 
 check_cmd_line "$@"
 check_dirs
