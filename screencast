@@ -1508,7 +1508,7 @@ check_cmd_line() {
         
         # do not allow to enter an output filename when not saving the live streaming
         [ "$#" -eq '1' ] && [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] &&
-            exit_program "output filename was specified but but not saving the live streaming"
+            exit_program "output filename was specified but but not saving the live streaming ('-K' not set)"
         
         # do not allow to enter anything after the output filename
         [ "$#" -gt '1' ] && exit_program 'please do not enter anything after the output filename'
@@ -1559,7 +1559,7 @@ check_cmd_line() {
         format="${output_file##*.}"    # set container format (output filename extension)
     else
         # do not allow to use '-u' when not saving the live streaming
-        [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && exit_program "'-u' is set but not saving the live streaming"
+        [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
         
         # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
