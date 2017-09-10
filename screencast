@@ -1477,7 +1477,7 @@ check_cmd_line() {
             then
                 if printf '%s' "$video_rate" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
                 then
-                    exit_program 'when live streaming, the video framerate (fps) cannot a floating point value'
+                    exit_program 'video framerate (fps) cannot be a floating point value when live streaming'
                 else
                     exit_program "'${video_rate}' is not a valid video framerate (fps) format"
                 fi
