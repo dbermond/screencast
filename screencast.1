@@ -1,7 +1,7 @@
 .\" screencast manpage
 .TH screencast "1" "July 2017" "version 1.4.0.next" "User Commands"
 .SH NAME
-\fBscreencast\fR - command line interface to record a X11 desktop
+\fBscreencast\fR \- command line interface to record a X11 desktop
 .SH SYNOPSIS
 .nf
 \fBscreencast\fR [\fIoptions\fR] output
@@ -24,7 +24,7 @@ supported encoders and container formats.
 .PP
 \fBscreencast\fR not only provides an easy way to record your desktop, but it
 also has options to automatically add some effects to the recordings, like
-video fade-in / fade-out, text watermarking, webcam overlay  and volume
+video fade\-in / fade\-out, text watermarking, webcam overlay  and volume
 increase.
 .SH OPTIONS
 \fBOptions usage notes:\fR
@@ -68,7 +68,7 @@ be out of screen bounds).
 default: 0,0 (screen top left corner)
 .RE
 .TP
-\fB\-S\fR, \fB\-\-select-region\fR
+\fB\-S\fR, \fB\-\-select\-region\fR
 .RS
 Select with mouse the screen region to record. Use a single mouse click to
 select an entire window. Click and drag with mouse to select a region. When
@@ -86,7 +86,7 @@ will not be able to record and will exit with error.
 .TP
 \fB\-r\fR, \fB\-\-fps\fR=\fIN\fR
 .RS
-Video framerate (frames per second - fps).
+Video framerate (frames per second \- fps).
 .PP
 default: 25
 .RE
@@ -269,8 +269,8 @@ default: disabled
 \fB\-I\fR, \fB\-\-webcam\-input\fR=\fIDEV\fR
 .RS
 Webcam input device, usually in the form of \fI/dev/videoN\fR. To list video
-capture devices on your system you can use the \fBv4l2-ctl\fR utility
-(\'$ \fBv4l2\-ctl \-\-list-devices\fR\'). This option can be used only with
+capture devices on your system you can use the \fBv4l2\-ctl\fR utility
+(\'$ \fBv4l2\-ctl \-\-list\-devices\fR\'). This option can be used only with
 the \fB\-W\fR option.
 .PP
 default: /dev/video0
@@ -339,11 +339,11 @@ can be used only with video encoders: x264, h264_nvenc, h264_vaapi and
 h264_qsv
 .PP
 can be used only with container formats (when saving the live streamed video
-with \fB-K\fR option): mp4, mov, mkv, flv, nut, wmv, asf and avi
+with \fB\-K\fR option): mp4, mov, mkv, flv, nut, wmv, asf and avi
 .PP
-cannot be used with fade effect (\fB-e\fR option)
+cannot be used with fade effect (\fB\-e\fR option)
 .PP
-must be recorded with audio (\fB-i\fR and \fB-a\fR options cannot be setted to
+must be recorded with audio (\fB\-i\fR and \fB\-a\fR options cannot be setted to
 \fInone\fR)
 .RE
 .PP
@@ -360,12 +360,12 @@ Regarding to filesize and CPU power, this option affects only the \fIx264\fR,
 \fIx265\fR and \fIkvazaar\fR video encoders. This option cannot be used with
 fade effect (\fB\-e\fR option). This option is worth to be used with a
 hardware accelerated encoder, like the NVENC or VAAPI ones, or when using
-CPU-intensive tasks accompanied by one of the affected software-based encoders
-that were mentioned (and not needing the fade effect). You do not need to
-specify this option when doing a live streaming (\fB\-L\fR option) because it
-already works in a one step process. Note that the default \fBscreencast\fR
-behavior is to record in a two step process (1st step: lossless recording. 2nd
-step: encoding).
+CPU\-intensive tasks accompanied by one of the affected software\-based
+encoders that were mentioned (and not needing the fade effect). You do not
+need to specify this option when doing a live streaming (\fB\-L\fR option)
+because it already works in a one step process. Note that the default
+\fBscreencast\fR behavior is to record in a two step process (1st step:
+lossless recording. 2nd step: encoding).
 .PP
 default: disabled
 .RE
@@ -396,7 +396,7 @@ option.
 .PP
 .nf
        default: none
-supported ones: truepng, pingo, optipng, opt-png, none
+supported ones: truepng, pingo, optipng, opt\-png, none
 .fi
 .RE
 .TP
@@ -433,7 +433,7 @@ doing a live streaming it will keep (save) the live streamed video.
 Auto choose output filename based on date and time. The output filename will
 have the following format:
 .PP
-screencast-YEAR-MONTH-DAY_HOUR.MINUTE.SECOND.FORMAT
+screencast\-YEAR\-MONTH\-DAY_HOUR.MINUTE.SECOND.FORMAT
 .RE
 .TP
 \fB\-l\fR, \fB\-\-list\fR
@@ -475,9 +475,9 @@ output filename. In this case, the \'ogg\' format will produce a video with
 .RE
 .PP
 1280x720 video from screen positon 200,234 , 30 fps, \'mp3lame\' audio encoder,
-\'x265\' video encoder, \'mkv\' container format, fade-in video effect, volume
-increase effect of 50%, small text watermark effect in bottom right video
-corner (the default watermark size, position and font):
+\'x265\' video encoder, \'mkv\' container format, fade\-in video effect,
+volume increase effect of 50%, small text watermark effect in bottom right
+video corner (the default watermark size, position and font):
 .RS
 .PP
 \fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-r\fR 30 \fB\-a\fR
@@ -490,25 +490,25 @@ myvideo.mkv
 When not using the \fB\-x\fR option press the \fIq\fR key in terminal window to
 end the recording.
 .SH REQUIREMENTS
-The minimum requirements are a POSIX-compatible shell, a running X session, a
+The minimum requirements are a POSIX\-compatible shell, a running X session, a
 recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use
 \fIFFmpeg\fR version git master. \fIFFmpeg\fR needs to be compiled with support
 for x11grab (libxcb) and the desired encoders and muxers. When recording
 offline, \fIFFmpeg\fR needs to be compiled with support for ffv1 encoder, ffv1
-decoder and matroska muxer (\fBscreencast\fR will try to auto-fallback to
+decoder and matroska muxer (\fBscreencast\fR will try to auto\-fallback to
 ffvhuff or huffyuv encoder/decoder if ffv1 is not supported and to nut muxer
 if matroska is not supported, but ffv1 and matroska are preferred). When live
 streaming, *FFmpeg* needs to compiled with support for flv muxer.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
 \fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA
-demuxer (\fBscreencast\fR will try to auto-fallback to PulseAudio demuxer if
-ALSA is not supported, but ALSA is preferred). \fIarecord\fR (alsa-utils) will
-be required for ALSA when specifying a short or long ALSA input device name
-with the \fB\-i\fR option. If the PulseAudio demuxer is being used in the
-described auto-fallback situation, \fIpactl\fR will be required when
+demuxer (\fBscreencast\fR will try to auto\-fallback to PulseAudio demuxer if
+ALSA is not supported, but ALSA is preferred). \fIarecord\fR (alsa\-utils)
+will be required for ALSA when specifying a short or long ALSA input device
+name with the \fB\-i\fR option. If the PulseAudio demuxer is being used in the
+described auto\-fallback situation, \fIpactl\fR will be required when
 specifying a PulseAudio input source name with with the \fB\-i\fR option. When
-using webcam overlay effect (\fB-W\fR option), \fIFFmpeg\fR must have been
+using webcam overlay effect (\fB\-W\fR option), \fIFFmpeg\fR must have been
 compiled with support for Video4Linux2.
 .PP
 \fInotify\-send\fR (libnotify) is needed for desktop notifications. Note that
@@ -520,7 +520,7 @@ the \fB\-n\fR option, eliminating the need of \fInotify\-send\fR. Running
 \fBscreencast\fR will try to play a notification sound when the encoding
 process is finished. For this, it will use \fIpaplay\fR (from PulseAudio) and
 a sound file from the freedesktop sound theme (usually a package called
-\fIsound-theme-freedesktop\fR in most Linux distributions). Although not a
+\fIsound\-theme\-freedesktop\fR in most Linux distributions). Although not a
 requirement, they are recommended to be installed for a better user experience.
 .PP
 Other requirements are needed according to additional options that may be
@@ -562,7 +562,7 @@ FFmpeg encoder names have the \'lib\' prefix removed for simplicity. For
 example, libx264 is called \fIx264\fR in this program.
 .PP
 For vorbis and opus audio, FFmpeg has both an external library encoder (named
-\'libvorbis\' and \'libopus\' encoders) and a native built-in encoder (named
+\'libvorbis\' and \'libopus\' encoders) and a native built\-in encoder (named
 \'vorbis\' and \'opus\' encoders). Although the \fIvorbis\fR and \fIopus\fR
 audio encoders are mentioned in the options, it is made this way just for
 simplicity as stated right above. When the user selects the \fIvorbis\fR or
@@ -578,7 +578,7 @@ encoder with \fImp4\fR container format.
 .PP
 When using the \fImp4\fR container format, the moov atom will be automatically
 moved to the beginning of the output video file. This is the same as running
-\fIqt-faststart\fR in the output video and is useful for uploading to
+\fIqt\-faststart\fR in the output video and is useful for uploading to
 streaming websites like \fIYouTube\fR.
 .PP
 The default settings for container format and audio/video encoders will produce
@@ -597,7 +597,7 @@ Daniel Bermond < yahoo\-com: danielbermond >
 .PP
 <https://github.com/dbermond/screencast/>
 .SH COPYRIGHT
-Copyright \(co 2015-2017 Daniel Bermond
+Copyright \(co 2015\-2017 Daniel Bermond
 .SH LICENSE
 GNU General Public License as published by the Free Software Foundation, either
 version 2 of the License, or (at your option) any later version.
