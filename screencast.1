@@ -570,11 +570,11 @@ simplicity as stated right above. When the user selects the \fIvorbis\fR or
 libvorbis or libopus encoder, which has a much superior quality than the FFmpeg
 native built\-in vorbis and opus encoders.
 .PP
-The \fImkv\fR container format is the only one that supports a combinantion of
-all audio and video encoders. All other container formats have restrictions.
-\fBscreencast\fR will exit with error if an unsupported encoder is chosen for
-a given container format. For example, you cannot use the \fIopus\fR audio
-encoder with \fImp4\fR container format.
+The \fImkv\fR and \fInut\fR container formats are the only ones that support a
+combinantion of all audio and video encoders. All other container formats have
+restrictions. \fBscreencast\fR will exit with error if an unsupported encoder
+is chosen for a given container format. For example, you cannot use the
+\fIaac\fR audio encoder with \fIwebm\fR container format.
 .PP
 When using the \fImp4\fR container format, the moov atom will be automatically
 moved to the beginning of the output video file. This is the same as running
