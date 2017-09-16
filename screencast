@@ -3310,6 +3310,13 @@ check_cmd_line "$@"
 check_dirs
 show_settings
 
+# show a warning if the output file(s) already exists
+[ "$auto_filename" = 'false' ] && [ -f "${savedir}/${output_file}" ] &&
+    print_warn "output file '${output_file}' already exists, overwriting without prompt"
+
+[ "$streaming" = 'true' ] && [ -f "$streaming_url" ] &&
+    print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
+
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
 
