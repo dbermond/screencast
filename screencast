@@ -717,21 +717,34 @@ print_error() {
 }
 
 # show_header function: show program header
-# arguments: none
+# arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: the program header
 # return code (status): not relevant
 show_header() {
+    # give error if --version/-V is not the unique command line option
+    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    then
+        exit_program "--version (-V) option can be used only alone"
+    fi
+    
     printf '%s\n' "screencast ${screencast_version} - Command line interface to record a X11 desktop"
     printf '%s\n' "Copyright (c) 2015-$(date +%Y) Daniel Bermond"
     printf '%s\n' "$screencast_website"
 }
 
 # help function
-# arguments: none
+# arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: the program help screen
 # return code (status): not relevant
 show_help() {
-    show_header
+    # give error if --help/-h/-? is not the unique command line option
+    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    then
+        exit_program "--help (-h) option can be used only alone"
+    fi
+    
+    show_header "$@"
+    
     printf '\n'
     printf '%s\n' 'Usage: screencast [options] <output>'
     printf '%s\n' '                  [options] -u'
@@ -926,11 +939,18 @@ remove_spaces() {
 }
 
 # list_supported function: print a list of arguments supported by this program
-# arguments: none
+# arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: the described list
 # return code (status): not relevant
 list_supported() {
-    show_header
+    # give error if --list/-l is not the unique command line option
+    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    then
+        exit_program "--list (-l) option can be used only alone"
+    fi
+    
+    show_header "$@"
+    
     get_list_formats
     get_list_audiocodecs
     get_list_videocodecs
@@ -1542,17 +1562,17 @@ get_cmd_line() {
                 ;;
             
             -l|--list)  # option without argument
-                list_supported
+                list_supported "$@"
                 exit 0
                 ;;
             
             -h|-\?|--help)  # option without argument
-                show_help
+                show_help "$@"
                 exit 0
                 ;;
             
             -V|--version)  # option without argument
-                show_header
+                show_header "$@"
                 exit 0
                 ;;
             
