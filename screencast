@@ -18,6 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#########################################
+#           general settings            #
+#########################################
+
 # program settings
 screencast_version='v1.4.0.next'
 screencast_website='https://github.com/dbermond/screencast/'
@@ -30,11 +34,14 @@ finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
 finish_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 
 # control settings (controls various aspects)
+saving_output='true'         # if user is saving an output video (true, false)
+recording_audio='true'       # if user is recording audio (true, false)
 select_region='false'        # mouse screen region selection (true, false)
 auto_filename='false'        # auto choose output filename based on date/time
 keep_video='false'           # keep live streaming or the tmp video (true, false)
 fade='none'                  # fade effect (in, out, both, none)
 watermark='false'            # watermark effect (true, false)
+pngoptimizer='none'          # png (watermark) optimizer (truepng, pingo, optipng, opt-png, none)
 webcam_overlay='false'       # webcam overlay effect (true, false)
 streaming='false'            # live streaming (true, false)
 one_step='false'             # one step process (true, false)
@@ -66,16 +73,7 @@ audio_input='default'        # audio input
 audio_encoder='aac'          # audio encoder
 volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_channel_layout='-channel_layout stereo'
-audio_general_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
-codec_pcm_s16le='-codec:a pcm_s16le -ar 48000 -ac 2'
-codec_flac='-codec:a flac -b:a 392k -ar 48000 -ac 2'
-codec_fdkaac='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
-codec_aac='-codec:a aac -b:a 128k -ar 44100 -ac 2'
-codec_vorbis='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
-codec_opus='-codec:a libopus -b:a 128k -ar 48000 -ac 2'
-codec_mp3lame='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
-codec_shine='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
-codec_wma='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
+audio_input_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000 -channels 2 ${audio_channel_layout}"
 
 # video settings
 video_encoder='x264'               # video encoder
@@ -86,36 +84,499 @@ video_size='640x480'               # video size (resolution)
 video_rate='25'                    # video framerate (fps)
 corner_padding='10'                # video corner padding (for watermark and webcam effects)
 vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
-video_general_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
-codec_ffv1='ffv1 -level 3 -slicecrc 1'
-codec_ffvhuff='ffvhuff'
-codec_huffyuv='huffyuv'
-codec_x264='libx264 -crf 21 -preset veryslow'
-codec_h264_nvenc='h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150'
-codec_h264_vaapi='h264_vaapi -qp 18'
-codec_h264_qsv='h264_qsv -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
-codec_x265='libx265 -crf 25 -preset veryslow'
-codec_kvazaar='libkvazaar -kvazaar-params preset=veryslow'
-codec_hevc_nvenc='hevc_nvenc -preset slow'
-codec_hevc_vaapi='hevc_vaapi -qp 22'
-codec_hevc_qsv='hevc_qsv -load_plugin hevc_hw -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
-codec_theora='libtheora -qscale:v 5'
-codec_vp8='libvpx -crf 8 -b:v 2M'
-codec_vp8_vaapi='vp8_vaapi -global_quality 30'
-codec_vp9='libvpx-vp9 -crf 30 -b:v 0'
-codec_vp9_vaapi='vp9_vaapi -global_quality 80'
-codec_wmv='wmv2 -qscale:v 3'
-
-# live streaming settings
-codec_streaming_x264='libx264 -preset fast'
-
-# one step process settings
-codec_onestep_x264="$codec_streaming_x264"
-codec_onestep_x265='libx265 -crf 25 -preset fast'
-codec_onestep_kvazaar='libkvazaar -kvazaar-params preset=fast'
+video_input_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
 
 # metadata settings
-metadata="comment=$(printf '%s\n%s' 'Created with screencast' "${screencast_website}")"
+metadata="comment=$(printf '%s\n%s' "Created with screencast ${screencast_version}" "${screencast_website}")"
+
+# default options for later comparison (to print informative messages)
+audio_encoder_default="$audio_encoder"
+video_encoder_default="$video_encoder"
+format_default="$format"
+
+#########################################
+#       container format settings       #
+#########################################
+
+# supported container formats (for general code usage, one per line for accurate grepping with '^pattern$')
+supported_formats_all='mp4
+mov
+mkv
+webm
+ogg
+ogv
+flv
+nut
+wmv
+asf
+avi'
+
+# supported container formats (for use with -l/--list option)
+get_list_formats() {
+    for item in $supported_formats_all
+    do
+        list_formats="${list_formats:-}${item}, "
+    done
+    
+    list_formats="$(printf '%s' "$list_formats" | sed 's/,[[:space:]]$//')"
+}
+
+# lossless container format settings functions: make checks and settings for container format to store lossless video
+#                                               (for the 1st step, lossless recording)
+# arguments: none
+# return value: not relevant
+# return code (status): 0 - the detected ffmpeg build has support for the tested container format
+#                       1 - the detected ffmpeg build has no support for the tested container format
+# sets special variable: $rec_extension - file extension (container format) of the lossless video
+# note: the program will exit with error if the tested container format is not supported by the detected ffmpeg build
+lossless_format_settings_mkv() {
+    if check_component matroska muxer
+    then
+        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer
+        rec_extension='mkv'
+    else
+        return 1
+    fi
+}
+
+lossless_format_settings_nut() {
+    if check_component nut muxer
+    then
+        check_component nut demuxer || component_error nut demuxer
+        rec_extension='nut'
+    else
+        return 1
+    fi
+}
+
+# format settings functions: make checks and settings for the selected container format
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variables: $supported_audiocodecs - audio encoders supported by the selected container format (one per line)
+#                         $supported_videocodecs - video encoders supported by the selected container format (one per line)
+# note: the program will exit with error if the selected container format is not supported by the detected ffmpeg build
+format_settings_mp4() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^wma$/d')"
+    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^theora$/d;/^vp8$/d;/^vp8_vaapi$/d;/^wmv$/d')"
+    
+    # check if the detected ffmpeg build has support for the mp4/mov muxer
+    check_component "$format" muxer || component_error "$format" muxer
+    
+    # move the moov atom to the beginning of the file
+    if [ "$streaming"  = 'true' ] 
+    then
+        faststart='[movflags=+faststart]'
+    else
+        faststart='-movflags +faststart'
+    fi
+}
+
+format_settings_mov() {
+    format_settings_mp4 "$@"
+    
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
+    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^vp9$/d;/^vp9_vaapi$/d')"
+    
+    unplayable_audiocodecs_mov='vorbis
+wma'
+    unplayable_videocodecs_mov='theora
+vp8
+vp8_vaapi
+wmv'
+}
+
+format_settings_mkv() {
+    # note: mkv container formats supports all valid audio and video encoders for this program
+    supported_audiocodecs="$supported_audiocodecs_all"
+    supported_videocodecs="$supported_videocodecs_all"
+    
+    # check if the detected ffmpeg build has support for the matroska (mkv) muxer
+    if [ "$rec_extension" != "$format" ] 
+    then
+        check_component matroska muxer || component_error matroska muxer
+    fi
+}
+
+format_settings_webm() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
+    supported_videocodecs='vp8
+vp8_vaapi
+vp9
+vp9_vaapi'
+    
+    # check if the detected ffmpeg build has support for the webm muxer
+    check_component "$format" muxer || component_error "$format" muxer
+    
+    # auto choose audio/video encoder if needed
+    [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
+    [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
+}
+
+format_settings_ogg() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
+    supported_videocodecs='vp8
+vp8_vaapi
+theora'
+    
+    # check if the detected ffmpeg build has support for the ogg/ogv muxer
+    check_component "$format" muxer || component_error "$format" muxer
+    
+    # auto choose audio/video encoder if needed
+    [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
+    [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
+}
+
+format_settings_ogv() {
+    format_settings_ogg "$@"
+}
+
+format_settings_flv() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
+    supported_videocodecs='x264
+h264_nvenc
+h264_vaapi
+h264_qsv'
+    
+    # check if the detected ffmpeg build has support for the flv muxer only if recording offline
+    # (flv muxer support in ffmpeg is already checked during the live streaming checks)
+    if [ "$streaming" = 'false' ] 
+    then
+        check_component "$format" muxer || component_error "$format" muxer
+    fi
+}
+
+format_settings_nut() {
+    # note: nut container formats supports all valid audio and video encoders for this program
+    supported_audiocodecs="$supported_audiocodecs_all"
+    supported_videocodecs="$supported_videocodecs_all"
+    
+    # check if the detected ffmpeg build has support for the nut muxer
+    if [ "$rec_extension" != "$format" ] 
+    then
+        check_component "$format" muxer || component_error "$format" muxer
+    fi
+}
+
+format_settings_wmv() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
+    
+    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
+                                 sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+    
+    # check if the detected ffmpeg build has support for the asf muxer
+    # note: asf muxer is used for wmv (and wma) container format
+    check_component asf muxer || component_error asf muxer
+}
+
+format_settings_asf() {
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
+    
+    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
+                                 sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+    
+    # check if the detected ffmpeg build has support for the asf muxer
+    check_component "$format" muxer || component_error "$format" muxer
+}
+
+format_settings_avi() {
+    # note: avi container formats supports all valid video encoders for this program
+    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
+    supported_videocodecs="$supported_videocodecs_all"
+    
+    # check if the detected ffmpeg build has support for the avi muxer
+    check_component "$format" muxer || component_error "$format" muxer
+}
+
+#########################################
+#         audio encoder settings        #
+#########################################
+
+# supported audio encoders (for general code usage, one per line for accurate grepping with '^pattern$')
+supported_audiocodecs_all='aac
+opus
+vorbis
+mp3lame
+shine
+wma
+none'
+
+# supported audio encoders (for use with -l/--list option)
+get_list_audiocodecs() {
+    for item in $supported_audiocodecs_all
+    do
+        list_audiocodecs="${list_audiocodecs:-}${item}, "
+    done
+    
+    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
+}
+
+# lossless audio encoder settings functions: make checks and settings for lossless audio encoder
+#                                           (for the 1st step, lossless recording)
+# arguments: none
+# return value: not relevant
+# return code (status): 0 - the detected ffmpeg build has support for the tested lossless audio_encoder
+#                       1 - the detected ffmpeg build has no support for the tested lossless audio encoder
+# sets special variable: $audio_record_codec - ffmpeg lossless audio codec option and settings
+# note: the program will exit with error if the selected lossless audio encoder is not supported by the detected ffmpeg build
+lossless_audiocodec_settings_pcm_s16le() {
+    if check_component pcm_s16le encoder
+    then
+        check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder'
+        audio_record_codec='-codec:a pcm_s16le -ar 48000 -ac 2'
+    else
+        return 1
+    fi
+}
+
+lossless_audiocodec_settings_flac() {
+    if check_component flac encoder
+    then
+        check_component flac decoder || component_error flac 'audio decoder'
+        audio_record_codec='-codec:a flac -b:a 392k -ar 48000 -ac 2'
+    else
+        return 1
+    fi
+}
+
+# audio encoder settings functions: make checks and settings for the selected audio encoder
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variable: $audio_encode_codec - ffmpeg audio codec option and settings
+# note: the program will exit with error if the selected audio encoder is not supported by the detected ffmpeg build
+audiocodec_settings_aac() {
+    if check_component libfdk_aac encoder
+    then
+        audio_encode_codec='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
+    else
+        check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder'
+        audio_encode_codec='-codec:a aac -b:a 128k -ar 44100 -ac 2'
+    fi
+}
+
+audiocodec_settings_vorbis() {
+    check_component libvorbis encoder || component_error libvorbis 'audio encoder'
+    audio_encode_codec='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
+}
+
+audiocodec_settings_opus() {
+    check_component libopus encoder || component_error libopus 'audio encoder'
+    audio_encode_codec='-codec:a libopus -b:a 128k -ar 48000 -ac 2'
+}
+
+audiocodec_settings_mp3lame() {
+    check_component libmp3lame encoder || component_error libmp3lame 'audio encoder'
+    audio_encode_codec='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
+}
+
+audiocodec_settings_shine() {
+    check_component libshine encoder || component_error libshine 'audio encoder'
+    audio_encode_codec='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
+}
+
+audiocodec_settings_wma() {
+    check_component wmav2 encoder || component_error wmav2 'audio encoder'
+    audio_encode_codec='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
+}
+
+#########################################
+#         video encoder settings        #
+#########################################
+
+# supported video encoders (for general code usage, one per line for accurate grepping with '^pattern$')
+supported_videocodecs_all='x264
+h264_nvenc
+h264_vaapi
+h264_qsv
+x265
+kvazaar
+hevc_nvenc
+hevc_vaapi
+hevc_qsv
+vp8
+vp8_vaapi
+vp9
+vp9_vaapi
+theora
+wmv'
+
+# supported audio encoders (for use with -l/--list option)
+get_list_videocodecs() {
+    list_videocodecs='x264, h264_nvenc, h264_vaapi, h264_qsv,
+                         x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
+                         vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
+}
+
+# get_videocodecs_for_nonmulti8_msg function: defines video encoders to be used with dimension_msg()
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variables: $msg_speedloss_videocodecs   - video encoders that can lead to speedloss with non multiple of
+#                                                        8 dimensions (one per line)
+#                         $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
+get_videocodecs_for_nonmulti8_msg() {
+    msg_speedloss_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
+                                     sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+    
+    msg_requirement_videocodecs='x265
+kvazaar
+hevc_nvenc
+hevc_vaapi
+hevc_qsv
+'
+}
+
+# lossless video encoder settings functions: make checks and settings for lossless video encoder
+#                                           (for the 1st step, lossless recording)
+# arguments: none
+# return value: not relevant
+# return code (status): 0 - the detected ffmpeg build has support for the tested lossless video_encoder
+#                       1 - the detected ffmpeg build has no support for the tested lossless video encoder
+# sets special variable: $video_record_codec - ffmpeg lossless video codec option and settings
+# note: the program will exit with error if the selected lossless video encoder is not supported by the detected ffmpeg build
+lossless_videocodec_settings_ffv1() {
+    if check_component ffv1 encoder
+    then
+        check_component ffv1 decoder || component_error ffv1 'video decoder'
+        video_record_codec='ffv1 -level 3 -slicecrc 1'
+    else
+        return 1
+    fi
+}
+
+lossless_videocodec_settings_ffvhuff() {
+    if check_component ffvhuff encoder
+    then
+        check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
+        video_record_codec='ffvhuff'
+    else
+        return 1
+    fi
+}
+
+lossless_videocodec_settings_huffyuv() {
+    if check_component huffyuv encoder
+    then
+        check_component huffyuv decoder || component_error huffyuv 'video decoder'
+        video_record_codec='huffyuv'
+    else
+        return 1
+    fi
+}
+
+# video encoder settings functions: make checks and settings for the selected video encoder
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variable: $video_encode_codec - ffmpeg video codec settings
+# note: the program will exit with error if the selected video encoder is not supported by the detected ffmpeg build
+videocodec_settings_x264() {
+    check_component libx264 encoder || component_error libx264 'video encoder'
+    
+    if [ "$streaming" = 'true' ] 
+    then
+        video_encode_codec='libx264 -preset fast'
+    else
+        if [ "$one_step" = 'false' ] 
+        then
+            video_encode_codec='libx264 -crf 21 -preset veryslow'
+        else
+            video_encode_codec='libx264 -crf 21 -preset fast'
+        fi
+    fi
+}
+
+videocodec_settings_h264_nvenc() {
+    check_component h264_nvenc encoder || component_error h264_nvenc 'video encoder'
+    video_encode_codec='h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150'
+}
+
+videocodec_settings_h264_vaapi() {
+    check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder'
+    check_vaapi_device
+    video_encode_codec='h264_vaapi -qp 18'
+}
+
+videocodec_settings_h264_qsv() {
+    check_component h264_qsv encoder || component_error h264_qsv 'video encoder'
+    video_encode_codec='h264_qsv -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
+}
+
+videocodec_settings_x265() {
+    check_component libx265 encoder || component_error libx265 'video encoder'
+    
+    if [ "$one_step" = 'false' ] 
+    then
+        video_encode_codec='libx265 -crf 25 -preset veryslow'
+    else
+        video_encode_codec='libx265 -crf 25 -preset fast'
+    fi
+}
+
+videocodec_settings_kvazaar() {
+    check_component libkvazaar encoder || component_error libkvazaar 'video encoder'
+    
+    if [ "$one_step" = 'false' ] 
+    then
+        video_encode_codec='libkvazaar -kvazaar-params preset=veryslow'
+    else
+        video_encode_codec='libkvazaar -kvazaar-params preset=fast'
+    fi
+}
+
+videocodec_settings_hevc_nvenc() {
+    check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder'
+    video_encode_codec='hevc_nvenc -preset slow'
+}
+
+videocodec_settings_hevc_vaapi() {
+    check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder'
+    check_vaapi_device
+    video_encode_codec='hevc_vaapi -qp 22'
+}
+
+videocodec_settings_hevc_qsv() {
+    check_component hevc_qsv encoder || component_error hevc_qsv 'video encoder'
+    video_encode_codec='hevc_qsv -load_plugin hevc_hw -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
+}
+
+videocodec_settings_vp8() {
+    check_component libvpx encoder || component_error libvpx 'video encoder'
+    video_record_codec="${video_record_codec} -pix_fmt yuv420p"
+    video_encode_codec='libvpx -crf 8 -b:v 2M'
+}
+
+videocodec_settings_vp8_vaapi() {
+    check_component vp8_vaapi encoder || component_error vp8_vaapi 'video encoder'
+    check_vaapi_device
+    video_encode_codec='vp8_vaapi -global_quality 30'
+}
+
+videocodec_settings_vp9() {
+    check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder'
+    video_encode_codec='libvpx-vp9 -crf 30 -b:v 0'
+}
+
+videocodec_settings_vp9_vaapi() {
+    check_component vp9_vaapi encoder || component_error vp9_vaapi 'video encoder'
+    check_vaapi_device
+    video_encode_codec='vp9_vaapi -global_quality 80'
+}
+
+videocodec_settings_theora() {
+    check_component libtheora encoder || component_error libtheora 'video encoder'
+    video_encode_codec='libtheora -qscale:v 5'
+}
+
+videocodec_settings_wmv() {
+    check_component wmv2 encoder || component_error wmv2 'video encoder'
+    video_encode_codec='wmv2 -qscale:v 3'
+}
+
+#########################################
+#            effects settings           #
+#########################################
 
 # watermark settings
 watermark_font='Arial'
@@ -128,44 +589,92 @@ watermark_position='bottomright'
     # 10,688  - bottom left  corner
     # 550,350 - centralized
 
-# png (watermark) optimization settings
-pngoptimizer='none'      # truepng, pingo, optipng, opt-png, none
-truepngsettings='-o max'
-pingosettings='-s8'
-optipngsettings='-o 7'
-advdefsettings='-z4i10'
-
 # webcam settings
-webcam_general_options="-f video4linux2 -thread_queue_size ${queue_size} -probesize 10M"
+webcam_input_options="-f video4linux2 -thread_queue_size ${queue_size} -probesize 10M"
 webcam_size='320x240'
 webcam_input='/dev/video0'
 webcam_position='topright'
 
-# video fade settings
-fade_color='black'      # color to be used by the video fade effect
-fade_length='0.6'       # length (in seconds) of video fade effect itself
-fade_solid_length='0.1' # solid color length (in seconds) of video fade effect
+# effect settings functions: make settings for the selected effect(s)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# sets special variables: various, depending on the effect
+get_supported_fade() {
+    supported_fade='none
+in
+out
+both'
+}
 
-# default options for later comparison (to print informative messages)
-audio_encoder_default="$audio_encoder"
-video_encoder_default="$video_encoder"
-format_default="$format"
+get_list_fade() {
+    get_supported_fade
+    
+    for item in $supported_fade
+    do
+        list_fade="${list_fade:-}${item}, "
+    done
+    
+    list_fade="$(printf '%s' "$list_fade" | sed 's/,[[:space:]]$//')"
+}
 
-# supported arguments (for use with -l/--list)
-supported_fade='in, out, both, none'
-supported_formats='mp4, mov, mkv, webm, ogg, ogv, flv, nut, wmv, asf, avi'
-supported_aencoders='aac, opus, vorbis, mp3lame, shine, wma, none'
-supported_vencoders='x264, h264_nvenc, h264_vaapi, h264_qsv,
-                         x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
-                         vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
-supported_wmark_position='topleft, topright, bottomleft, bottomright
-                         (or the respective aliases tl, tr, bl, br)'
-supported_webcam_position='topleft, topright, bottomleft, bottomright
-                         (or the respective aliases tl, tr, bl, br)'
-supported_pngopt='truepng, pingo, optipng, opt-png, none'
+
+get_supported_pngoptmz() {
+    supported_pngoptmz='none
+optipng
+opt-png
+truepng
+pingo'
+}
+
+get_list_pngoptmz() {
+    get_supported_pngoptmz
+    
+    for item in $supported_pngoptmz
+    do
+        list_pngoptmz="${list_pngoptmz:-}${item}, "
+    done
+    
+    list_pngoptmz="$(printf '%s' "$list_pngoptmz" | sed 's/,[[:space:]]$//')"
+}
+
+get_fade_settings() {
+    fade_color='black'      # color to be used by the video fade effect
+    fade_length='0.6'       # length (in seconds) of video fade effect itself
+    fade_solid_length='0.1' # solid color length (in seconds) of video fade effect
+}
+
+get_supported_streaming_settings() {
+    # supported audio/video encoders in the flv muxer that have restrictions in specific container formats
+    supported_streaming_formats="$(printf '%s' "$supported_formats_all" | sed '/^ogg$/d;/^ogv$/d;/^webm$/d')"
+    
+    # flv muxer restrictions
+    supported_streaming_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
+    supported_streaming_videocodecs='x264
+h264_nvenc
+h264_vaapi
+h264_qsv
+'
+}
+
+get_pngoptmz_settings_truepng() {
+    pngoptmz_settings='-o max'
+}
+
+get_pngoptmz_settings_pingo() {
+    pngoptmz_settings='-s8'
+}
+
+get_pngoptmz_settings_optipng() {
+    pngoptmz_settings='-o 7'
+}
+
+get_pngoptmz_settings_advdef() {
+    advdef_settings='-z4i10'
+}
 
 #########################################
-#              functions                #
+#           general functions           #
 #########################################
 
 # cleanup function: delete unneeded files
@@ -422,22 +931,40 @@ remove_spaces() {
 # return code (status): not relevant
 list_supported() {
     show_header
+    get_list_formats
+    get_list_audiocodecs
+    get_list_videocodecs
+    get_list_fade
+    get_list_pngoptmz
+    
+    list_wmark_position='topleft, topright, bottomleft, bottomright
+                         (or the respective aliases tl, tr, bl, br)'
+                         
+    list_webcam_position='topleft, topright, bottomleft, bottomright
+                         (or the respective aliases tl, tr, bl, br)'
+    
     printf '\n'
     printf '%s\n' 'Supported arguments:'
-    printf '%s\n' "  -f, --format           $(printf '%s' "$supported_formats")"
-    printf '%s\n' "  -a, --audio-encoder    $(printf '%s' "$supported_aencoders")"
-    printf '%s\n' "  -v, --video-encoder    $(printf '%s' "$supported_vencoders")"
-    printf '%s\n' "  -e, --fade             $(printf '%s' "$supported_fade")"
-    printf '%s\n' "  -k, --wmark-position   $(printf '%s' "$supported_wmark_position")"
-    printf '%s\n' "  -P, --webcam-position  $(printf '%s' "$supported_webcam_position")"
-    printf '%s\n' "  -g, --png-optimizer    $(printf '%s' "$supported_pngopt")"
+    printf '%s\n' "  -f, --format           $(printf '%s' "$list_formats")"
+    printf '\n'
+    printf '%s\n' "  -a, --audio-encoder    $(printf '%s' "$list_audiocodecs")"
+    printf '\n'
+    printf '%s\n' "  -v, --video-encoder    $(printf '%s' "$list_videocodecs")"
+    printf '\n'
+    printf '%s\n' "  -e, --fade             $(printf '%s' "$list_fade")"
+    printf '\n'
+    printf '%s\n' "  -k, --wmark-position   $(printf '%s' "$list_wmark_position")"
+    printf '\n'
+    printf '%s\n' "  -P, --webcam-position  $(printf '%s' "$list_webcam_position")"
+    printf '\n'
+    printf '%s\n' "  -g, --png-optimizer    $(printf '%s' "$list_pngoptmz")"
     printf '\n'
     printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
     printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
     printf '\n'
     printf '%s\n' '  note: the container formats mkv and nut support a combination of all audio'
     printf '%s\n' '        and video encoders. Restrictions apply to other container formats.'
-    }
+}
 
 # get_cmd_line function: get command line arguments and adjust related variables
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
@@ -1091,16 +1618,27 @@ show_settings() {
     print_good "${color_bold:-}video encoder   :${color_off:-} ${video_encoder} ${video_outstr:-}"
     print_good "${color_bold:-}audio encoder   :${color_off:-} ${audio_encoder} ${audio_outstr:-}"
     
-    if [ "$streaming" = 'false' ] ||
-       {
-           [ "$streaming"  = 'true' ] &&
-           [ "$keep_video" = 'true' ] ;
-       }
-    then
-        print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
-    fi
+    [ "$saving_output" = 'true' ] && print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
     
     print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
+    
+    # print a waning if user chosen a possible unplayable combinantion of encoder and container format
+    if [ "$format" = 'mov' ] 
+    then
+        msg="on 'mov' container format may not be playable"
+        
+        if printf '%s' "$unplayable_audiocodecs_mov" | grep -q "^${audio_encoder}$"
+        then
+            print_warn "'${audio_encoder}' audio encoder ${msg}"
+        fi
+        
+        if printf '%s' "$unplayable_videocodecs_mov" | grep -q "^${video_encoder}$"
+        then
+            print_warn "'${video_encoder}' video encoder ${msg}"
+        fi
+        
+        unset msg
+    fi
 }
 
 # component_error function: print an error message and show an error notification
@@ -1194,14 +1732,16 @@ check_component() {
 # return value: a string with the created message
 # return code (status): not relevant
 dimension_msg() {
-    case "$video_encoder" in
-        x264|h264_nvenc|hevc_nvenc)
-            msg='(this can lead to a speedloss)'
-            ;;
-        x265|kvazaar|theora|vp8|vp9)
-            msg="(${video_encoder} requirement)"
-            ;;
-    esac
+    get_videocodecs_for_nonmulti8_msg
+    
+    if printf '%s' "$msg_speedloss_videocodecs" | grep -q "^${video_encoder}$"
+    then
+        msg='(this can lead to a speedloss)'
+        
+    elif printf '%s' "$msg_requirement_videocodecs" | grep -q "^${video_encoder}$"
+    then
+        msg="(${video_encoder} requirement)"
+    fi
     
     case "$1" in
         width)
@@ -1228,7 +1768,7 @@ check_dimension() {
     dimension_value="$1"
     
     # the dimension will be a multiple of 8 if the remainder is 0
-    [ "$((dimension_value % 8))" = '0' ] || return 1
+    [ "$((dimension_value % 8))" = '0' ]
 }
 
 # adjust_dimension function: change a given dimension to the immediately higher
@@ -1417,14 +1957,15 @@ check_alsa_short_name() {
 # note2: this png optimizer check should be on check_cmd_line(), but it is implemented
 #        as a separate function to allow it to be executed before check_requirements()
 check_pngoptimizer() {
-    case "$pngoptimizer" in
-        truepng|pingo|optipng|opt-png|none)
-            :
-            ;;
-        *)
-            exit_program "'$pngoptimizer' is not a valid PNG optimizer for this program"
-            ;;
-    esac
+    if [ "$pngoptimizer_setted" = 'true' ] 
+    then
+        get_supported_pngoptmz
+        
+        if ! printf '%s' "$supported_pngoptmz" | grep -q "^${pngoptimizer}$"
+        then
+            exit_program "'${pngoptimizer}' is not a valid PNG optimizer for this program"
+        fi
+    fi
 }
 
 # check_cmd_line function: check validity of command line options and arguments (aslo set some variables)
@@ -1490,24 +2031,55 @@ check_cmd_line() {
         fi
     fi
     
+    # check if user entered a valid audio encoder
+    if [ "$audio_encoder_setted" = 'true' ] 
+    then
+        if ! printf '%s' "$supported_audiocodecs_all" | grep -q "^${audio_encoder}$"
+        then
+            exit_program "'${audio_encoder}' is not a valid audio encoder for this program"
+        fi
+    fi
+    
+    # check if user entered a valid video encoder
+    if [ "$video_encoder_setted" = 'true' ] 
+    then
+        if ! printf '%s' "$supported_videocodecs_all" | grep -q "^${video_encoder}$"
+        then
+            exit_program "'${video_encoder}' is not a valid video encoder for this program"
+        fi
+    fi
+    
+    # check if user is recording audio (if not, modify the corresponding control variable)
+    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
+    then
+        recording_audio='false'
+    fi
+    
+    # check if user is saving an output video (if not, modify the corresponding control variable)
+    [ "$streaming"  = 'true' ] && [ "$keep_video" = 'false' ] && saving_output='false'
+    
+    # check if user entered a valid fade effect (-e/--fade)
+    if [ "$fade_setted" = 'true' ] 
+    then
+        get_supported_fade
+        
+        if printf '%s' "$supported_fade" | grep -q "^${fade}$"
+        then
+            # do not allow to use fade effect when using a one step process (-1/--one-step)
+            [ "$one_step"  = 'true' ] && [ "$fade" != 'none' ] && exit_program 'fade effect (-e) cannot be used when using a one step process (-1)'
+        else
+            exit_program "'${fade}' is not a valid fade effect for this program"
+        fi
+    fi
+    
     # checks and settings based on usage of the '-u' option
     if [ "$auto_filename" = 'false' ] 
     then
-        # check if user have not entered an output filename after the options
-        if [ "$#" -eq '0' ] &&
-           {
-               [ "$streaming" = 'false' ] ||
-               {
-                   [ "$streaming"     = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
-               } ;
-           }
-        then
-            exit_program "you must enter an output filename with extension (or use '-u')"
-        fi
+        # check if user have not entered an output filename after the options (only if saving the output video)
+        [ "$#" -eq '0' ] && [ "$saving_output" = 'true' ] && exit_program "you must enter an output filename with extension (or use '-u')"
         
         # do not allow to enter an output filename when not saving the live streaming
-        [ "$#" -eq '1' ] && [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] &&
+        [ "$#" -eq '1' ] && [ "$saving_output" = 'false' ] &&
             exit_program "output filename was specified but but not saving the live streaming ('-K' not set)"
         
         # do not allow to enter anything after the output filename
@@ -1555,11 +2127,15 @@ check_cmd_line() {
         # to make the program output more clear
         printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd)")")"
         
-        output_file="$(basename "$1")" # set the output filename
-        format="${output_file##*.}"    # set container format (output filename extension)
+        # set the output filename and get the container format (only if saving the output video)
+        if [ "$saving_output" = 'true' ] 
+        then
+            output_file="$(basename "$1")" # set the output filename
+            format="${output_file##*.}"    # set container format (output filename extension)
+        fi
     else
         # do not allow to use '-u' when not saving the live streaming
-        [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
+        [ "$saving_output" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
         
         # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
@@ -1573,131 +2149,143 @@ check_cmd_line() {
         fi
     fi
     
+    # check if user entered a valid container format
+    if [ "$format_setted" = 'true' ] ||
+       {
+           [ "$auto_filename" = 'false' ] &&
+           [ "$saving_output" = 'true'  ] ;
+       }
+    then
+        if ! printf '%s' "$supported_formats_all" | grep -q "^${format}$"
+        then
+           exit_program "'${format}' is not a valid container format for this program"
+        fi
+    fi
+    
     # check for valid live streaming settings
     if [ "$streaming" = 'true' ] 
     then
+        get_supported_streaming_settings
+        
         # check if the detected ffmpeg build has support for flv muxer (used for live streaming)
         check_component flv muxer || component_error flv muxer
         
         # do not allow live streaming without recording audio (YouTube seems to refuse it)
-        if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
-        then
-            exit_program 'live streaming cannot be sent without audio'
-        fi
+        [ "$recording_audio" = 'false' ] && exit_program 'live streaming cannot be sent without audio'
+        
+        # do not allow to use fade effect with live streaming (-L/--live-streaming)
+        [ "$fade" != 'none' ] && exit_program 'fade effect (-e) cannot be used with live streaming (-L)'
         
         # check for an invalid container format if saving the live stream
         # (supported audio/video encoders in the flv muxer that have restrictions in specific container formats)
-        if [ "$keep_video" = 'true' ] 
+        if [ "$saving_output" = 'true' ] 
         then
-            case "$format" in
-                ogg|ogv|webm)
-                    exit_program "live streaming cannot be saved to the '${format}' container format"
-                    ;;
-            esac
+            if ! printf '%s' "$supported_streaming_formats" | grep -q "^${format}$"
+            then
+                exit_program "live streaming cannot be saved to the '${format}' container format"
+            fi
         fi
         
         # check for an invalid audio encoder for live streaming (flv muxer restrictions)
-        case "$audio_encoder" in
-            opus|vorbis|wma)
-                exit_program "live streaming cannot be made with the '${audio_encoder}' audio encoder"
-                ;;
-        esac
+        if ! printf '%s' "$supported_streaming_audiocodecs" | grep -q "^${audio_encoder}$"
+        then
+            exit_program "live streaming cannot be made with the '${audio_encoder}' audio encoder"
+        fi
         
         # check for an invalid video encoder for live streaming (flv muxer restrictions)
-        case "$video_encoder" in
-            x265|kvazaar|hevc_nvenc|hevc_vaapi|hevc_qsv|vp8|vp8_vaapi|vp9|vp9_vaapi|theora|wmv)
-                exit_program "live streaming cannot be made with the '${video_encoder}' video encoder"
-                ;;
-        esac
+        if ! printf '%s' "$supported_streaming_videocodecs" | grep -q "^${video_encoder}$"
+        then
+            exit_program "live streaming cannot be made with the '${video_encoder}' video encoder"
+        fi
     fi
     
-    # container format checks and settings:
-    #   - check if a valid container format was selected
-    #   - check if the detected ffmpeg build has support for the chosen muxer
-    #   - auto choose audio/video encoder if needed to avoid an error:
-    #       - if user specified only the format without the encoders, and the entered format does not support the default encoders
-    #       - currently only needed for webm and ogg/ogv formats
-    #   - set some special options for mp4 and mov
-    case "$format" in
-        mp4|mov)
-            check_component "$format" muxer || component_error "$format" muxer
+    # execute container formats checks and settings (only if saving the output video)
+    [ "$saving_output" = 'true' ] && "format_settings_${format}"
+    
+    # check if user entered and invalid combination of audio encoder and container format
+    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
+    then
+        if ! printf '%s' "$supported_audiocodecs" | grep -q "^${audio_encoder}$"
+        then
+            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
             
-            # move the moov atom to the beginning of the file
-            if [ "$streaming"  = 'true' ] 
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
             then
-                faststart='[movflags=+faststart]'
-            else
-                faststart='-movflags +faststart'
+                msg="${msg}
+                      (did you forget to select the container format?)"
             fi
-            ;;
-        webm)
-            check_component "$format" muxer || component_error "$format" muxer
             
-            # auto choose audio/video encoder if needed
-            [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
-            [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
-            ;;
-        ogg|ogv)
-            check_component "$format" muxer || component_error "$format" muxer
+            show_settings
+            exit_program "$msg"
+        fi
+    fi
+    
+    # check if user entered and invalid combination of video encoder and container format
+    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
+    then
+        if ! printf '%s' "$supported_videocodecs" | grep -q "^${video_encoder}$"
+        then
+            msg="container format '${format}' does not support '${video_encoder}' video encoder"
             
-            # auto choose audio/video encoder if needed
-            [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
-            [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
-            ;;
-        mkv)
-            if [ "$rec_extension" != "$format" ] 
+            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
             then
-                check_component matroska muxer || component_error matroska muxer
+                msg="${msg}
+                      (did you forget to select the container format?)"
             fi
-            ;;
-        flv)
-            # check for flv muxer support only if recording offline
-            # (flv muxer support in ffmpeg is already checked during live streaming checks)
-            if [ "$streaming" != 'false' ] 
-            then
-                check_component "$format" muxer || component_error "$format" muxer
-            fi
-            ;;
-        nut)
-            if [ "$rec_extension" != "$format" ] 
-            then
-                check_component "$format" muxer || component_error "$format" muxer
-            fi
-            ;;
-        asf|avi)
-            check_component "$format" muxer || component_error "$format" muxer
-            ;;
-        wmv)
-            # asf muxer is used for wmv (and wma) container format
-            check_component asf muxer || component_error asf muxer
-            ;;
-        *)
-            # the following if statement will avoid and error when live streaming and not saving the video
-            if [ "$streaming" = 'false' ] ||
+            
+            show_settings
+            exit_program "$msg"
+        fi
+        
+        # special condition check: mp4 + vp9
+        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+        if {
+                [ "$video_encoder" = 'vp9'       ] ||
+                [ "$video_encoder" = 'vp9_vaapi' ] ;
+           } &&
+           [ "$format" = 'mp4' ] 
+        then
+            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
+            
+            if {
+                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
+                   ! {
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
+                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                     } ;
+               } ||
                {
-                   [ "$streaming"  = 'true' ] &&
-                   [ "$keep_video" = 'true' ] ;
+                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
+                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
                }
             then
-                exit_program "'${format}' is not a valid container format for this program"
-            fi
-            ;;
-    esac
+                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                then
+                    msg="${msg}
+                      (did you forget to select the container format?)"
+                fi
+                
+                show_settings
+                exit_program "$msg"
+            
+            fi # end: if { <complex multi-line ffmpeg version check>
+        
+        fi # end: [ "$format" = 'mp4' ] &&
+        
+    fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
     
     # audio input checks and adjustments
-    if [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ] 
+    if [ "$recording_audio" = 'true' ] 
     then
         # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
-        if check_component pcm_s16le encoder
+        if ! lossless_audiocodec_settings_pcm_s16le
         then
-            check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder'
-            audio_record_codec="$codec_pcm_s16le"
-        else
-            if check_component flac encoder
+            if lossless_audiocodec_settings_flac
             then
                 print_warn "no 'pcm_s16le' encoder support in ffmpeg, falling back to 'flac' encoder for recording"
-                check_component flac decoder || component_error flac 'audio decoder'
-                audio_record_codec="$codec_flac"
             else
                 component_error 'pcm_s16le or flac' 'audio encoder'
             fi
@@ -1709,7 +2297,7 @@ check_cmd_line() {
             # check for PulseAudio support in ffmpeg
             if check_component pulse demuxer
             then
-                audio_general_options="$(printf '%s' "$audio_general_options" | sed 's/alsa/pulse/')"
+                audio_input_options="$(printf '%s' "$audio_input_options" | sed 's/alsa/pulse/')"
                 
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             else
@@ -1718,7 +2306,6 @@ check_cmd_line() {
             
             if [ "$audio_input_setted" = 'false' ] 
             then
-                audio_input='default'
                 print_warn "auto setting audio input device to 'default'"
             else
                 # check if user entered a valid PulseAudio input source
@@ -1778,375 +2365,39 @@ check_cmd_line() {
         
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
         
-    fi # end: [ "$audio_input" != 'none' ] && [ "$audio_encoder" != 'none' ]
-    
-    # check for invalid combination of audio encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
-    then
-        if {
-               # note: opus support in mp4 is currently experimental in ffmpeg
-               [ "$format" = 'mp4' ] &&
-               {
-                   [ "$audio_encoder" = 'opus' ] ||
-                   [ "$audio_encoder" = 'wma'  ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'webm' ] &&
-               {
-                   [ "$audio_encoder" = 'aac'     ] ||
-                   [ "$audio_encoder" = 'mp3lame' ] ||
-                   [ "$audio_encoder" = 'shine'   ] ||
-                   [ "$audio_encoder" = 'wma'     ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'ogg' ] ||
-                   [ "$format" = 'ogv' ] ;
-               } &&
-               {
-                   [ "$audio_encoder" = 'aac'     ] ||
-                   [ "$audio_encoder" = 'mp3lame' ] ||
-                   [ "$audio_encoder" = 'shine'   ] ||
-                   [ "$audio_encoder" = 'wma'     ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'flv' ] &&
-               {
-                   [ "$audio_encoder" = 'opus'   ] ||
-                   [ "$audio_encoder" = 'vorbis' ] ||
-                   [ "$audio_encoder" = 'wma'    ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'wmv' ] ||
-                   [ "$format" = 'asf' ] ||
-                   [ "$format" = 'avi' ] ||
-                   [ "$format" = 'mov' ] ;
-               } &&
-               [ "$audio_encoder" = 'opus' ] ;
-           }
-        then
-            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        
-        fi # end: if { <complex multi-line fomat and video encoder combination check>
-    
-    fi # end: [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
-    
-    # check for invalid combination of video encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
-    then
-        if {
-               [ "$format" = 'mp4' ] &&
-               {
-                   [ "$video_encoder" = 'theora'    ] ||
-                   [ "$video_encoder" = 'vp8'       ] ||
-                   [ "$video_encoder" = 'vp8_vaapi' ] ||
-                   [ "$video_encoder" = 'wmv'       ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'webm' ] &&
-               {
-                   [ "$video_encoder" = 'x264'       ] ||
-                   [ "$video_encoder" = 'h264_nvenc' ] ||
-                   [ "$video_encoder" = 'h264_vaapi' ] ||
-                   [ "$video_encoder" = 'h264_qsv'   ] ||
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'theora'     ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'ogg' ] ||
-                   [ "$format" = 'ogv' ] ;
-               } &&
-               {
-                   [ "$video_encoder" = 'x264'       ] ||
-                   [ "$video_encoder" = 'h264_nvenc' ] ||
-                   [ "$video_encoder" = 'h264_vaapi' ] ||
-                   [ "$video_encoder" = 'h264_qsv'   ] ||
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'vp9'        ] ||
-                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'flv' ] &&
-               {
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ||
-                   [ "$video_encoder" = 'theora'     ] ||
-                   [ "$video_encoder" = 'vp8'        ] ||
-                   [ "$video_encoder" = 'vp8_vaapi'  ] ||
-                   [ "$video_encoder" = 'vp9'        ] ||
-                   [ "$video_encoder" = 'vp9_vaapi'  ] ||
-                   [ "$video_encoder" = 'wmv'        ] ;
-               } ;
-           } ||
-           {
-               {
-                   [ "$format" = 'wmv' ] ||
-                   [ "$format" = 'asf' ] ;
-               } &&
-               {
-                   [ "$video_encoder" = 'x265'       ] ||
-                   [ "$video_encoder" = 'kvazaar'    ] ||
-                   [ "$video_encoder" = 'hevc_nvenc' ] ||
-                   [ "$video_encoder" = 'hevc_vaapi' ] ||
-                   [ "$video_encoder" = 'hevc_qsv'   ] ;
-               } ;
-           } ||
-           {
-               [ "$format" = 'mov' ] &&
-               {
-                   [ "$video_encoder" = 'vp9'       ] ||
-                   [ "$video_encoder" = 'vp9_vaapi' ] ;
-               } ;
-           }
-        then
-            msg="container format '${format}' does not support '${video_encoder}' video encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        
-        fi # end: if { <complex multi-line fomat and audio encoder combination check>
-        
-        # special condition check: mp4 + vp9
-        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-        if [ "$format" = 'mp4' ] &&
-           {
-               [ "$video_encoder" = 'vp9'       ] ||
-               [ "$video_encoder" = 'vp9_vaapi' ] ;
-           }
-        then
-            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
-            
-            if {
-                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
-                   ! {
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
-                     } ;
-               } ||
-               {
-                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
-               }
-            then
-                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
-                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
-                
-                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-                then
-                    msg="${msg}
-                      (did you forget to select the container format?)"
-                fi
-                
-                show_settings
-                exit_program "$msg"
-            
-            fi # end: if { <complex multi-line ffmpeg version check>
-        
-        fi # end: [ "$format" = 'mp4' ] &&
-    
-    fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
-    
-    # audio encoder checks and settings:
-    #   - check if user entered a valid audio encoder
-    #   - check if the detect ffmpeg build has support for the selected audio encoder
-    #   - set recording and encoding options accordingly
-    case "$audio_encoder" in
-        aac)
-            if check_component libfdk_aac encoder
-            then
-                audio_encode_codec="$codec_fdkaac"
-            else
-                check_component aac encoder    || component_error aac        'audio encoder'
-                audio_encode_codec="$codec_aac"
-            fi
-            ;;
-        vorbis)
-            check_component libvorbis encoder  || component_error libvorbis  'audio encoder'
-            audio_encode_codec="$codec_vorbis"
-            ;;
-        opus)
-            check_component libopus encoder    || component_error libopus    'audio encoder'
-            audio_encode_codec="$codec_opus"
-            ;;
-        mp3lame)
-            check_component libmp3lame encoder || component_error libmp3lame 'audio encoder'
-            audio_encode_codec="$codec_mp3lame"
-            ;;
-        shine)
-            check_component libshine encoder   || component_error libshine   'audio encoder'
-            audio_encode_codec="$codec_shine"
-            ;;
-        wma)
-            check_component wmav2 encoder      || component_error wmav2      'audio encoder'
-            audio_encode_codec="$codec_wma"
-            ;;
-        none)
-            :
-            ;;
-        *)
-            exit_program "'${audio_encoder}' is not a valid audio encoder for this program"
-            ;;
-    esac
+    fi # end: [ "$recording_audio" = 'true' ]
     
     # do not allow to use '-i none' with an '-a' argument different than 'none'
-    if [ "$audio_input_setted"   = 'true' ] && [ "$audio_input"    = 'none' ] &&
-       [ "$audio_encoder_setted" = 'true' ] && [ "$audio_encoder" != 'none' ] 
+    if [ "$audio_input"    = 'none' ] && [ "$audio_input_setted"   = 'true' ] &&
+       [ "$audio_encoder" != 'none' ] && [ "$audio_encoder_setted" = 'true' ] 
     then
         exit_program "'-i none' cannot be used with an '-a' argument different than 'none'"
     fi
     
     # do not allow to use '-a none' with an '-i' argument different than 'none'
-    if [ "$audio_encoder_setted" = 'true' ] && [ "$audio_encoder"  = 'none' ] &&
-       [ "$audio_input_setted"   = 'true' ] && [ "$audio_input"   != 'none' ] 
+    if [ "$audio_encoder"  = 'none' ] && [ "$audio_encoder_setted" = 'true' ] &&
+       [ "$audio_input"   != 'none' ] && [ "$audio_input_setted"   = 'true' ] 
        
     then
         exit_program "'-a none' cannot be used with an '-i' argument different than 'none'"
     fi
     
-    # adjust settings if user is not recording audio (video without audio stream)
-    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
+    # execute audio encoder checks and settings (only if recording audio)
+    if [ "$recording_audio" = 'true' ] 
     then
+        "audiocodec_settings_${audio_encoder}"
+    
+    # adjust settings if user is not recording audio (video without audio stream)
+    else
         unset audio_input
         unset audio_channel_layout
-        unset audio_general_options
+        unset audio_input_options
         audio_record_codec='-an'
         audio_encode_codec='-an'
     fi
     
-    # video encoder checks and settings:
-    #   - check if user entered a valid video encoder
-    #   - check if the detect ffmpeg build has support for the selected video encoder
-    #   - set recording and encoding options accordingly
-    case "$video_encoder" in
-        x264)
-            check_component libx264 encoder    || component_error libx264    'video encoder'
-            
-            if [ "$streaming" = 'true' ] 
-            then
-                video_encode_codec="$codec_streaming_x264"
-            else
-                if [ "$one_step" = 'false' ] 
-                then
-                    video_encode_codec="$codec_x264"
-                else
-                    video_encode_codec="$codec_onestep_x264"
-                fi
-            fi
-            ;;
-        h264_nvenc)
-            check_component h264_nvenc encoder || component_error libx264    'video encoder'
-            video_encode_codec="$codec_h264_nvenc"
-            ;;
-        h264_vaapi)
-            check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder'
-            check_vaapi_device
-            video_encode_codec="$codec_h264_vaapi"
-            ;;
-        h264_qsv)
-            check_component h264_qsv encoder   || component_error h264_qsv   'video encoder'
-            video_encode_codec="$codec_h264_qsv"
-            ;;
-        x265)
-            check_component libx265 encoder    || component_error libx265    'video encoder'
-            
-            if [ "$one_step" = 'false' ] 
-            then
-                video_encode_codec="$codec_x265"
-            else
-                video_encode_codec="$codec_onestep_x265"
-            fi
-            ;;
-        kvazaar)
-            check_component libkvazaar encoder || component_error libkvazaar 'video encoder'
-            
-            if [ "$one_step" = 'false' ] 
-            then
-                video_encode_codec="$codec_kvazaar"
-            else
-                video_encode_codec="$codec_onestep_kvazaar"
-            fi
-            ;;
-        hevc_nvenc)
-            check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder'
-            video_encode_codec="$codec_hevc_nvenc"
-            ;;
-        hevc_vaapi)
-            check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder'
-            check_vaapi_device
-            video_encode_codec="$codec_hevc_vaapi"
-            ;;
-        hevc_qsv)
-            check_component hevc_qsv encoder   || component_error hevc_qsv   'video encoder'
-            video_encode_codec="$codec_hevc_qsv"
-            ;;
-        theora)
-            check_component libtheora encoder  || component_error libtheora  'video encoder'
-            video_encode_codec="$codec_theora"
-            ;;
-        vp8)
-            check_component libvpx encoder     || component_error libvpx     'video encoder'
-            video_record_codec="${video_record_codec} -pix_fmt yuv420p"
-            video_encode_codec="$codec_vp8"
-            ;;
-        vp8_vaapi)
-            check_component vp8_vaapi encoder  || component_error vp8_vaapi  'video encoder'
-            check_vaapi_device
-            video_encode_codec="$codec_vp8_vaapi"
-            ;;
-        vp9)
-            check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder'
-            video_encode_codec="$codec_vp9"
-            ;;
-        vp9_vaapi)
-            check_component vp9_vaapi encoder  || component_error vp9_vaapi  'video encoder'
-            check_vaapi_device
-            video_encode_codec="$codec_vp9_vaapi"
-            ;;
-        wmv)
-            check_component wmv2 encoder       || component_error wmv2       'video encoder'
-            video_encode_codec="$codec_wmv"
-            ;;
-        *)
-            exit_program "'${video_encoder}' is not a valid video encoder for this program"
-            ;;
-    esac
+    # execute video encoder checks and settings
+    "videocodec_settings_${video_encoder}"
     
     # do not allow to use -A/--vaapi-device without setting a vaapi video encoder
     case "$video_encoder" in
@@ -2159,28 +2410,8 @@ check_cmd_line() {
             ;;
     esac
     
-    # check if a valid fade effect was entered (-e/--fade)
-    if [ "$fade_setted" = 'true' ] 
-    then
-        case "$fade" in
-            none)
-                :
-                ;;
-            in|out|both)
-                # do not allow to use fade effect with live streaming (-L/--live-streaming)
-                [ "$streaming" = 'true' ] && exit_program 'fade effect (-e) cannot be used with live streaming (-L)'
-                
-                # do not allow to use fade effect when using a one step process (-1/--one-step)
-                [ "$one_step" = 'true' ] && exit_program 'fade effect (-e) cannot be used when using a one step process (-1)'
-                ;;
-            *)
-                exit_program "'${fade}' is not a valid fade effect"
-                ;;
-        esac
-    fi
-    
     # do not allow to use -m option when -i or -a are setted to 'none'
-    if [ "$audio_encoder" = 'none' ] && [ "$volume_factor_setted" = 'true' ] 
+    if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ] 
     then
         exit_program "--volume-factor (-m) option cannot be used when '-i' or '-a' are setted to 'none'"
     fi
@@ -2442,6 +2673,23 @@ randomstr() {
     fi
 }
 
+# optimize_png function: optimize the png (watermark) image
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+# note: needs $wmark_image
+optimize_png() {
+    print_good 'optimizing watermark image'
+    
+    [ "$pngoptimizer" != 'opt-png' ] && "get_pngoptmz_settings_${pngoptimizer}"
+    
+    "$pngoptimizer" $pngoptmz_settings "$wmark_image"
+    
+    # use advdef to optimize PNG even more
+    get_pngoptmz_settings_advdef
+    advdef $advdef_settings "$wmark_image"
+}
+
 # create_watermark function: create a text watermark and set watermark options
 #                            to be passed to ffmpeg command
 # arguments: none
@@ -2493,27 +2741,7 @@ create_watermark() {
                 if file "$wmark_image" | grep -q 'PNG image data'
                 then
                     # optimize PNG image if chosen by user (-g/--png-optimizer)
-                    if [ "$pngoptimizer" != 'none' ] 
-                    then
-                        print_good 'optimizing watermark image'
-                        case "$pngoptimizer" in
-                            truepng)
-                                truepng $truepngsettings "$wmark_image"
-                                ;;
-                            pingo)
-                                pingo $pingosettings "$wmark_image"
-                                ;;
-                            optipng)
-                                optipng $optipngsettings "$wmark_image"
-                                ;;
-                            opt-png)
-                                opt-png "$wmark_image"
-                                ;;
-                        esac
-                        
-                        # use advdef to optimize PNG even more
-                        advdef $advdefsettings "$wmark_image"
-                    fi
+                    [ "$pngoptimizer" != 'none' ] && optimize_png
                     
                     # set ffmpeg watermark options
                     watermark_input="-framerate ${video_rate} \
@@ -2545,6 +2773,8 @@ create_watermark() {
 # return code (status): not relevant
 # sets special variables: $fade_options - ffmpeg fade options
 videofade() {
+    get_fade_settings
+    
     # get recorded video length in seconds
     video_length="$(ffprobe \
                         -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
@@ -2572,6 +2802,53 @@ videofade() {
             fade_options="${fadein},${fadeout}"
             ;;
     esac
+}
+
+# check_basic_components: check for basic components in the detected ffmpeg build
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# note: it will make the program exit with error if the needed basic ffmpeg components are not available in the detected build
+check_basic_components() {
+    # check if the detected ffmpeg build has support for basic screen recording format
+    check_component x11grab demuxer || component_error x11grab demuxer
+    
+    # check for the needed ffmpeg components when using a two step process
+    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
+    then
+        # check if the detected ffmpeg build has support for a basic muxer and demuxer for the lossless recording
+        if ! lossless_format_settings_mkv
+        then
+            if lossless_format_settings_nut
+            then
+                print_warn "no 'matroska' muxer support in ffmpeg, falling back to 'nut' muxer for recording"
+            else
+                component_error 'matroska or nut' muxer
+            fi
+        fi
+        
+        # check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
+        if ! lossless_videocodec_settings_ffv1
+        then
+            msg='encoder will produce an extra-large temporary video, consider changing the tmp directory'
+            
+            if ! lossless_videocodec_settings_ffvhuff
+            then
+                if lossless_videocodec_settings_huffyuv
+                then
+                    print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
+                    print_warn "'huffyuv' ${msg}"
+                    unset msg
+                else
+                    component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
+                fi
+            else
+                print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
+                print_warn "'ffvhuff' ${msg}"
+                unset msg
+            fi
+        fi
+    fi
 }
 
 # set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
@@ -2603,7 +2880,7 @@ set_webcam() {
         
         [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
         
-        webcam_options="${webcam_general_options} ${webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
+        webcam_options="${webcam_input_options} ${webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
         
         vfilter_option='-filter_complex'
         vfilter_settings="${vfilter_settings:+"${vfilter_settings},overlay=${webcam_position},format=bgr0"}"
@@ -2789,13 +3066,13 @@ live_streaming() {
     notify 'normal' '1700' 'media-record' 'live streaming...'
     
     # do the live stream and save the recorded content to an output file
-    if [ "$keep_video" = 'true' ] 
+    if [ "$saving_output" = 'true' ] 
     then
         if ffmpeg \
-               $audio_general_options \
+               $audio_input_options \
                $audio_input \
                $vaapi_device \
-               $video_general_options \
+               $video_input_options \
                -framerate $video_rate \
                -video_size $video_size \
                -i :0.0+${video_position} \
@@ -2823,10 +3100,10 @@ live_streaming() {
     # live streaming only, do not save the recorded content to an output file
     else
         if ffmpeg \
-               $audio_general_options \
+               $audio_input_options \
                $audio_input \
                $vaapi_device \
-               $video_general_options \
+               $video_input_options \
                -framerate $video_rate \
                -video_size $video_size \
                -i :0.0+${video_position} \
@@ -2850,13 +3127,13 @@ live_streaming() {
     fi
 }
 
-# record_offline_1step function: record offline (without live streaming) using one step
-#                                (recording and encoding at the same time).
+# record_offline_one_step function: record offline (without live streaming) using one step
+#                                   (recording and encoding at the same time).
 # arguments: none
 # return value: none
 # return code (status): not relevant
 # note: it will make the program exit with error if a recording error occurs
-record_offline_1step() {
+record_offline_one_step() {
     set_watermark
     set_webcam
     fix_pass_duration
@@ -2867,10 +3144,10 @@ record_offline_1step() {
     
     # record screen and encode in one step
     if ffmpeg \
-           $audio_general_options \
+           $audio_input_options \
            $audio_input \
            $vaapi_device \
-           $video_general_options \
+           $video_input_options \
            -framerate $video_rate \
            -video_size $video_size \
            -i :0.0+${video_position} \
@@ -2892,13 +3169,13 @@ record_offline_1step() {
     fi
 }
 
-# record_offline_2steps function: record offline (without live streaming) using two steps
-#                                 (1st step: lossless recording. 2nd step: encoding).
+# record_offline_two_steps function: record offline (without live streaming) using two steps
+#                                    (1st step: lossless recording. 2nd step: encoding).
 # arguments: none
 # return value: none
 # return code (status): not relevant
 # note: it will make the program exit with error if a recording or encoding error occurs
-record_offline_2steps() {
+record_offline_two_steps() {
     [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && vfilter_option='-vf'
     
     set_webcam
@@ -2909,9 +3186,9 @@ record_offline_2steps() {
     
     # record screen to a lossless video
     if ffmpeg \
-           $audio_general_options \
+           $audio_input_options \
            $audio_input \
-           $video_general_options \
+           $video_input_options \
            -framerate $video_rate \
            -video_size $video_size \
            -i :0.0+${video_position} \
@@ -3008,82 +3285,10 @@ check_requirements
 ffmpeg_formats="$(ffmpeg -formats -v quiet)" # muxers   and demuxers (formats)
 ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 
-# check if the detected ffmpeg build has support for basic screen recording format
-check_component x11grab demuxer || component_error x11grab demuxer
-
-# check for the needed ffmpeg components when using a two step process
-if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
-then
-    # check if the detected ffmpeg build has support for a basic muxer and demuxer for the lossless recording
-    if check_component matroska muxer
-    then
-        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer
-        rec_extension='mkv'
-    else
-        if check_component nut muxer
-        then
-            check_component nut demuxer || component_error nut demuxer
-            print_warn "no 'matroska' muxer support in ffmpeg, falling back to 'nut' muxer for recording"
-            rec_extension='nut'
-        else
-            component_error 'matroska or nut' muxer
-        fi
-    fi
-
-    # check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
-    if check_component ffv1 encoder
-    then
-        check_component ffv1 decoder || component_error ffv1 'video decoder'
-        video_record_codec="$codec_ffv1"
-    else
-        if check_component ffvhuff encoder
-        then
-            print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
-            check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
-            
-            print_warn "'ffvhuff' encoder will produce an extra-large temporary video, consider changing the tmp directory"
-            video_record_codec="$codec_ffvhuff"
-        else
-            if check_component huffyuv encoder
-            then
-                print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
-                check_component huffyuv decoder || component_error huffyuv 'video decoder'
-                
-                print_warn "'huffyuv' encoder will produce an extra-large temporary video, consider changing the tmp directory"
-                video_record_codec="$codec_huffyuv"
-            else
-                component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
-            fi
-            
-        fi # end: check_component ffvhuff encoder
-        
-    fi # end: check_component ffv1 encoder
-    
-fi # end: [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
-
+check_basic_components
 check_cmd_line "$@"
 check_dirs
 show_settings
-
-# print a waning if user chosen a possible unplayable combinantion of encoder and container format
-if [ "$format" = 'mov' ] 
-then
-    msg="on 'mov' container format may not be playable"
-    
-    case "$audio_encoder" in
-        vorbis|wma)
-            print_warn "'${audio_encoder}' audio encoder ${msg}"
-            ;;
-    esac
-    
-    case "$video_encoder" in
-        theora|vp8|vp8_vaapi|wmv)
-            print_warn "'${video_encoder}' video encoder ${msg}"
-            ;;
-    esac
-    
-    unset msg
-fi
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
@@ -3097,8 +3302,8 @@ then
 else
     if [ "$one_step" = 'false' ] 
     then
-        record_offline_2steps
+        record_offline_two_steps
     else
-        record_offline_1step
+        record_offline_one_step
     fi
 fi
