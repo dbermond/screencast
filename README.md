@@ -332,11 +332,11 @@ Show program version information.
 
     - Live streaming only, without saving a local output video:
     
-        - `$ screencast -L <URL> -v h264_vaapi
+        - `$ screencast -L <URL> -v h264_vaapi`
     
     - Live streaming and also saving a copy to a local output video (with auto chosen output filename, default `mp4` format):
     
-        - `$ screencast -L <URL> -v h264_nvenc -K -u
+        - `$ screencast -L <URL> -v h264_nvenc -K -u`
 
 - 1280x720 video from screen positon 200,234 , 30 fps, `mp3lame` audio encoder, `x265` video encoder, `mkv` container format, fade-in video effect, volume increase effect of 50%, small text watermark effect in bottom right video corner (using the default values for watermark size, position and font) and webcam overlay effect at top right video corner (using the default values for webcam input, size position and framerate):
 
