@@ -348,10 +348,21 @@ lossless_audiocodec_settings_flac() {
 audiocodec_settings_aac() {
     if check_component libfdk_aac encoder
     then
-        audio_encode_codec='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
+        if [ "$streaming" = 'true' ] 
+        then
+            audio_encode_codec='-codec:a libfdk_aac -b:a  96k -ar 44100 -ac 2'
+        else
+            audio_encode_codec='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
+        fi
     else
         check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder'
-        audio_encode_codec='-codec:a aac -b:a 128k -ar 44100 -ac 2'
+        
+        if [ "$streaming" = 'true' ] 
+        then
+            audio_encode_codec='-codec:a aac -b:a  96k -ar 44100 -ac 2'
+        else
+            audio_encode_codec='-codec:a aac -b:a 128k -ar 44100 -ac 2'
+        fi
     fi
 }
 
@@ -367,12 +378,24 @@ audiocodec_settings_opus() {
 
 audiocodec_settings_mp3lame() {
     check_component libmp3lame encoder || component_error libmp3lame 'audio encoder'
-    audio_encode_codec='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
+    
+    if [ "$streaming" = 'true' ] 
+    then
+        audio_encode_codec='-codec:a libmp3lame -b:a  96k -ar 44100 -ac 2'
+    else
+        audio_encode_codec='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
+    fi
 }
 
 audiocodec_settings_shine() {
     check_component libshine encoder || component_error libshine 'audio encoder'
-    audio_encode_codec='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
+    
+    if [ "$streaming" = 'true' ] 
+    then
+        audio_encode_codec='-codec:a libshine -b:a  96k -ar 44100 -ac 2'
+    else
+        audio_encode_codec='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
+    fi
 }
 
 audiocodec_settings_wma() {
@@ -476,13 +499,13 @@ videocodec_settings_x264() {
     
     if [ "$streaming" = 'true' ] 
     then
-        video_encode_codec='libx264 -preset fast'
+        video_encode_codec='libx264 -crf 30 -preset veryfast'
     else
         if [ "$one_step" = 'false' ] 
         then
             video_encode_codec='libx264 -crf 21 -preset veryslow'
         else
-            video_encode_codec='libx264 -crf 21 -preset fast'
+            video_encode_codec='libx264 -crf 21 -preset ultrafast'
         fi
     fi
 }
@@ -510,7 +533,7 @@ videocodec_settings_x265() {
     then
         video_encode_codec='libx265 -crf 25 -preset veryslow'
     else
-        video_encode_codec='libx265 -crf 25 -preset fast'
+        video_encode_codec='libx265 -crf 25 -preset ultrafast'
     fi
 }
 
@@ -521,7 +544,7 @@ videocodec_settings_kvazaar() {
     then
         video_encode_codec='libkvazaar -kvazaar-params preset=veryslow'
     else
-        video_encode_codec='libkvazaar -kvazaar-params preset=fast'
+        video_encode_codec='libkvazaar -kvazaar-params preset=ultrafast'
     fi
 }
 
