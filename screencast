@@ -133,9 +133,9 @@ get_list_formats() {
 # sets special variable: $rec_extension - file extension (container format) of the lossless video
 # note: the program will exit with error if the tested container format is not supported by the detected ffmpeg build
 lossless_format_settings_matroska() {
-    if check_component matroska muxer
+    if check_component  matroska       muxer &&
+       check_component 'matroska,webm' demuxer
     then
-        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer false
         rec_extension='mkv'
     else
         return 1
@@ -143,9 +143,9 @@ lossless_format_settings_matroska() {
 }
 
 lossless_format_settings_nut() {
-    if check_component nut muxer
+    if check_component nut muxer && 
+       check_component nut demuxer
     then
-        check_component nut demuxer || component_error nut demuxer false
         rec_extension='nut'
     else
         return 1
@@ -326,9 +326,9 @@ get_list_audiocodecs() {
 # sets special variable: $audio_record_codec - ffmpeg lossless audio codec option and settings
 # note: the program will exit with error if the selected lossless audio encoder is not supported by the detected ffmpeg build
 lossless_audiocodec_settings_pcm_s16le() {
-    if check_component pcm_s16le encoder
+    if check_component pcm_s16le encoder &&
+       check_component pcm_s16le decoder
     then
-        check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder' false
         audio_record_codec='-codec:a pcm_s16le -ar 48000 -ac 2'
     else
         return 1
@@ -336,9 +336,9 @@ lossless_audiocodec_settings_pcm_s16le() {
 }
 
 lossless_audiocodec_settings_flac() {
-    if check_component flac encoder
+    if check_component flac encoder &&
+       check_component flac decoder
     then
-        check_component flac decoder || component_error flac 'audio decoder' false
         audio_record_codec='-codec:a flac -b:a 320k -ar 48000 -ac 2'
     else
         return 1
@@ -472,9 +472,9 @@ hevc_qsv
 # sets special variable: $video_record_codec - ffmpeg lossless video codec option and settings
 # note: the program will exit with error if the selected lossless video encoder is not supported by the detected ffmpeg build
 lossless_videocodec_settings_ffv1() {
-    if check_component ffv1 encoder
+    if check_component ffv1 encoder &&
+       check_component ffv1 decoder
     then
-        check_component ffv1 decoder || component_error ffv1 'video decoder' false
         video_record_codec='ffv1 -level 3 -slicecrc 1'
     else
         return 1
@@ -482,9 +482,9 @@ lossless_videocodec_settings_ffv1() {
 }
 
 lossless_videocodec_settings_ffvhuff() {
-    if check_component ffvhuff encoder
+    if check_component ffvhuff encoder &&
+       check_component ffvhuff decoder
     then
-        check_component ffvhuff decoder || component_error ffvhuff 'video decoder' false
         video_record_codec='ffvhuff'
     else
         return 1
@@ -492,9 +492,9 @@ lossless_videocodec_settings_ffvhuff() {
 }
 
 lossless_videocodec_settings_huffyuv() {
-    if check_component huffyuv encoder
+    if check_component huffyuv encoder &&
+       check_component huffyuv decoder
     then
-        check_component huffyuv decoder || component_error huffyuv 'video decoder' false
         video_record_codec='huffyuv'
     else
         return 1
