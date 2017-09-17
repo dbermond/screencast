@@ -30,6 +30,7 @@ screencast_website='https://github.com/dbermond/screencast/'
 savedir="$(pwd)"             # path to save output files
 tmpdir='/tmp'                # path for temporary files
 queue_size='3096'            # ffmpeg thread queue size
+paplay_volume='36045'        # paplay playback volume (65536 = 100%)
 finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
 finish_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 
@@ -3002,7 +3003,7 @@ finish() {
     # play a sound after finish if requirements are present
     if command -v paplay >/dev/null 2>&1
     then
-        [ -f "$finish_sound" ] && paplay "$finish_sound" &
+        [ -f "$finish_sound" ] && paplay --volume="$paplay_volume" "$finish_sound" &
     fi
 }
 
