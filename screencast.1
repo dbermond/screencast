@@ -4,8 +4,9 @@
 \fBscreencast\fR \- command line interface to record a X11 desktop
 .SH SYNOPSIS
 .nf
-\fBscreencast\fR [\fIoptions\fR] output
+\fBscreencast\fR [\fIoptions\fR] <output>
 \fBscreencast\fR [\fIoptions\fR] \fB\-u\fR
+\fBscreencast\fR [\fIoptions\fR] \fB\-L\fR <URL>
 .fi
 .PP
 The specified output filename must have an extension which in turn must be a
@@ -448,50 +449,88 @@ Help screen.
 \fB\-V\fR, \fB\-\-version\fR
 Show program version information.
 .SH EXAMPLES
-Use all default settings:
+Use all default settings, specifying filename of the output video:
 .RS
 .PP
-\fBscreencast\fR myvideo.mp4
+$ \fBscreencast\fR myvideo.mp4
 .RE
 .PP
-Use default settings for a 1280x720 video from screen positon 200,234 with
-auto chosen output filename:
+Use default settings for a 1280x720 video from screen positon 200,234 (with
+auto chosen output filename, default 'mp4' format):
 .RS
 .PP
-\fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-u\fR
+$ \fBscreencast\fR \fB\-s\fR 1280x720 \fB\-p\fR 200,234 \fB\-u\fR
 .RE
 .PP
 Changing just the container format without specifying encoders will make it to
-auto choose themif needed. In this case, the \'webm\' format will produce a
+auto choose them if needed. In this case, the \'webm\' format will produce a
 video with \'opus\' and \'vp9\' encoders:
 .RS
 .PP
-\fBscreencast\fR /home/user/webmvideos/myvideo.webm
+$ \fBscreencast\fR /home/user/webmvideos/myvideo.webm
 .RE
 .PP
-Specifying save dir and container format, with auto chosen encoders and
-output filename. In this case, the \'ogg\' format will produce a video with
-\'vorbis\' (libvorbis) and \'theora\' encoders:
-.PP
+Use hardware accelerated video encoders:
 .RS
-\fBscreencast\fR \fB\-o\fR /home/user/myvideos \fB\-f\fR ogg \fB\-u\fR
+.PP
+NVENC HEVC:
+.RS
+.PP
+$ \fBscreencast\fR \fB-u\fR \fB-v\fR hevc_nvenc
+.RE
+.PP
+VAAPI VP9 using the defafult DRM render node (/dev/dri/renderD128):
+.RS
+.PP
+$ \fBscreencast\fR \fB-u\fR \fB-v\fR vp9_vaapi
+.RE
+.PP
+VAAPI H.264 using the defafult DRM render node (/dev/dri/renderD128):
+.RS
+.PP
+$ \fBscreencast\fR \fB-u\fR \fB-v\fR h264_vaapi
+.RE
+.PP
+VAAPI H.264 using the DRM render node /dev/dri/renderD129:
+.RS
+.PP
+$ \fBscreencast\fR \fB-u\fR \fB-v\fR h264_vaapi -A /dev/dri/renderD129
+.RE
+.RE
+Live streaming:
+.RS
+.PP
+Live streaming only, without saving a local output video:
+.RS
+.PP
+$ \fBscreencast\fR \fB-L\fR <URL> \fB-v\fR h264_vaapi
+.RE
+.PP
+Live streaming and also saving a copy to a local output video (with auto
+chosen output filename, default 'mp4' format):
+.RS
+.PP
+$ \fBscreencast\fR \fB-L\fR <URL> \fB-v\fR h264_nvenc \fB-K\fR \fB-u\fR
+.RE
 .RE
 .PP
 1280x720 video from screen positon 200,234 , 30 fps, \'mp3lame\' audio encoder,
 \'x265\' video encoder, \'mkv\' container format, fade\-in video effect,
 volume increase effect of 50%, small text watermark effect in bottom right
-video corner (the default watermark size, position and font):
+video corner (using the default values for watermark size, position and font)
+and webcam overlay effect at top right video corner (using the default values
+for webcam input, size position and framerate):
 .RS
 .PP
-\fBscreencast\fR \fB\-p\fR 200,234 \fB\-s\fR 1280x720 \fB\-r\fR 30 \fB\-a\fR
+$ \fBscreencast\fR \fB\-s\fR 1280x720 \fB\-p\fR 200,234 \fB\-r\fR 30 \fB\-a\fR
 mp3lame \fB\-v\fR x265 \fB\-e\fR in \fB\-m\fR 1.5 \fB\-w\fR www.mysitehere.com
-myvideo.mkv
+\fB-W\fR myvideo.mkv
 .RE
 .PP
 \fINOTE\fR:
 .PP
-When not using the \fB\-x\fR option press the \fIq\fR key in terminal window to
-end the recording.
+When not using the \fB\-x\fR option, press the \fBq\fR key in terminal window
+to end the recording.
 .SH REQUIREMENTS
 The minimum requirements are a POSIX\-compatible shell, a running X session, a
 recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use

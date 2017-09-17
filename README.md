@@ -57,8 +57,9 @@ screencast
 
 ## USAGE
 ```
-$ screencast [options] output
+$ screencast [options] <output>
 $ screencast [options] -u
+$ screencast [options] -L <URL>
 ```
 
 The specified output filename must have an extension which in turn must be a supported container format.
@@ -297,28 +298,52 @@ Help screen.
 Show program version information.
 
 ## EXAMPLES
-- Use all default settings:
+- Use all default settings, specifying filename of the output video:
 
     - `$ screencast myvideo.mp4`
 
-- Use default settings for a 1280x720 video from screen positon 200,234 with auto chosen output filename:
+- Use default settings for a 1280x720 video from screen positon 200,234 (with auto chosen output filename, default `mp4` format):
 
-    - `$ screencast -p 200,234 -s 1280x720 -u`
+    - `$ screencast -u -s 1280x720 -p 200,234 `
 
 - Changing just the container format without specifying encoders will make it to auto choose them if needed. In this case, the `webm` format will produce a video with `opus` and `vp9` encoders:
 
     - `$ screencast /home/user/webmvideos/myvideo.webm`
 
-- Specifying save dir and container format, with auto chosen encoders and output filename. In this case, the `ogg` format will produce a video with `vorbis` (libvorbis) and `theora` encoders:
+- Use hardware accelerated video encoders:
 
-    - `$ screencast -o /home/user/myvideos -f ogg -u`
+    - NVENC HEVC:
+    
+        - `$ screencast -u -v hevc_nvenc`
+    
+    - VAAPI VP9 using the defafult DRM render node (/dev/dri/renderD128):
+    
+        - `$ screencast -u -v vp9_vaapi`
+    
+    - VAAPI H.264 using the defafult DRM render node (/dev/dri/renderD128):
+    
+        - `$ screencast -u -v h264_vaapi`
+    
+    - VAAPI H.264 using the DRM render node /dev/dri/renderD129:
+    
+        - `$ screencast -u -v h264_vaapi -A /dev/dri/renderD129`
+    
+- Live streaming:
 
-- 1280x720 video from screen positon 200,234 , 30 fps, `mp3lame` audio encoder, `x265` video encoder, `mkv` container format, fade-in video effect, volume increase effect of 50%, small text watermark effect in bottom right video corner (the default watermark size, position and font):
+    - Live streaming only, without saving a local output video:
+    
+        - `$ screencast -L <URL> -v h264_vaapi
+    
+    - Live streaming and also saving a copy to a local output video (with auto chosen output filename, default `mp4` format):
+    
+        - `$ screencast -L <URL> -v h264_nvenc -K -u
 
-    - `$ screencast -p 200,234 -s 1280x720 -r 30 -a mp3lame -v x265 -e in -m 1.5 -w www.mysitehere.com myvideo.mkv`
+- 1280x720 video from screen positon 200,234 , 30 fps, `mp3lame` audio encoder, `x265` video encoder, `mkv` container format, fade-in video effect, volume increase effect of 50%, small text watermark effect in bottom right video corner (using the default values for watermark size, position and font) and webcam overlay effect at top right video corner (using the default values for webcam input, size position and framerate):
+
+    - `$ screencast -s 1280x720 -p 200,234 -r 30 -a mp3lame -v x265 -e in -m 1.5 -w www.mysitehere.com -W myvideo.mkv`
 
 **NOTE**:
-When not using the [`-x`](#-x---fixedn) option press the **q** key in terminal window to end the recording.
+When not using the [`-x`](#-x---fixedn) option, press the **q** key in terminal window to end the recording.
 
 ## INSTALLATION
 Make the **screencast** file executable and copy it to a directory that is in your *PATH*.
