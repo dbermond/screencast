@@ -333,7 +333,7 @@ lossless_audiocodec_settings_flac() {
     if check_component flac encoder
     then
         check_component flac decoder || component_error flac 'audio decoder'
-        audio_record_codec='-codec:a flac -b:a 392k -ar 48000 -ac 2'
+        audio_record_codec='-codec:a flac -b:a 320k -ar 48000 -ac 2'
     else
         return 1
     fi
