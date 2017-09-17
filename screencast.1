@@ -328,7 +328,8 @@ bandwidth. Use the \fB\-K\fR option if you want to save a local copy of the
 live streamed video. It uses a one step process (record and encode at the
 same time). \fBscreencast\fR will record offline when this option is not
 specified. It has been tested only with the \fIYouTube\fR live streaming
-service.
+service. It is recommended to use a hardware accelerated video encoder with
+this option.
 .PP
 Some restrictions apply:
 .RS
@@ -366,7 +367,8 @@ need to specify this option when doing a live streaming (\fB\-L\fR option)
 because it already works in a one step process. Note that the default
 \fBscreencast\fR behavior is to record in a two step process (1st step:
 lossless recording. 2nd step: encoding).\fBThis option can cause audio
-problems. It is not recommended to use it with software-based encoders.\fR
+problems. It is not recommended to use it with software-based video
+encoders.\fR
 .PP
 default: disabled
 .RE
