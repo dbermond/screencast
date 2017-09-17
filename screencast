@@ -111,6 +111,9 @@ wmv
 asf
 avi'
 
+supported_formats_lossless='matroska
+nut'
+
 # supported container formats (for use with -l/--list option)
 get_list_formats() {
     for item in $supported_formats_all
@@ -129,10 +132,10 @@ get_list_formats() {
 #                       1 - the detected ffmpeg build has no support for the tested container format
 # sets special variable: $rec_extension - file extension (container format) of the lossless video
 # note: the program will exit with error if the tested container format is not supported by the detected ffmpeg build
-lossless_format_settings_mkv() {
+lossless_format_settings_matroska() {
     if check_component matroska muxer
     then
-        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer
+        check_component 'matroska,webm' demuxer || component_error 'matroska,webm' demuxer false
         rec_extension='mkv'
     else
         return 1
@@ -142,7 +145,7 @@ lossless_format_settings_mkv() {
 lossless_format_settings_nut() {
     if check_component nut muxer
     then
-        check_component nut demuxer || component_error nut demuxer
+        check_component nut demuxer || component_error nut demuxer false
         rec_extension='nut'
     else
         return 1
@@ -161,7 +164,7 @@ format_settings_mp4() {
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^theora$/d;/^vp8$/d;/^vp8_vaapi$/d;/^wmv$/d')"
     
     # check if the detected ffmpeg build has support for the mp4/mov muxer
-    check_component "$format" muxer || component_error "$format" muxer
+    check_component "$format" muxer || component_error "$format" muxer true
     
     # move the moov atom to the beginning of the file
     if [ "$streaming"  = 'true' ] 
@@ -194,7 +197,7 @@ format_settings_mkv() {
     # check if the detected ffmpeg build has support for the matroska (mkv) muxer
     if [ "$rec_extension" != "$format" ] 
     then
-        check_component matroska muxer || component_error matroska muxer
+        check_component matroska muxer || component_error matroska muxer true
     fi
 }
 
@@ -206,7 +209,7 @@ vp9
 vp9_vaapi'
     
     # check if the detected ffmpeg build has support for the webm muxer
-    check_component "$format" muxer || component_error "$format" muxer
+    check_component "$format" muxer || component_error "$format" muxer true
     
     # auto choose audio/video encoder if needed
     [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
@@ -220,7 +223,7 @@ vp8_vaapi
 theora'
     
     # check if the detected ffmpeg build has support for the ogg/ogv muxer
-    check_component "$format" muxer || component_error "$format" muxer
+    check_component "$format" muxer || component_error "$format" muxer true
     
     # auto choose audio/video encoder if needed
     [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
@@ -242,7 +245,7 @@ h264_qsv'
     # (flv muxer support in ffmpeg is already checked during the live streaming checks)
     if [ "$streaming" = 'false' ] 
     then
-        check_component "$format" muxer || component_error "$format" muxer
+        check_component "$format" muxer || component_error "$format" muxer true
     fi
 }
 
@@ -254,7 +257,7 @@ format_settings_nut() {
     # check if the detected ffmpeg build has support for the nut muxer
     if [ "$rec_extension" != "$format" ] 
     then
-        check_component "$format" muxer || component_error "$format" muxer
+        check_component "$format" muxer || component_error "$format" muxer true
     fi
 }
 
@@ -266,7 +269,7 @@ format_settings_wmv() {
     
     # check if the detected ffmpeg build has support for the asf muxer
     # note: asf muxer is used for wmv (and wma) container format
-    check_component asf muxer || component_error asf muxer
+    check_component asf muxer || component_error asf muxer true
 }
 
 format_settings_asf() {
@@ -276,7 +279,7 @@ format_settings_asf() {
                                  sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
     
     # check if the detected ffmpeg build has support for the asf muxer
-    check_component "$format" muxer || component_error "$format" muxer
+    check_component "$format" muxer || component_error "$format" muxer true
 }
 
 format_settings_avi() {
@@ -285,7 +288,7 @@ format_settings_avi() {
     supported_videocodecs="$supported_videocodecs_all"
     
     # check if the detected ffmpeg build has support for the avi muxer
-    check_component "$format" muxer || component_error "$format" muxer
+    check_component "$format" muxer || component_error "$format" muxer true
 }
 
 #########################################
@@ -300,6 +303,9 @@ mp3lame
 shine
 wma
 none'
+
+supported_audiocodecs_lossless='pcm_s16le
+flac'
 
 # supported audio encoders (for use with -l/--list option)
 get_list_audiocodecs() {
@@ -322,7 +328,7 @@ get_list_audiocodecs() {
 lossless_audiocodec_settings_pcm_s16le() {
     if check_component pcm_s16le encoder
     then
-        check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder'
+        check_component pcm_s16le decoder || component_error pcm_s16le 'audio decoder' false
         audio_record_codec='-codec:a pcm_s16le -ar 48000 -ac 2'
     else
         return 1
@@ -332,7 +338,7 @@ lossless_audiocodec_settings_pcm_s16le() {
 lossless_audiocodec_settings_flac() {
     if check_component flac encoder
     then
-        check_component flac decoder || component_error flac 'audio decoder'
+        check_component flac decoder || component_error flac 'audio decoder' false
         audio_record_codec='-codec:a flac -b:a 320k -ar 48000 -ac 2'
     else
         return 1
@@ -355,7 +361,7 @@ audiocodec_settings_aac() {
             audio_encode_codec='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
         fi
     else
-        check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder'
+        check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder' true
         
         if [ "$streaming" = 'true' ] 
         then
@@ -367,17 +373,17 @@ audiocodec_settings_aac() {
 }
 
 audiocodec_settings_vorbis() {
-    check_component libvorbis encoder || component_error libvorbis 'audio encoder'
+    check_component libvorbis encoder || component_error libvorbis 'audio encoder' true
     audio_encode_codec='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
 }
 
 audiocodec_settings_opus() {
-    check_component libopus encoder || component_error libopus 'audio encoder'
+    check_component libopus encoder || component_error libopus 'audio encoder' true
     audio_encode_codec='-codec:a libopus -b:a 128k -ar 48000 -ac 2'
 }
 
 audiocodec_settings_mp3lame() {
-    check_component libmp3lame encoder || component_error libmp3lame 'audio encoder'
+    check_component libmp3lame encoder || component_error libmp3lame 'audio encoder' true
     
     if [ "$streaming" = 'true' ] 
     then
@@ -388,7 +394,7 @@ audiocodec_settings_mp3lame() {
 }
 
 audiocodec_settings_shine() {
-    check_component libshine encoder || component_error libshine 'audio encoder'
+    check_component libshine encoder || component_error libshine 'audio encoder' true
     
     if [ "$streaming" = 'true' ] 
     then
@@ -399,7 +405,7 @@ audiocodec_settings_shine() {
 }
 
 audiocodec_settings_wma() {
-    check_component wmav2 encoder || component_error wmav2 'audio encoder'
+    check_component wmav2 encoder || component_error wmav2 'audio encoder' true
     audio_encode_codec='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
 }
 
@@ -423,6 +429,13 @@ vp9
 vp9_vaapi
 theora
 wmv'
+
+supported_videocodecs_lossless='ffv1
+ffvhuff
+huffyuv'
+
+largefile_videocodecs_lossless='ffvhuff
+huffyuv'
 
 # supported audio encoders (for use with -l/--list option)
 get_list_videocodecs() {
@@ -461,7 +474,7 @@ hevc_qsv
 lossless_videocodec_settings_ffv1() {
     if check_component ffv1 encoder
     then
-        check_component ffv1 decoder || component_error ffv1 'video decoder'
+        check_component ffv1 decoder || component_error ffv1 'video decoder' false
         video_record_codec='ffv1 -level 3 -slicecrc 1'
     else
         return 1
@@ -471,7 +484,7 @@ lossless_videocodec_settings_ffv1() {
 lossless_videocodec_settings_ffvhuff() {
     if check_component ffvhuff encoder
     then
-        check_component ffvhuff decoder || component_error ffvhuff 'video decoder'
+        check_component ffvhuff decoder || component_error ffvhuff 'video decoder' false
         video_record_codec='ffvhuff'
     else
         return 1
@@ -481,7 +494,7 @@ lossless_videocodec_settings_ffvhuff() {
 lossless_videocodec_settings_huffyuv() {
     if check_component huffyuv encoder
     then
-        check_component huffyuv decoder || component_error huffyuv 'video decoder'
+        check_component huffyuv decoder || component_error huffyuv 'video decoder' false
         video_record_codec='huffyuv'
     else
         return 1
@@ -495,7 +508,7 @@ lossless_videocodec_settings_huffyuv() {
 # sets special variable: $video_encode_codec - ffmpeg video codec settings
 # note: the program will exit with error if the selected video encoder is not supported by the detected ffmpeg build
 videocodec_settings_x264() {
-    check_component libx264 encoder || component_error libx264 'video encoder'
+    check_component libx264 encoder || component_error libx264 'video encoder' true
     
     if [ "$streaming" = 'true' ] 
     then
@@ -511,23 +524,23 @@ videocodec_settings_x264() {
 }
 
 videocodec_settings_h264_nvenc() {
-    check_component h264_nvenc encoder || component_error h264_nvenc 'video encoder'
+    check_component h264_nvenc encoder || component_error h264_nvenc 'video encoder' true
     video_encode_codec='h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150'
 }
 
 videocodec_settings_h264_vaapi() {
-    check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder'
+    check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder' true
     check_vaapi_device
     video_encode_codec='h264_vaapi -qp 18'
 }
 
 videocodec_settings_h264_qsv() {
-    check_component h264_qsv encoder || component_error h264_qsv 'video encoder'
+    check_component h264_qsv encoder || component_error h264_qsv 'video encoder' true
     video_encode_codec='h264_qsv -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
 }
 
 videocodec_settings_x265() {
-    check_component libx265 encoder || component_error libx265 'video encoder'
+    check_component libx265 encoder || component_error libx265 'video encoder' true
     
     if [ "$one_step" = 'false' ] 
     then
@@ -538,7 +551,7 @@ videocodec_settings_x265() {
 }
 
 videocodec_settings_kvazaar() {
-    check_component libkvazaar encoder || component_error libkvazaar 'video encoder'
+    check_component libkvazaar encoder || component_error libkvazaar 'video encoder' true
     
     if [ "$one_step" = 'false' ] 
     then
@@ -549,51 +562,51 @@ videocodec_settings_kvazaar() {
 }
 
 videocodec_settings_hevc_nvenc() {
-    check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder'
+    check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder' true
     video_encode_codec='hevc_nvenc -preset slow'
 }
 
 videocodec_settings_hevc_vaapi() {
-    check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder'
+    check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder' true
     check_vaapi_device
     video_encode_codec='hevc_vaapi -qp 22'
 }
 
 videocodec_settings_hevc_qsv() {
-    check_component hevc_qsv encoder || component_error hevc_qsv 'video encoder'
+    check_component hevc_qsv encoder || component_error hevc_qsv 'video encoder' true
     video_encode_codec='hevc_qsv -load_plugin hevc_hw -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
 }
 
 videocodec_settings_vp8() {
-    check_component libvpx encoder || component_error libvpx 'video encoder'
+    check_component libvpx encoder || component_error libvpx 'video encoder' true
     video_record_codec="${video_record_codec} -pix_fmt yuv420p"
     video_encode_codec='libvpx -crf 8 -b:v 2M'
 }
 
 videocodec_settings_vp8_vaapi() {
-    check_component vp8_vaapi encoder || component_error vp8_vaapi 'video encoder'
+    check_component vp8_vaapi encoder || component_error vp8_vaapi 'video encoder' true
     check_vaapi_device
     video_encode_codec='vp8_vaapi -global_quality 30'
 }
 
 videocodec_settings_vp9() {
-    check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder'
+    check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder' true
     video_encode_codec='libvpx-vp9 -crf 30 -b:v 0'
 }
 
 videocodec_settings_vp9_vaapi() {
-    check_component vp9_vaapi encoder || component_error vp9_vaapi 'video encoder'
+    check_component vp9_vaapi encoder || component_error vp9_vaapi 'video encoder' true
     check_vaapi_device
     video_encode_codec='vp9_vaapi -global_quality 80'
 }
 
 videocodec_settings_theora() {
-    check_component libtheora encoder || component_error libtheora 'video encoder'
+    check_component libtheora encoder || component_error libtheora 'video encoder' true
     video_encode_codec='libtheora -qscale:v 5'
 }
 
 videocodec_settings_wmv() {
-    check_component wmv2 encoder || component_error wmv2 'video encoder'
+    check_component wmv2 encoder || component_error wmv2 'video encoder' true
     video_encode_codec='wmv2 -qscale:v 3'
 }
 
@@ -1687,8 +1700,9 @@ show_settings() {
 # component_error function: print an error message and show an error notification
 #                           about a not found ffmpeg component and exit the program
 # arguments: $1 - the not found ffmpeg component
-#            $2 - ffmpeg component type (optional)
+#            $2 - ffmpeg component type
 #                 ([audio/video ]encoder, [audio/video ]decoder, muxer, demuxer)
+#            $3 - show suggestion to try a different component (true, false)
 # return value: not relevant
 # return code (status): not relevant
 component_error() {
@@ -1699,32 +1713,93 @@ component_error() {
     notify 'critical' '5000' 'dialog-error' \
            "error: the detected ffmpeg build has no support for '${1}' ${2}"
     
-    if printf '%s' "$2" | grep -q '.*encoder$'
+    if [ "$3" =  'true' ] && printf '%s' "$2" | grep -q '.*encoder$'
     then
-        case "$2" in
-            ffv1|ffvhuff|huffyuv|pcm_s16le|flac)
-                :
-                ;;
-            *)
-                printf '%s%s\n'   '                      ' \
-                                  "(or try a different ${2})" >&2
-                ;;
-        esac
-                      
-    elif printf '%s' "$2" | grep -q 'muxer'
+        printf '%s%s\n'   '                      ' \
+                          "(or try a different ${2})" >&2
+                          
+    elif [ "$3" =  'true' ] && printf '%s' "$2" | grep -q 'muxer'
     then
-        case "$2" in
-            matroska|nut)
-                :
-                ;;
-            *)
-                printf '%s%s\n'   '                      ' \
-                                  "(or try a different ${2}/format)" >&2
-                ;;
-        esac
+        printf '%s%s\n'   '                      ' \
+                          "(or try a different ${2}/format)" >&2
     fi
     
     exit 1
+}
+
+# check_lossless_component: check if at least one supported lossless component of the given type is
+#                           available in the detected ffmpeg build
+# arguments: $1 - component type (format, audiocodec, videocodec)
+# return value: none
+# return code (status): not relevant
+# note1: it will fallback to the next supported lossless component of the given type that is found
+# note2: program will exit with error if no supported lossless components of the given type are available in ffmpeg
+check_lossless_component() {
+    case "$1" in
+        format)
+            component_list="$supported_formats_lossless"
+            component_generic_name='muxer/demuxer'
+            ;;
+        audiocodec)
+            component_list="$supported_audiocodecs_lossless"
+            component_generic_name='audio encoder/decoder'
+            ;;
+        videocodec)
+            component_list="$supported_videocodecs_lossless"
+            component_generic_name='video encoder/decoder'
+            ;;
+        *)
+            exit_program "check_lossless_component(): invalid component type '${1}'"
+            ;;
+    esac
+    
+    first_component="$( printf '%s' "$component_list" | head -n 1)"
+    second_component="$(printf '%s' "$component_list" | sed  -n '2p')"
+    last_component="$(  printf '%s' "$component_list" | tail -n 1)"
+        
+    for component in $component_list
+    do
+        if "lossless_${1}_settings_${component}"
+        then
+            if [ "$component" = "$first_component" ] 
+            then
+                break
+            else
+                if [ "$component" = "$second_component" ] 
+                then
+                    previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]$//")"
+                    
+                elif [ "$component" = "$last_component" ] 
+                then
+                    previous_components="$(printf '%s' "$previous_components" | sed 's/,[[:space:]]$//')"
+                    last_word="$(          printf '%s' "$previous_components" | awk '{print $NF}')"
+                    previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]${last_word}$/ or ${last_word}/")"
+                fi
+                
+                print_warn "no '${previous_components}' ${component_generic_name} support in ffmpeg"
+                print_warn "falling back to '${component}' ${component_generic_name} for lossless recording"
+                
+                if [ "$1" = 'videocodec' ] &&
+                   printf '%s' "$largefile_videocodecs_lossless" | grep -q "^${component}$"
+                then
+                    print_warn "'${component}' encoder will produce an extra-large temporary video, change the tmp direcotry if needed"
+                fi
+                
+                break
+            fi
+        else
+            if [ "$component" = "$last_component" ] 
+            then
+                previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]$/ or ${component}/")"
+                component_error "$previous_components" "$component_generic_name" false
+            else
+                previous_components="${previous_components:-}${component}, "
+                continue
+            fi
+        fi
+    done
+    
+    unset previous_components
 }
 
 # check_component function: check if the detected ffmpeg build has support for a given component
@@ -2211,7 +2286,7 @@ check_cmd_line() {
         get_supported_streaming_settings
         
         # check if the detected ffmpeg build has support for flv muxer (used for live streaming)
-        check_component flv muxer || component_error flv muxer
+        check_component flv muxer || component_error flv muxer false
         
         # do not allow live streaming without recording audio (YouTube seems to refuse it)
         [ "$recording_audio" = 'false' ] && exit_program 'live streaming cannot be sent without audio'
@@ -2324,15 +2399,7 @@ check_cmd_line() {
     if [ "$recording_audio" = 'true' ] 
     then
         # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
-        if ! lossless_audiocodec_settings_pcm_s16le
-        then
-            if lossless_audiocodec_settings_flac
-            then
-                print_warn "no 'pcm_s16le' encoder support in ffmpeg, falling back to 'flac' encoder for recording"
-            else
-                component_error 'pcm_s16le or flac' 'audio encoder'
-            fi
-        fi
+        check_lossless_component audiocodec
         
         # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA is not available)
         if ! check_component alsa demuxer
@@ -2344,7 +2411,7 @@ check_cmd_line() {
                 
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             else
-                component_error 'ALSA or PulseAudio' 'backend'
+                component_error 'ALSA or PulseAudio' backend false
             fi
             
             if [ "$audio_input_setted" = 'false' ] 
@@ -2847,53 +2914,6 @@ videofade() {
     esac
 }
 
-# check_basic_components: check for basic components in the detected ffmpeg build
-# arguments: none
-# return value: none
-# return code (status): not relevant
-# note: it will make the program exit with error if the needed basic ffmpeg components are not available in the detected build
-check_basic_components() {
-    # check if the detected ffmpeg build has support for basic screen recording format
-    check_component x11grab demuxer || component_error x11grab demuxer
-    
-    # check for the needed ffmpeg components when using a two step process
-    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
-    then
-        # check if the detected ffmpeg build has support for a basic muxer and demuxer for the lossless recording
-        if ! lossless_format_settings_mkv
-        then
-            if lossless_format_settings_nut
-            then
-                print_warn "no 'matroska' muxer support in ffmpeg, falling back to 'nut' muxer for recording"
-            else
-                component_error 'matroska or nut' muxer
-            fi
-        fi
-        
-        # check if the detected ffmpeg build has support for a lossless video encoder and decoder for recording
-        if ! lossless_videocodec_settings_ffv1
-        then
-            msg='encoder will produce an extra-large temporary video, consider changing the tmp directory'
-            
-            if ! lossless_videocodec_settings_ffvhuff
-            then
-                if lossless_videocodec_settings_huffyuv
-                then
-                    print_warn "no 'ffv1' and 'ffvhuff' encoders support in ffmpeg, falling back to 'huffyuv' encoder for recording"
-                    print_warn "'huffyuv' ${msg}"
-                    unset msg
-                else
-                    component_error 'ffv1, ffvhuff or huffyuv' 'video encoder'
-                fi
-            else
-                print_warn "no 'ffv1' encoder support in ffmpeg, falling back to 'ffvhuff' encoder for recording"
-                print_warn "'ffvhuff' ${msg}"
-                unset msg
-            fi
-        fi
-    fi
-}
-
 # set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
 # arguments: none
 # return value: none
@@ -2919,7 +2939,7 @@ set_watermark() {
 set_webcam() {
     if [ "$webcam_overlay" = 'true' ] 
     then
-        check_component video4linux2,v4l2 demuxer || component_error ideo4linux2,v4l2 demuxer
+        check_component video4linux2,v4l2 demuxer || component_error video4linux2,v4l2 demuxer false
         
         [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
         
@@ -3328,7 +3348,16 @@ check_requirements
 ffmpeg_formats="$(ffmpeg -formats -v quiet)" # muxers   and demuxers (formats)
 ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 
-check_basic_components
+# check if the detected ffmpeg build has support for basic screen recording format
+check_component x11grab demuxer || component_error x11grab demuxer false
+
+# check for the needed lossless ffmpeg components when using a two step process
+if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
+then
+    check_lossless_component format
+    check_lossless_component videocodec
+fi
+
 check_cmd_line "$@"
 check_dirs
 show_settings
