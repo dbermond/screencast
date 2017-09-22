@@ -1210,27 +1210,27 @@ get_cmd_line() {
                 command_error '--video-encoder (-v)'
                 ;;
             
-            -A|--vaaapi-device)
+            -A|--vaapi-device)
                 if [ -n "$2" ] 
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
-                        command_error '--vaaapi-device (-A)'
+                        command_error '--vaapi-device (-A)'
                     else
                         vaapi_device="$2"
                         vaapi_device_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
-                    command_error '--vaaapi-device (-A)'
+                    command_error '--vaapi-device (-A)'
                 fi
                 ;;
-            --vaaapi-device=?*)
+            --vaapi-device=?*)
                 vaapi_device="$2"
                 vaapi_device_setted='true'
                 ;;
-            --vaaapi-device=)
-                command_error '--vaaapi-device (-A)'
+            --vaapi-device=)
+                command_error '--vaapi-device (-A)'
                 ;;
             
             -e|--fade)
