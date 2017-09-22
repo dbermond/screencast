@@ -350,13 +350,17 @@ Make the **screencast** file executable and copy it to a directory that is in yo
 
 Copy the *screencast.1* man page file to your user commands man page directory, usually at `/usr/share/man/man1`. For convenience, firstly compress the man page with *gzip*.
 
+If you are using bash and bash-completion, copy the bash completion script to one of the auto sourced directories. This will enable a faster typing of options and arguments through tab expansion.
+
 You can acomplish this by doing:
 
 ```
 $ chmod +x screencast
-$ sudo mv screencast /usr/local/bin
-$ gzip -9 -n screencast.1
-$ sudo mv screencast.1.gz /usr/share/man/man1
+$ sudo cp screencast /usr/local/bin
+$ gzip -9 -n -k screencast.1
+$ sudo cp screencast.1.gz /usr/share/man/man1
+$ sudo mkdir -p /etc/bash_completion.d
+$ sudo cp bash-completion/screencast /etc/bash_completion.d
 ```
 
 ## REQUIREMENTS

@@ -1,0 +1,119 @@
+#
+# Bash completion for screencast
+#
+# Copyright (c) 2015-2017 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+_screencast() {
+    local cur prev opts
+    
+    COMPREPLY=()
+    
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    
+    opts='-s --size
+          -p --position
+          -S --select-region
+          -r --fps
+          -f --format
+          -i --audio-input
+          -a --audio-encoder
+          -v --video-encoder
+          -A --vaapi-device
+          -e --fade
+          -m --volume-factor
+          -w --watermark
+          -z --wmark-size
+          -k --wmark-position
+          -c --wmark-font
+          -W --webcam
+          -I --webcam-input
+          -Z --webcam-size
+          -P --webcam-position
+          -R --webcam-fps
+          -L --live-streaming
+          -1 --one-step
+          -x --fixed
+          -n --no-notifications
+          -g --png-optimizer
+          -o --output-dir
+          -t --tmp-dir
+          -K --keep
+          -u --auto-filename
+          -l --list
+          -h --help
+          -V --version'
+          
+    case "$prev" in
+        -f|--format)
+            local formats='mp4 mov mkv webm ogg ogv flv nut wmv asf avi'
+            COMPREPLY=( $(compgen -W "$formats" -- $cur) )
+            return 0
+            ;;
+        -i|--audio-input)
+            local audio_inputs='default pulse none'
+            COMPREPLY=( $(compgen -W "$audio_inputs" -- $cur) )
+            return 0
+            ;;
+        -a|--audio-encoder)
+            local audio_encoders='aac opus vorbis mp3lame shine wma none'
+            COMPREPLY=( $(compgen -W "$audio_encoders" -- $cur) )
+            return 0
+            ;;
+        -v|--video-encoder)
+            local video_encoders='x264 h264_nvenc h264_vaapi h264_qsv
+                                  x265 hevc_nvenc hevc_vaapi hevc_qsv kvazaar
+                                  vp8 vp8_vaapi vp9 vp9_vaapi theora wmv'
+            COMPREPLY=( $(compgen -W "$video_encoders" -- $cur) )
+            return 0
+            ;;
+        -A|--vaapi-device)
+            local vaapi_devices=$(ls -1 /dev/dri/render* 2>/dev/null)
+            COMPREPLY=( $(compgen -W "$vaapi_devices" -- $cur) )
+            return 0
+            ;;
+        -e|--fade)
+            local fade_effects='none in out both'
+            COMPREPLY=( $(compgen -W "$fade_effects" -- $cur) )
+            return 0
+            ;;
+        -k|--wmark-position)
+            local wmark_positions='topleft tl topright tr bottomleft bl bottomright br'
+            COMPREPLY=( $(compgen -W "$wmark_positions" -- $cur) )
+            return 0
+            ;;
+        -I|--webcam-input)
+            local webcam_inputs=$(ls -1 /dev/video* 2>/dev/null)
+            COMPREPLY=( $(compgen -W "$webcam_inputs" -- $cur) )
+            return 0
+            ;;
+        -P|--webcam-position)
+            local webcam_positions='topleft tl topright tr bottomleft bl bottomright br'
+            COMPREPLY=( $(compgen -W "$webcam_positions" -- $cur) )
+            return 0
+            ;;
+        -g|--png-optimizer)
+            local png_optimizers='none optipng opt-png truepng pingo'
+            COMPREPLY=( $(compgen -W "$png_optimizers" -- $cur) )
+            return 0
+            ;;
+    esac
+
+    COMPREPLY=( $(compgen -W "$opts" -- $cur) )
+    return 0
+}
+
+complete -F _screencast screencast
