@@ -414,6 +414,8 @@ It has been reported that **screencast** does not work under Wayland.
     - [Arch Linux (AUR package, release version)](https://aur.archlinux.org/packages/screencast/)
     - [Arch Linux (AUR package, git master version)](https://aur.archlinux.org/packages/screencast-git/)
 
+- [**screencast** Wiki](https://github.com/dbermond/screencast/wiki/)
+
 ## AUTHOR
 Daniel Bermond
 
