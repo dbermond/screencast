@@ -534,13 +534,15 @@ to end the recording.
 .SH REQUIREMENTS
 The minimum requirements are a POSIX\-compatible shell, a running X session, a
 recent \fIFFmpeg\fR version and \fIxdpyinfo\fR. It\'s advised to use
-\fIFFmpeg\fR version git master. \fIFFmpeg\fR needs to be compiled with support
-for x11grab (libxcb) and the desired encoders and muxers. When recording
-offline, \fIFFmpeg\fR needs to be compiled with support for ffv1 encoder, ffv1
-decoder and matroska muxer (\fBscreencast\fR will try to auto\-fallback to
-ffvhuff or huffyuv encoder/decoder if ffv1 is not supported and to nut muxer
-if matroska is not supported, but ffv1 and matroska are preferred). When live
-streaming, *FFmpeg* needs to compiled with support for flv muxer.
+\fIFFmpeg\fR version git master. \fIFFmpeg\fR needs to be compiled with
+support for x11grab (libxcb) and the desired encoders and muxers/formats.
+When recording offline in the default two step process behavior
+(see \fBREMARKS\fR), \fIFFmpeg\fR needs to be compiled with support for ffv1
+encoder, ffv1 decoder, matroska muxer and matroska demuxer (\fBscreencast\fR
+will try to auto\-fallback to ffvhuff or huffyuv encoder/decoder if ffv1 is
+not supported and to nut muxer/demuxer if matroska is not supported, but ffv1
+and matroska are preferred). When live streaming, \fIFFmpeg\fR needs to be
+compiled with support for flv muxer.
 .PP
 When recording audio (\fB\-i\fR and \fB\-a\fR options not setted to
 \fInone\fR), \fIFFmpeg\fR must have been compiled with support for ALSA
@@ -591,7 +593,9 @@ why you see a desktop notification saying \'encoding...\'. This mechanism
 produces a better video, avoids problems and allows to use fade effect. When
 live streaming or when using the \fB\-1\fR/\fB\-\-one\-step\fR option,
 \fBscreencast\fR uses a one step process, with recording and encoding at the
-same time.
+same time. Note that the \fB\-1\fR/\fB\-\-one\-step\fR option is not
+recommended to be used with software-based video encoders, since it can cause
+audio problems.
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
