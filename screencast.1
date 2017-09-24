@@ -561,11 +561,14 @@ the \fB\-n\fR option, eliminating the need of \fInotify\-send\fR. Running
 \fBscreencast\fR in a system without \fInotify\-send\fR and without using the
 \fB\-n\fR option will result in error.
 .PP
-\fBscreencast\fR will try to play a notification sound when the encoding
-process is finished. For this, it will use \fIpaplay\fR (from PulseAudio) and
+\fBscreencast\fR will try to play a sound notification when the
+recording/encoding process is finished. For this, it will use \fIFFplay\fR and
 a sound file from the freedesktop sound theme (usually a package called
 \fIsound\-theme\-freedesktop\fR in most Linux distributions). Although not a
-requirement, they are recommended to be installed for a better user experience.
+requirement, they are recommended to be installed for a better user
+experience. Note that \fIFFplay\fR must have been compiled with support for
+ogg demuxer and libvorbis (or vorbis) decoder in order to play the needed
+sound file.
 .PP
 Other requirements are needed according to additional options that may be
 specified by the user:
