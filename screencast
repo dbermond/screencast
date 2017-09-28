@@ -904,14 +904,15 @@ show_list() {
         list_pngoptmz="${list_pngoptmz:-}${item}, "
     done
     
-    list_formats="$(    printf '%s' "$list_formats"     | sed 's/,[[:space:]]$//')"
-    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
+    # shellcheck disable=SC1004
     list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
                         &/;s/[[:space:]]vp8.*/\
                         &/')"
-    list_fade="$(    printf '%s' "$list_fade"     | sed 's/,[[:space:]]$//')"
-    list_pngoptmz="$(printf '%s' "$list_pngoptmz" | sed 's/,[[:space:]]$//')"
-    list_fade="$(    printf '%s' "$list_fade"     | sed 's/,[[:space:]]$//')"
+    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
+    list_formats="$(    printf '%s' "$list_formats"     | sed 's/,[[:space:]]$//')"
+    list_fade="$(       printf '%s' "$list_fade"        | sed 's/,[[:space:]]$//')"
+    list_pngoptmz="$(   printf '%s' "$list_pngoptmz"    | sed 's/,[[:space:]]$//')"
+    list_fade="$(       printf '%s' "$list_fade"        | sed 's/,[[:space:]]$//')"
     
     list_wmark_position='topleft, topright, bottomleft, bottomright
                          (or the respective aliases tl, tr, bl, br)'
