@@ -1977,7 +1977,6 @@ check_alsa_short_name() {
             then
                 return 1
             fi
-            
         else
             return 1
         fi
