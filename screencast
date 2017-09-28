@@ -389,6 +389,7 @@ supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
                                      vp9\nvp9_vaapi
                                      theora\nwmv' | sed 's/^[[:space:]]*//g')"
 
+supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheora\nwmv')"
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
@@ -3301,12 +3302,18 @@ check_cmd_line "$@"
 check_dirs
 show_settings
 
-# show a warning if the output file(s) already exists
+# show a warning if the output file already exists
 [ "$auto_filename" = 'false' ] && [ -f "${savedir}/${output_file}" ] &&
     print_warn "output file '${output_file}' already exists, overwriting without prompt"
 
-[ "$streaming" = 'true' ] && [ -f "$streaming_url" ] &&
-    print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
+# show a warning if using a software-based video encoders in a one step process
+if [ "$one_step" = 'true' ] && [ "$streaming" = 'false' ] 
+then
+    if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
+    then
+        print_warn 'using a software-based video encoder in a one step process is not recommend (can cause audio problems)'
+    fi
+fi
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
@@ -3314,6 +3321,15 @@ show_settings
 # do a live streaming if chosen by user (-L/--live-streaming)
 if [ "$streaming" = 'true' ] 
 then
+    # show a warning if a possible output file already exists
+    [ -f "$streaming_url" ] && print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
+    
+    # show a warning if using a software-based video encoders in live streaming
+    if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
+    then
+        print_warn 'using a software-based video encoder in live streaming is not recommend (can cause audio problems)'
+    fi
+    
     live_streaming
 
 # record offline if live streaming is not chosen by user
