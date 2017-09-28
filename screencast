@@ -910,7 +910,7 @@ exit_program() {
 # return value: a modified string
 # return code (status): not relevant
 remove_spaces() {
-    printf '%s' "$1" | sed 's/[[:space:]]\+/ /g'
+    printf '%s' "$1" | sed 's/[[:space:]]\{1,\}/ /g'
 }
 
 # list_supported function: print a list of arguments supported by this program
@@ -1977,8 +1977,8 @@ check_alsa_short_name() {
     elif printf '%s' "$audio_input" | grep -Eq '^(plug)?+hw:[0-9],[0-9]+,[0-9]+$'
     then
         alsa_card="$(     printf '%s' "$audio_input" | sed 's/.*hw://;s/,.*//')"
-        alsa_device="$(   printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\+,//;s/,.*//')"
-        alsa_subdevice="$(printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\+,//;s/.*,//')"
+        alsa_device="$(   printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\{1,\},//;s/,.*//')"
+        alsa_subdevice="$(printf '%s' "$audio_input" | sed 's/.*hw://;s/[0-9]\{1,\},//;s/.*,//')"
         
         if printf '%s' "$arecord" | grep "card[[:space:]]${alsa_card}:" | grep -q "device[[:space:]]${alsa_device}:"
         then
