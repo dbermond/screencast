@@ -373,6 +373,19 @@ supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheor
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
+# supported video encoders (for use with show_list() in -l/--list option)
+get_list_videocodecs() {
+    for item in $supported_videocodecs_all
+    do
+        list_videocodecs="${list_videocodecs:-}${item}, "
+    done
+    
+    # shellcheck disable=SC1004
+    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
+                        &/;s/[[:space:]]vp8.*/\
+                        &/')"
+}
+
 # get_videocodecs_for_nonmulti8_msg function: defines video encoders to be used with dimension_msg()
 # arguments: none
 # return value: none
@@ -876,6 +889,7 @@ show_list() {
     fi
     
     show_header "$@"
+    get_list_videocodecs
     get_supported_fade
     get_supported_pngoptmz
     
@@ -889,11 +903,6 @@ show_list() {
         list_audiocodecs="${list_audiocodecs:-}${item}, "
     done
     
-    for item in $supported_videocodecs_all
-    do
-        list_videocodecs="${list_videocodecs:-}${item}, "
-    done
-    
     for item in $supported_fade
     do
         list_fade="${list_fade:-}${item}, "
@@ -904,21 +913,15 @@ show_list() {
         list_pngoptmz="${list_pngoptmz:-}${item}, "
     done
     
-    # shellcheck disable=SC1004
-    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
-                        &/;s/[[:space:]]vp8.*/\
-                        &/')"
     list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
     list_formats="$(    printf '%s' "$list_formats"     | sed 's/,[[:space:]]$//')"
     list_fade="$(       printf '%s' "$list_fade"        | sed 's/,[[:space:]]$//')"
     list_pngoptmz="$(   printf '%s' "$list_pngoptmz"    | sed 's/,[[:space:]]$//')"
-    list_fade="$(       printf '%s' "$list_fade"        | sed 's/,[[:space:]]$//')"
     
     list_wmark_position='topleft, topright, bottomleft, bottomright
                          (or the respective aliases tl, tr, bl, br)'
                          
-    list_webcam_position='topleft, topright, bottomleft, bottomright
-                         (or the respective aliases tl, tr, bl, br)'
+    list_webcam_position="$list_wmark_position"
     
     printf '\n'
     printf '%s\n' 'Supported arguments:'
