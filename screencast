@@ -103,16 +103,6 @@ format_default="$format"
 supported_formats_all="$(     printf 'mp4\nmov\nmkv\nwebm\nogg\nogv\nflv\nnut\nwmv\nasf\navi')"
 supported_formats_lossless="$(printf 'matroska\nnut')"
 
-# supported container formats (for use with -l/--list option)
-get_list_formats() {
-    for item in $supported_formats_all
-    do
-        list_formats="${list_formats:-}${item}, "
-    done
-    
-    list_formats="$(printf '%s' "$list_formats" | sed 's/,[[:space:]]$//')"
-}
-
 # lossless container format settings functions: make checks and settings for container format to store lossless video
 #                                               (for the 1st step, lossless recording)
 # arguments: none
@@ -276,16 +266,6 @@ format_settings_avi() {
 supported_audiocodecs_all="$(     printf 'aac\nopus\nvorbis\nmp3lame\nshine\nwma\nnone')"
 supported_audiocodecs_lossless="$(printf 'pcm_s16le\nflac')"
 
-# supported audio encoders (for use with -l/--list option)
-get_list_audiocodecs() {
-    for item in $supported_audiocodecs_all
-    do
-        list_audiocodecs="${list_audiocodecs:-}${item}, "
-    done
-    
-    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
-}
-
 # lossless audio encoder settings functions: make checks and settings for lossless audio encoder
 #                                           (for the 1st step, lossless recording)
 # arguments: none
@@ -392,13 +372,6 @@ supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
 supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheora\nwmv')"
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
-
-# supported audio encoders (for use with -l/--list option)
-get_list_videocodecs() {
-    list_videocodecs='x264, h264_nvenc, h264_vaapi, h264_qsv,
-                         x265, hevc_nvenc, hevc_vaapi, hevc_qsv, kvazaar,
-                         vp8, vp8_vaapi, vp9, vp9_vaapi, theora, wmv'
-}
 
 # get_videocodecs_for_nonmulti8_msg function: defines video encoders to be used with dimension_msg()
 # arguments: none
@@ -591,31 +564,8 @@ get_supported_fade() {
     supported_fade="$(printf 'none\nin\nout\nboth')"
 }
 
-get_list_fade() {
-    get_supported_fade
-    
-    for item in $supported_fade
-    do
-        list_fade="${list_fade:-}${item}, "
-    done
-    
-    list_fade="$(printf '%s' "$list_fade" | sed 's/,[[:space:]]$//')"
-}
-
-
 get_supported_pngoptmz() {
     supported_pngoptmz="$(printf 'none\noptipng\nopt-png\ntruepng\npingo')"
-}
-
-get_list_pngoptmz() {
-    get_supported_pngoptmz
-    
-    for item in $supported_pngoptmz
-    do
-        list_pngoptmz="${list_pngoptmz:-}${item}, "
-    done
-    
-    list_pngoptmz="$(printf '%s' "$list_pngoptmz" | sed 's/,[[:space:]]$//')"
 }
 
 get_fade_settings() {
@@ -914,11 +864,11 @@ remove_spaces() {
     printf '%s' "$1" | sed 's/[[:space:]]\{1,\}/ /g'
 }
 
-# list_supported function: print a list of arguments supported by this program
+# show_list function: print a list of arguments supported by this program
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: the described list
 # return code (status): not relevant
-list_supported() {
+show_list() {
     # give error if --list/-l is not the unique command line option
     if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
     then
@@ -926,12 +876,42 @@ list_supported() {
     fi
     
     show_header "$@"
+    get_supported_fade
+    get_supported_pngoptmz
     
-    get_list_formats
-    get_list_audiocodecs
-    get_list_videocodecs
-    get_list_fade
-    get_list_pngoptmz
+    for item in $supported_formats_all
+    do
+        list_formats="${list_formats:-}${item}, "
+    done
+    
+    for item in $supported_audiocodecs_all
+    do
+        list_audiocodecs="${list_audiocodecs:-}${item}, "
+    done
+    
+    for item in $supported_videocodecs_all
+    do
+        list_videocodecs="${list_videocodecs:-}${item}, "
+    done
+    
+    for item in $supported_fade
+    do
+        list_fade="${list_fade:-}${item}, "
+    done
+    
+    for item in $supported_pngoptmz
+    do
+        list_pngoptmz="${list_pngoptmz:-}${item}, "
+    done
+    
+    list_formats="$(    printf '%s' "$list_formats"     | sed 's/,[[:space:]]$//')"
+    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
+    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
+                        &/;s/[[:space:]]vp8.*/\
+                        &/')"
+    list_fade="$(    printf '%s' "$list_fade"     | sed 's/,[[:space:]]$//')"
+    list_pngoptmz="$(printf '%s' "$list_pngoptmz" | sed 's/,[[:space:]]$//')"
+    list_fade="$(    printf '%s' "$list_fade"     | sed 's/,[[:space:]]$//')"
     
     list_wmark_position='topleft, topright, bottomleft, bottomright
                          (or the respective aliases tl, tr, bl, br)'
@@ -1538,7 +1518,7 @@ get_cmd_line() {
                 ;;
             
             -l|--list)  # option without argument
-                list_supported "$@"
+                show_list "$@"
                 exit 0
                 ;;
             
