@@ -99,21 +99,9 @@ format_default="$format"
 #       container format settings       #
 #########################################
 
-# supported container formats (for general code usage, one per line for accurate grepping with '^pattern$')
-supported_formats_all='mp4
-mov
-mkv
-webm
-ogg
-ogv
-flv
-nut
-wmv
-asf
-avi'
-
-supported_formats_lossless='matroska
-nut'
+# supported container formats (one per line for accurate grepping and easy deletion)
+supported_formats_all="$(     printf 'mp4\nmov\nmkv\nwebm\nogg\nogv\nflv\nnut\nwmv\nasf\navi')"
+supported_formats_lossless="$(printf 'matroska\nnut')"
 
 # supported container formats (for use with -l/--list option)
 get_list_formats() {
@@ -182,12 +170,8 @@ format_settings_mov() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^vp9$/d;/^vp9_vaapi$/d')"
     
-    unplayable_audiocodecs_mov='vorbis
-wma'
-    unplayable_videocodecs_mov='theora
-vp8
-vp8_vaapi
-wmv'
+    unplayable_audiocodecs_mov="$(printf 'vorbis\nwma')"
+    unplayable_videocodecs_mov="$(printf 'theora\nvp8\nvp8_vaapi\nwmv')"
 }
 
 format_settings_mkv() {
@@ -204,10 +188,7 @@ format_settings_mkv() {
 
 format_settings_webm() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
-    supported_videocodecs='vp8
-vp8_vaapi
-vp9
-vp9_vaapi'
+    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\nvp9\nvp9_vaapi')"
     
     # check if the detected ffmpeg build has support for the webm muxer
     check_component "$format" muxer || component_error "$format" muxer true
@@ -219,9 +200,7 @@ vp9_vaapi'
 
 format_settings_ogg() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
-    supported_videocodecs='vp8
-vp8_vaapi
-theora'
+    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\ntheora')"
     
     # check if the detected ffmpeg build has support for the ogg/ogv muxer
     check_component "$format" muxer || component_error "$format" muxer true
@@ -237,10 +216,7 @@ format_settings_ogv() {
 
 format_settings_flv() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
-    supported_videocodecs='x264
-h264_nvenc
-h264_vaapi
-h264_qsv'
+    supported_videocodecs="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv')"
     
     # check if the detected ffmpeg build has support for the flv muxer only if recording offline
     # (flv muxer support in ffmpeg is already checked during the live streaming checks)
@@ -296,17 +272,9 @@ format_settings_avi() {
 #         audio encoder settings        #
 #########################################
 
-# supported audio encoders (for general code usage, one per line for accurate grepping with '^pattern$')
-supported_audiocodecs_all='aac
-opus
-vorbis
-mp3lame
-shine
-wma
-none'
-
-supported_audiocodecs_lossless='pcm_s16le
-flac'
+# supported audio encoders (one per line for accurate grepping and easy deletion)
+supported_audiocodecs_all="$(     printf 'aac\nopus\nvorbis\nmp3lame\nshine\nwma\nnone')"
+supported_audiocodecs_lossless="$(printf 'pcm_s16le\nflac')"
 
 # supported audio encoders (for use with -l/--list option)
 get_list_audiocodecs() {
@@ -414,29 +382,15 @@ audiocodec_settings_wma() {
 #         video encoder settings        #
 #########################################
 
-# supported video encoders (for general code usage, one per line for accurate grepping with '^pattern$')
-supported_videocodecs_all='x264
-h264_nvenc
-h264_vaapi
-h264_qsv
-x265
-kvazaar
-hevc_nvenc
-hevc_vaapi
-hevc_qsv
-vp8
-vp8_vaapi
-vp9
-vp9_vaapi
-theora
-wmv'
+# supported video encoders (one per line for accurate grepping and easy deletion)
+supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
+                                     x265\nhevc_nvenc\nhevc_vaapi\nhevc_qsv\nkvazaar
+                                     vp8\nvp8_vaapi
+                                     vp9\nvp9_vaapi
+                                     theora\nwmv' | sed 's/^[[:space:]]*//g')"
 
-supported_videocodecs_lossless='ffv1
-ffvhuff
-huffyuv'
-
-largefile_videocodecs_lossless='ffvhuff
-huffyuv'
+supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
+largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
 # supported audio encoders (for use with -l/--list option)
 get_list_videocodecs() {
@@ -456,12 +410,7 @@ get_videocodecs_for_nonmulti8_msg() {
     msg_speedloss_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
                                      sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
     
-    msg_requirement_videocodecs='x265
-kvazaar
-hevc_nvenc
-hevc_vaapi
-hevc_qsv
-'
+    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nhevc_nvenc\nhevc_vaapi\nhevc_qsv')"
 }
 
 # lossless video encoder settings functions: make checks and settings for lossless video encoder
@@ -638,10 +587,7 @@ webcam_position='topright'
 # return code (status): not relevant
 # sets special variables: various, depending on the effect
 get_supported_fade() {
-    supported_fade='none
-in
-out
-both'
+    supported_fade="$(printf 'none\nin\nout\nboth')"
 }
 
 get_list_fade() {
@@ -657,11 +603,7 @@ get_list_fade() {
 
 
 get_supported_pngoptmz() {
-    supported_pngoptmz='none
-optipng
-opt-png
-truepng
-pingo'
+    supported_pngoptmz="$(printf 'none\noptipng\nopt-png\ntruepng\npingo')"
 }
 
 get_list_pngoptmz() {
@@ -687,11 +629,7 @@ get_supported_streaming_settings() {
     
     # flv muxer restrictions
     supported_streaming_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
-    supported_streaming_videocodecs='x264
-h264_nvenc
-h264_vaapi
-h264_qsv
-'
+    supported_streaming_videocodecs="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv\n')"
 }
 
 get_pngoptmz_settings_truepng() {
