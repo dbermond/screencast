@@ -1,0 +1,90 @@
+## screencast
+Interface to record a X11 desktop
+Copyright 2015-2017 Daniel Bermond
+https://github.com/dbermond/screencast/
+
+### changelog
+
+### version next
+- new feature: webcam overlay effect
+- new feature: live streaming (tested only with YouTube)
+- new feature: record in a one step process (record and encode at the same time)
+- added support for VAAPI hardware accelerated video encoding with H.264, HEVC, VP8 and VP9
+- added support for Intel QSV hardware accelerated video encoding with H.264 and HEVC
+- added support for the container formats .mov .ogv .flv .nut .wmv .asf and .avi
+- added support for VP9 encoder on MP4 cotainer format (needs FFmpeg 3.4 or newer - or git master)
+- added support for Windows Media Audio and Video encoders (wma and wmv encoders)
+- added support for FFmpeg builds that do not have ALSA enabled, like the Fedora build from the RPM Fusion repository
+- added support for bash-completion
+- added video metadata information referencing the program
+- added predefined special values for watermark and webcam position: topleft/tl, topright/tr, bottomleft/bl and bottomright/br
+- added checks for all the needed FFmpeg encoders, decoders, muxers and demuxers to avoid failures
+- added check  for the selected audio input name to avoid failures
+- faster VP9 encoding speed with software-based encoder (vp9)
+- only show a setting as 'default' if not setted at command line
+- changed some notification icons
+- changed default --audio-input value to 'default'
+- do not allow to use --volume-factor option when --audio-input or --audio-encoder are setted to 'none'
+- do not allow invalid usage of 'none' between --audio-input and --audio-encoder
+- do not allow to use --help, --list or --version with other options
+- renamed the --keep-tmpvideo long option to --keep in order to better reflect its usage with the newly added live streaming feature
+- fix: volume factor was not showing when it is the unique selected effect
+- fix: wrong message on blank command line argument (regression since 1.4.0)
+- fix: possible wrong generation of random string
+- fix: eliminated a FFmpeg warning with the shine audio encoder
+- code restructuration for a better readability and maintenance
+- documentation updates, improvements and fixes
+- minor improvements and fixes
+- cosmetic changes
+
+### version 1.4.0 - 2017-07-05
+- faster startup when using watermark
+- color output support
+- informative messages are printed to stdin during the various stages
+- do not allow to use --wmark-size, --wmark-position, --wmark-font and --png-optimizer options without --watermark option
+- do not allow to use -o when setting an output filename
+- fix: 'past duration 0.xxxxxx too large' warnings (regression since 1.3.0)
+- fix: failure to deny --size/--position with --select-region
+- fix: some invalid arguments could be passed
+- fix: show correct name of a possible not found ffmpeg format
+- documentation fixes
+- minor improvements and fixes
+
+### version 1.3.0 - 2017-06-18
+- new feature: select screen region with mouse (--select-region)
+- force video width and height to be both a multiple of 8
+- do not allow to use --format option when entering an output filename
+- updated pingo settings
+- fix: add hardware-based encoders to video/format check
+- fix: alsa and x11grab options now match ffmpeg documentation
+- fix: auto choose encoder if not specified by --audio-encoder/--video-encoder when using --format and --auto-filename
+- fix: avoid a warning with larger video sizes
+- documentation improvements, fixes and updates
+- minor improvements and fixes
+
+### version 1.2.1 - 2017-05-06
+- small fix to help screen
+- docs: small changings to description
+
+### version 1.2.0 - 2017-05-06
+- new option: keep temporary video
+- new requirement: xdpyinfo
+- license: added compatibility with GPLv3 and later
+- delete zero-sized output file if any
+- check for a running X session
+- check for video that is out of screen bounds
+- speedup improvements
+- shorter code
+- documentation improvements and updates
+- minor fixes
+
+### version 1.1.0 - 2017-04-21
+- Added --version command line option
+- Use FFV1 version 3 for the lossless video
+- Fix: create $tmpdir if it does not exist
+- Fix: remove ending slash in $tmpdir if present
+- Documentation fixes and updates
+- Minor fixes
+
+### version 1.0.0 - 2017-02-12
+- Initial release
