@@ -2240,68 +2240,18 @@ check_cmd_line() {
         fi
     fi
     
-    # execute container formats checks and settings (only if saving the output video)
-    [ "$saving_output" = 'true' ] && "format_settings_${format}"
-    
-    # check if user entered and invalid combination of audio encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
+    # checks and settings for formats and audio/video encoders when saving the output video
+    if [ "$saving_output" = 'true' ] 
     then
-        if ! printf '%s' "$supported_audiocodecs" | grep -q "^${audio_encoder}$"
-        then
-            msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        fi
-    fi
-    
-    # check if user entered and invalid combination of video encoder and container format
-    if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
-    then
-        if ! printf '%s' "$supported_videocodecs" | grep -q "^${video_encoder}$"
-        then
-            msg="container format '${format}' does not support '${video_encoder}' video encoder"
-            
-            if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
-            then
-                msg="${msg}
-                      (did you forget to select the container format?)"
-            fi
-            
-            show_settings
-            exit_program "$msg"
-        fi
+        # execute container formats checks and settings
+        "format_settings_${format}"
         
-        # special condition check: mp4 + vp9
-        # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-        if {
-                [ "$video_encoder" = 'vp9'       ] ||
-                [ "$video_encoder" = 'vp9_vaapi' ] ;
-           } &&
-           [ "$format" = 'mp4' ] 
+        # check if user entered and invalid combination of audio encoder and container format
+        if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
         then
-            ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
-            
-            if {
-                   printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
-                   ! {
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
-                         [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
-                     } ;
-               } ||
-               {
-                   printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-                   ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
-               }
+            if ! printf '%s' "$supported_audiocodecs" | grep -q "^${audio_encoder}$"
             then
-                msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
-                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
                 
                 if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
                 then
@@ -2311,12 +2261,67 @@ check_cmd_line() {
                 
                 show_settings
                 exit_program "$msg"
+            fi
+        fi
+        
+        # check if user entered and invalid combination of video encoder and container format
+        if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
+        then
+            if ! printf '%s' "$supported_videocodecs" | grep -q "^${video_encoder}$"
+            then
+                msg="container format '${format}' does not support '${video_encoder}' video encoder"
+                
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                then
+                    msg="${msg}
+                      (did you forget to select the container format?)"
+                fi
+                
+                show_settings
+                exit_program "$msg"
+            fi
             
-            fi # end: if { <complex multi-line ffmpeg version check>
+            # special condition check: mp4 + vp9
+            # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+            if {
+                    [ "$video_encoder" = 'vp9'       ] ||
+                    [ "$video_encoder" = 'vp9_vaapi' ] ;
+               } &&
+               [ "$format" = 'mp4' ] 
+            then
+                ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
+                
+                if {
+                       printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
+                       ! {
+                             [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
+                             [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                         } ;
+                   } ||
+                   {
+                       printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
+                       ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+                   }
+                then
+                    msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                    
+                    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                    then
+                        msg="${msg}
+                      (did you forget to select the container format?)"
+                    fi
+                    
+                    show_settings
+                    exit_program "$msg"
+                    
+                fi # end: if { <complex multi-line ffmpeg version check>
+                
+            fi # end: [ "$format" = 'mp4' ] &&
+            
+        fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
         
-        fi # end: [ "$format" = 'mp4' ] &&
-        
-    fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
+    fi # end: [ "$saving_output" = 'true' ]
     
     # audio input checks and adjustments
     if [ "$recording_audio" = 'true' ] 
