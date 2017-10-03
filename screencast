@@ -41,6 +41,7 @@ select_region='false'        # mouse screen region selection (true, false)
 auto_filename='false'        # auto choose output filename based on date/time
 keep_video='false'           # keep live streaming or the tmp video (true, false)
 fade='none'                  # fade effect (in, out, both, none)
+volume_increase='false'      # volume increase effect (true, false)
 watermark='false'            # watermark effect (true, false)
 pngoptimizer='none'          # png (watermark) optimizer (truepng, pingo, optipng, opt-png, none)
 webcam_overlay='false'       # webcam overlay effect (true, false)
@@ -148,9 +149,9 @@ format_settings_mp4() {
     # move the moov atom to the beginning of the file
     if [ "$streaming"  = 'true' ] 
     then
-        faststart='[movflags=+faststart]'
+        [ "$saving_output" = 'true' ] && tee_faststart='[movflags=+faststart]'
     else
-        faststart='-movflags +faststart'
+        ff_faststart='-movflags +faststart'
     fi
 }
 
@@ -1577,17 +1578,20 @@ show_settings() {
     esac
     
     [ "$fade" != 'none' ] && effects="fade-${fade}"
+    
     if [ "$watermark" = 'true' ] 
     then
         effects="${effects:+"${effects}, watermark"}"
         effects="${effects:-watermark}"
     fi
+    
     if [ "$webcam_overlay" = 'true' ] 
     then
         effects="${effects:+"${effects}, webcam overlay"}"
         effects="${effects:-webcam overlay}"
     fi
-    if [ -n "$volume_options" ] 
+    
+    if [ "$volume_increase" = 'true' ] 
     then
         effects="${effects:+"${effects}, volume (${volume_factor})"}"
         effects="${effects:-"volume (${volume_factor})"}"
@@ -2497,7 +2501,7 @@ check_cmd_line() {
                      printf '%s' "$volume_factor" | grep -Eq '^[1]+(\.[0]+)?$' ;
                  }
             then
-                volume_options="-af volume=${volume_factor}"
+                volume_increase='true'
             fi
         else
             exit_program "'${volume_factor}' is not a valid number for volume increase effect"
@@ -2617,7 +2621,7 @@ check_cmd_line() {
         if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
         then
             # enable fixed video length if chosen by user (a value different than '0')
-            printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || fixed_length_options="-t ${fixed_length}"
+            printf '%s' "$fixed_length" | grep -Eq '^[0]+(\.[0]+)?$' || ff_fixed_length_options="-t ${fixed_length}"
         else
             exit_program "'${fixed_length}' is not a valid number for fixed video length"
         fi
@@ -2765,7 +2769,7 @@ optimize_png() {
 # return value: not relevant
 # return code (status): 0 - text watermark image was successfully created
 #                       1 - failed to create text watermark image
-# sets special variables: $watermark_options - ffmpeg watermark options
+# sets special variables: $watermark_vfilter - ffmpeg video filter options for watermark
 create_watermark() {
     print_good 'generating watermark image'
     rndstr_png="$(randomstr '20')" # random string for tmp png filename
@@ -2812,12 +2816,7 @@ create_watermark() {
                     # optimize PNG image if chosen by user (-g/--png-optimizer)
                     [ "$pngoptimizer" != 'none' ] && optimize_png
                     
-                    # set ffmpeg watermark options
-                    watermark_input="-framerate ${video_rate} \
-                                     -thread_queue_size ${queue_size} \
-                                     -i ${wmark_image}"
-                    watermark_input="$(remove_spaces "$watermark_input")"
-                    watermark_options="overlay=${watermark_position}"
+                    return 0
                 else
                     print_warn 'the generated watermark is not a PNG file (watermarking aborted)' >&2
                     return 1
@@ -2873,124 +2872,11 @@ videofade() {
     esac
 }
 
-# set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
+# set_vaapi_qsv function: set needed options for live streaming (-L/--live-streaming)
 # arguments: none
 # return value: none
 # return code (status): not relevant
-set_watermark() {
-    if [ "$watermark" = 'true' ] 
-    then
-        if create_watermark
-        then
-            vfilter_option='-filter_complex'
-            vfilter_settings="${vfilter_settings:+"${vfilter_settings},${watermark_options}"}"
-            vfilter_settings="${vfilter_settings:-"$watermark_options"}"
-            
-            [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
-        fi
-    fi
-}
-
-# set_webcam function: enable webcam overlay effect if chosen by user (-W/--webcam)
-# arguments: none
-# return value: none
-# return code (status): not relevant
-set_webcam() {
-    if [ "$webcam_overlay" = 'true' ] 
-    then
-        check_component video4linux2,v4l2 demuxer || component_error video4linux2,v4l2 demuxer false
-        
-        [ "$webcam_rate_setted" = 'true' ] && webcam_options="-framerate ${webcam_rate}"
-        
-        webcam_options="${webcam_input_options} ${webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
-        
-        vfilter_option='-filter_complex'
-        vfilter_settings="${vfilter_settings:+"${vfilter_settings},overlay=${webcam_position},format=bgr0"}"
-        vfilter_settings="${vfilter_settings:-"overlay=${webcam_position},format=bgr0"}"
-    fi
-}
-
-# fix_pass_duration function: fix 'pass duration too large' messages in ffmpeg
-# arguments: none
-# return value: none
-# return code (status): not relevant
-fix_pass_duration() {
-    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && vfilter_option='-vf'
-    vfilter_settings="${vfilter_settings:+"${vfilter_settings},fps=${video_rate}"}"
-    vfilter_settings="${vfilter_settings:-"fps=${video_rate}"}"
-}
-
-# set_vaapi_qsv function: set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
-#                         if they are chosen by the user
-# arguments: none
-# return value: none
-# return code (status): not relevant
-set_vaapi_qsv() {
-    case "$video_encoder" in
-        *_vaapi)
-            if [ "$one_step" = 'false' ] 
-            then
-                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && vfilter_option='-vf'
-            else
-                [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && vfilter_option='-vf'
-            fi
-            
-            vfilter_settings="${vfilter_settings:+"${vfilter_settings},format=nv12,hwupload"}"
-            vfilter_settings="${vfilter_settings:-format=nv12,hwupload}"
-            
-            vaapi_device="-vaapi_device ${vaapi_device}"
-            pixel_format='vaapi_vld'
-            ;;
-        *_qsv)
-            pixel_format='nv12'
-            ;;
-    esac
-}
-
-# finish function: print message and show notification when finished
-# arguments: none
-# return value: the printed message
-# return code (status): not relevant
-finish() {
-    print_good 'finish'
-    
-    ! [ -f "$finish_icon" ] && finish_icon='video-x-generic'
-    
-    notify 'normal' '3000' "$finish_icon" 'finish'
-    
-    # play a sound after finish if requirements are present
-    if command -v ffplay >/dev/null 2>&1
-    then
-        [ -f "$finish_sound" ] && ffplay -v quiet -nodisp -autoexit -volume "$ffplay_volume" "$finish_sound" >/dev/null 2>&1 &
-    fi
-}
-
-# recording_error function: exit the program with the proper message/notifications if a recording error has occurred
-# arguments: none
-# return value: not relevant
-# return code (status): not relevant
-recording_error() {
-    print_error 'recording error!'
-    notify 'critical' '5000' 'dialog-error' 'recording error!'
-    exit 1
-}
-
-# encoding_error function: exit the program with the proper message/notifications if an encoding error has occurred
-# arguments: none
-# return value: not relevant
-# return code (status): not relevant
-encoding_error() {
-    print_error 'encoding error!'
-    notify 'critical' '5000' 'dialog-error' 'encoding error!'
-    exit 1
-}
-
-# live_streaming function: record and live stream
-# arguments: none
-# return value: none
-# return code (status): not relevant
-# note: it will make the program exit with error if a recording error occurs
-live_streaming() {
+set_live() {
     # set ffmpeg '-maxrate' and '-bufsize' options
     if   [ "$video_height" -gt '2160' ] 
     then
@@ -3078,11 +2964,174 @@ live_streaming() {
     fi
     
     video_encode_codec="${video_encode_codec} -g $((video_rate * 2))" # set gop size
+}
+
+# set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_watermark() {
+    if [ "$watermark" = 'true' ] 
+    then
+        if create_watermark
+        then
+            ff_watermark_options="-framerate ${video_rate} -thread_queue_size ${queue_size} -i ${wmark_image}"
+            
+            watermark_vfilter="overlay=${watermark_position}"
+            
+            ff_vfilter_option='-filter_complex'
+            ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},${watermark_vfilter}"}"
+            ff_vfilter_settings="${ff_vfilter_settings:-"$watermark_vfilter"}"
+            
+            [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
+        fi
+    fi
+}
+
+# set_webcam function: enable webcam overlay effect if chosen by user (-W/--webcam)
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_webcam() {
+    if [ "$webcam_overlay" = 'true' ] 
+    then
+        check_component video4linux2,v4l2 demuxer || component_error video4linux2,v4l2 demuxer false
+        
+        [ "$webcam_rate_setted" = 'true' ] && ff_webcam_options="-framerate ${webcam_rate}"
+        
+        ff_webcam_options="${webcam_input_options} ${ff_webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
+        
+        ff_vfilter_option='-filter_complex'
+        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},overlay=${webcam_position},format=bgr0"}"
+        ff_vfilter_settings="${ff_vfilter_settings:-"overlay=${webcam_position},format=bgr0"}"
+    fi
+}
+
+# set_volume function: enable volume increase effect if chosen by user (-m/--volume-factor)
+#                      (to enable: a value different than '1.0' or '0.0')
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_volume() {
+    [ "$volume_increase" = 'true' ] && ff_volume_options="-af volume=${volume_factor}"
+}
+
+# fix_pass_duration function: fix 'pass duration too large' messages in ffmpeg
+# arguments: none
+# return value: none
+# return code (status): not relevant
+fix_pass_duration() {
+    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && ff_vfilter_option='-vf'
+    ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},fps=${video_rate}"}"
+    ff_vfilter_settings="${ff_vfilter_settings:-"fps=${video_rate}"}"
+}
+
+# set_vaapi_qsv function: set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
+#                         if they are chosen by the user
+# arguments: none
+# return value: none
+# return code (status): not relevant
+set_vaapi_qsv() {
+    case "$video_encoder" in
+        *_vaapi)
+            if [ "$one_step" = 'false' ] 
+            then
+                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
+            else
+                [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
+            fi
+            
+            ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=nv12,hwupload"}"
+            ff_vfilter_settings="${ff_vfilter_settings:-format=nv12,hwupload}"
+            
+            ff_vaapi_options="-vaapi_device ${vaapi_device}"
+            pixel_format='vaapi_vld'
+            ;;
+        *_qsv)
+            pixel_format='nv12'
+            ;;
+    esac
+}
+
+# finish function: print message and show notification when finished
+# arguments: none
+# return value: the printed message
+# return code (status): not relevant
+finish() {
+    print_good 'finish'
     
+    ! [ -f "$finish_icon" ] && finish_icon='video-x-generic'
+    
+    notify 'normal' '3000' "$finish_icon" 'finish'
+    
+    # play a sound after finish if requirements are present
+    if command -v ffplay >/dev/null 2>&1
+    then
+        [ -f "$finish_sound" ] && ffplay -v quiet -nodisp -autoexit -volume "$ffplay_volume" "$finish_sound" >/dev/null 2>&1 &
+    fi
+}
+
+# recording_error function: exit the program with the proper message/notifications if a recording error has occurred
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+recording_error() {
+    print_error 'recording error!'
+    notify 'critical' '5000' 'dialog-error' 'recording error!'
+    exit 1
+}
+
+# encoding_error function: exit the program with the proper message/notifications if an encoding error has occurred
+# arguments: none
+# return value: not relevant
+# return code (status): not relevant
+encoding_error() {
+    print_error 'encoding error!'
+    notify 'critical' '5000' 'dialog-error' 'encoding error!'
+    exit 1
+}
+
+# run_ffmpeg function: execute ffmpeg command according to predefined variables
+# arguments: none
+# return value: not relevant
+# return code (status): the ffmpeg return status, usually:
+#                       0 - ffmpeg command executed successfully (ffmpeg normal exit)
+#                       1 - ffmpeg command failed                (ffmpeg error)
+run_ffmpeg() {
+    ffmpeg \
+        $ff_audio_options \
+        $ff_vaapi_options \
+        $ff_video_options \
+        $ff_webcam_options \
+        $ff_watermark_options \
+        $ff_vfilter_option $ff_vfilter_settings \
+        $ff_volume_options \
+        $ff_flag_global_header \
+        $ff_audio_codec \
+        -codec:v $ff_video_codec \
+        $ff_fixed_length_options \
+        $ff_pixfmt_options \
+        $ff_faststart \
+        $ff_map \
+        -metadata "$metadata" \
+        -y \
+        $ff_output
+}
+
+# live_streaming function: record and live stream
+# arguments: none
+# return value: none
+# return code (status): not relevant
+# note: it will make the program exit with error if a recording error occurs
+live_streaming() {
+    set_live
     set_watermark
-    set_webcam
-    fix_pass_duration
     set_vaapi_qsv
+    set_volume
+
+    ff_audio_codec="$audio_encode_codec"
+    ff_video_codec="$video_encode_codec"
+    ff_pixfmt_options="-pix_fmt ${pixel_format}"
     
     print_good 'live streaming'
     notify 'normal' '1700' 'media-record' 'live streaming...'
@@ -3090,62 +3139,20 @@ live_streaming() {
     # do the live stream and save the recorded content to an output file
     if [ "$saving_output" = 'true' ] 
     then
-        if ffmpeg \
-               $audio_input_options \
-               $audio_input \
-               $vaapi_device \
-               $video_input_options \
-               -framerate $video_rate \
-               -video_size $video_size \
-               -i :0.0+${video_position} \
-               $watermark_input \
-               $webcam_options \
-               $vfilter_option $vfilter_settings \
-               $volume_options \
-               -flags +global_header \
-               $audio_encode_codec \
-               -codec:v $video_encode_codec \
-               $fixed_length_options \
-               -pix_fmt $pixel_format \
-               -metadata "$metadata" \
-               -f tee \
-               -map 0:a \
-               -map 1:v \
-               -y \
-               "${faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
-        then
-            finish
-        else
-            recording_error
-        fi
-    
+        ff_flag_global_header='-flags +global_header'
+        ff_map='-map 0:a -map 1:v'
+        ff_output="-f tee ${tee_faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
+        
     # live streaming only, do not save the recorded content to an output file
     else
-        if ffmpeg \
-               $audio_input_options \
-               $audio_input \
-               $vaapi_device \
-               $video_input_options \
-               -framerate $video_rate \
-               -video_size $video_size \
-               -i :0.0+${video_position} \
-               $watermark_input \
-               $webcam_options \
-               $vfilter_option $vfilter_settings \
-               $volume_options \
-               $audio_encode_codec \
-               -codec:v $video_encode_codec \
-               $fixed_length_options \
-               -pix_fmt $pixel_format \
-               -metadata "$metadata" \
-               -f flv \
-               -y \
-               "$streaming_url"
-        then
-            finish
-        else
-            recording_error
-        fi
+        ff_output="-f flv ${streaming_url}"
+    fi
+    
+    if run_ffmpeg
+    then
+        finish
+    else
+        recording_error
     fi
 }
 
@@ -3157,33 +3164,19 @@ live_streaming() {
 # note: it will make the program exit with error if a recording error occurs
 record_offline_one_step() {
     set_watermark
-    set_webcam
-    fix_pass_duration
     set_vaapi_qsv
+    set_volume
     
-    print_good 'recording (one step)'
+    ff_audio_codec="$audio_encode_codec"
+    ff_video_codec="$video_encode_codec"
+    ff_pixfmt_options="-pix_fmt ${pixel_format}"
+    ff_output="${savedir}/${output_file}"
+    
+    print_good 'recording (one step process)'
     notify 'normal' '1700' 'media-record' 'recording (one step)...'
     
     # record screen and encode in one step
-    if ffmpeg \
-           $audio_input_options \
-           $audio_input \
-           $vaapi_device \
-           $video_input_options \
-           -framerate $video_rate \
-           -video_size $video_size \
-           -i :0.0+${video_position} \
-           $watermark_input \
-           $webcam_options \
-           $vfilter_option $vfilter_settings \
-           $volume_options \
-           $audio_encode_codec \
-           -codec:v $video_encode_codec \
-           $fixed_length_options \
-           -pix_fmt $pixel_format \
-           -metadata "$metadata" \
-           -y \
-           "${savedir}/${output_file}"
+    if run_ffmpeg
     then
         finish
     else
@@ -3198,33 +3191,23 @@ record_offline_one_step() {
 # return code (status): not relevant
 # note: it will make the program exit with error if a recording or encoding error occurs
 record_offline_two_steps() {
-    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && vfilter_option='-vf'
+    [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && ff_vfilter_option='-vf'
     
-    set_webcam
-    fix_pass_duration
     rndstr_video="$(randomstr '20')" # random string for tmp video filename
+    
+    ff_audio_codec="$audio_record_codec"
+    ff_video_codec="$video_record_codec"
+    ff_output="${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    
     print_good 'recording'
     notify 'normal' '1700' 'media-record' 'recording...'
     
     # record screen to a lossless video
-    if ffmpeg \
-           $audio_input_options \
-           $audio_input \
-           $video_input_options \
-           -framerate $video_rate \
-           -video_size $video_size \
-           -i :0.0+${video_position} \
-           $webcam_options \
-           $vfilter_option $vfilter_settings \
-           $audio_record_codec \
-           -codec:v $video_record_codec \
-           $fixed_length_options \
-           -metadata "$metadata" \
-           -y \
-           "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    if run_ffmpeg
     then
-        unset vfilter_option
-        unset vfilter_settings
+        unset ff_vfilter_option
+        unset ff_vfilter_settings
+        unset ff_webcam_options
         
         set_watermark
         
@@ -3232,32 +3215,27 @@ record_offline_two_steps() {
         if [ "$fade" != 'none' ] 
         then
             videofade
-            [ "$watermark" = 'false' ] && vfilter_option='-vf'
-            vfilter_settings="${vfilter_settings:+"${vfilter_settings},${fade_options}"}"
-            vfilter_settings="${vfilter_settings:-"${fade_options}"}"
+            [ "$watermark" = 'false' ] && ff_vfilter_option='-vf'
+            ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},${fade_options}"}"
+            ff_vfilter_settings="${ff_vfilter_settings:-"${fade_options}"}"
         fi
         
         set_vaapi_qsv
+        set_volume
+        
+        ff_audio_options="${audio_channel_layout}"
+        ff_video_options="-i ${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+        ff_audio_codec="$audio_encode_codec"
+        ff_video_codec="$video_encode_codec"
+        ff_pixfmt_options="-pix_fmt ${pixel_format}"
+        ff_map='-map 0'
+        ff_output="${savedir}/${output_file}"
         
         print_good 'encoding'
         notify 'normal' '3000' 'media-playback-stop' 'encoding...'
         
         # encode the recorded lossless video file
-        if ffmpeg \
-               $audio_channel_layout \
-               $vaapi_device \
-               -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
-               $watermark_input \
-               $vfilter_option $vfilter_settings \
-               $volume_options \
-               $audio_encode_codec \
-               -codec:v $video_encode_codec \
-               -pix_fmt $pixel_format \
-               -metadata "$metadata" \
-               $faststart \
-               -map 0 \
-               -y \
-               "${savedir}/${output_file}"
+        if run_ffmpeg
         then
             finish
         else
@@ -3324,6 +3302,12 @@ show_early_warnings
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
+
+# common settings for all recording ways
+set_webcam
+fix_pass_duration
+ff_audio_options="${audio_input_options} ${audio_input}"
+ff_video_options="${video_input_options} -framerate ${video_rate} -video_size ${video_size} -i :0.0+${video_position}"
 
 # do a live streaming if chosen by user (-L/--live-streaming)
 if [ "$streaming" = 'true' ] 
