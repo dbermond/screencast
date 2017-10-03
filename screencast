@@ -517,7 +517,6 @@ videocodec_settings_hevc_qsv() {
 
 videocodec_settings_vp8() {
     check_component libvpx encoder || component_error libvpx 'video encoder' true
-    video_record_codec="${video_record_codec} -pix_fmt yuv420p"
     video_encode_codec='libvpx -crf 8 -b:v 2M'
 }
 
