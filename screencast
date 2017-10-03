@@ -3140,7 +3140,7 @@ live_streaming() {
     if [ "$saving_output" = 'true' ] 
     then
         ff_flag_global_header='-flags +global_header'
-        ff_map='-map 0:a -map 1:v'
+        ff_map='-map 1:v -map 0:a'
         ff_output="-f tee ${tee_faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
         
     # live streaming only, do not save the recorded content to an output file
