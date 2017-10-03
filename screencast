@@ -1601,8 +1601,14 @@ show_settings() {
     [ "$saving_output" = 'true' ] && print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
     
     print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
-    
-    # print a waning if user chosen a possible unplayable combinantion of encoder and container format
+}
+
+# show_early_warnings function: show warnings that should appear right after show_settings()
+# arguments: none
+# return value: program early warnings
+# return code (status): not relevant
+show_early_warnings() {
+    # warn: user chosen a possible unplayable combinantion of encoder and container format
     if [ "$format" = 'mov' ] 
     then
         msg="on 'mov' container format may not be playable"
@@ -1618,6 +1624,31 @@ show_settings() {
         fi
         
         unset msg
+    fi
+    
+    # warn: output file already exists
+    [ "$auto_filename" = 'false' ] && [ -f "${savedir}/${output_file}" ] &&
+        print_warn "output file '${output_file}' already exists, overwriting without prompt"
+    
+    if [ "$streaming" = 'true' ] 
+    then
+        # warn: a possible output file already exists (if user specifies a local file in -L/--live-streaming option)
+        [ -f "$streaming_url" ] && print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
+        
+        # warn: using a software-based video encoder in live streaming
+        if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
+        then
+            print_warn 'using a software-based video encoder in live streaming is not recommend (can cause audio problems)'
+        fi
+    else
+        # warn: using a software-based video encoders in a one step process
+        if [ "$one_step" = 'true' ] 
+        then
+            if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
+            then
+                print_warn 'using a software-based video encoder in a one step process is not recommend (can cause audio problems)'
+            fi
+        fi
     fi
 }
 
@@ -3289,19 +3320,7 @@ fi
 check_cmd_line "$@"
 check_dirs
 show_settings
-
-# show a warning if the output file already exists
-[ "$auto_filename" = 'false' ] && [ -f "${savedir}/${output_file}" ] &&
-    print_warn "output file '${output_file}' already exists, overwriting without prompt"
-
-# show a warning if using a software-based video encoders in a one step process
-if [ "$one_step" = 'true' ] && [ "$streaming" = 'false' ] 
-then
-    if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
-    then
-        print_warn 'using a software-based video encoder in a one step process is not recommend (can cause audio problems)'
-    fi
-fi
+show_early_warnings
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
@@ -3309,23 +3328,14 @@ fi
 # do a live streaming if chosen by user (-L/--live-streaming)
 if [ "$streaming" = 'true' ] 
 then
-    # show a warning if a possible output file already exists
-    [ -f "$streaming_url" ] && print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
-    
-    # show a warning if using a software-based video encoders in live streaming
-    if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
-    then
-        print_warn 'using a software-based video encoder in live streaming is not recommend (can cause audio problems)'
-    fi
-    
     live_streaming
 
 # record offline if live streaming is not chosen by user
 else
-    if [ "$one_step" = 'false' ] 
+    if [ "$one_step" = 'true' ] 
     then
-        record_offline_two_steps
-    else
         record_offline_one_step
+    else
+        record_offline_two_steps
     fi
 fi
