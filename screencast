@@ -104,6 +104,9 @@ format_default="$format"
 supported_formats_all="$(     printf 'mp4\nmov\nmkv\nwebm\nogg\nogv\nflv\nnut\nwmv\nasf\navi')"
 supported_formats_lossless="$(printf 'matroska\nnut')"
 
+# container formats that, depending on the selected audio/video encoder, may be unplayable in some players
+possible_unplayable_formats="$(printf 'mp4\nmov')"
+
 # lossless container format settings functions: make checks and settings for container format to store lossless video
 #                                               (for the 1st step, lossless recording)
 # arguments: none
@@ -143,6 +146,8 @@ format_settings_mp4() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^wma$/d')"
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^theora$/d;/^vp8$/d;/^vp8_vaapi$/d;/^wmv$/d')"
     
+    possible_unplayable_videocodecs="$(printf 'vp9\nvp9_vaapi')"
+    
     # check if the detected ffmpeg build has support for the mp4/mov muxer
     check_component "$format" muxer || component_error "$format" muxer true
     
@@ -161,8 +166,8 @@ format_settings_mov() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^vp9$/d;/^vp9_vaapi$/d')"
     
-    unplayable_audiocodecs_mov="$(printf 'vorbis\nwma')"
-    unplayable_videocodecs_mov="$(printf 'theora\nvp8\nvp8_vaapi\nwmv')"
+    possible_unplayable_audiocodecs="$(printf 'vorbis\nwma')"
+    possible_unplayable_videocodecs="$(printf 'theora\nvp8\nvp8_vaapi\nwmv')"
 }
 
 format_settings_mkv() {
@@ -1611,17 +1616,17 @@ show_settings() {
 # return value: program early warnings
 # return code (status): not relevant
 show_early_warnings() {
-    # warn: user chosen a possible unplayable combinantion of encoder and container format
-    if [ "$format" = 'mov' ] 
+    # warn: user chosen a possible unplayable combinantion of audio/video encoder and container format
+    if printf '%s' "$possible_unplayable_formats" | grep -q "^${format}$"
     then
-        msg="on 'mov' container format may not be playable"
+        msg="on '${format}' container format may not be playable in some players"
         
-        if printf '%s' "$unplayable_audiocodecs_mov" | grep -q "^${audio_encoder}$"
+        if printf '%s' "$possible_unplayable_audiocodecs" | grep -q "^${audio_encoder}$"
         then
             print_warn "'${audio_encoder}' audio encoder ${msg}"
         fi
         
-        if printf '%s' "$unplayable_videocodecs_mov" | grep -q "^${video_encoder}$"
+        if printf '%s' "$possible_unplayable_videocodecs" | grep -q "^${video_encoder}$"
         then
             print_warn "'${video_encoder}' video encoder ${msg}"
         fi
