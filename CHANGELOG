@@ -32,6 +32,7 @@ https://github.com/dbermond/screencast/
 - fix: wrong message on blank command line argument (regression since 1.4.0)
 - fix: possible wrong generation of random string
 - fix: eliminated a FFmpeg warning with the shine audio encoder
+- fix: vp8 pixel format in the lossless recording step
 - code restructuration for a better readability and maintenance
 - documentation updates, improvements and fixes
 - minor improvements and fixes
