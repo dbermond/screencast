@@ -1611,11 +1611,11 @@ show_settings() {
     print_good "${color_bold:-}effects         :${color_off:-} ${effects}"
 }
 
-# show_early_warnings function: show warnings that should appear right after show_settings()
+# show_warnings function: show warnings that should appear right after show_settings()
 # arguments: none
 # return value: program early warnings
 # return code (status): not relevant
-show_early_warnings() {
+show_warnings() {
     # warn: user chosen a possible unplayable combinantion of audio/video encoder and container format
     if printf '%s' "$possible_unplayable_formats" | grep -q "^${format}$"
     then
@@ -3302,7 +3302,7 @@ fi
 check_cmd_line "$@"
 check_dirs
 show_settings
-show_early_warnings
+show_warnings
 
 # select with mouse the screen region to record if chosen by user
 [ "$select_region" = 'true' ] && get_region && check_screen
