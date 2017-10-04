@@ -2986,8 +2986,6 @@ set_watermark() {
             ff_vfilter_option='-filter_complex'
             ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},${watermark_vfilter}"}"
             ff_vfilter_settings="${ff_vfilter_settings:-"$watermark_vfilter"}"
-            
-            [ "$video_encoder" = 'vp9' ] && pixel_format='yuva420p'
         fi
     fi
 }
