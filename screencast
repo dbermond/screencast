@@ -2368,8 +2368,39 @@ check_cmd_line() {
         # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
         check_lossless_component audiocodec
         
-        # check for ALSA support in ffmpeg (fallback to PulseAudio if ALSA is not available)
-        if ! check_component alsa demuxer
+        # check for ALSA support in ffmpeg
+        if check_component alsa demuxer
+        then
+            # check if user entered a valid ALSA input device name
+            if [ "$audio_input_setted" = 'true' ] 
+            then
+                case "$audio_input" in
+                    pulse|default)
+                        :
+                        ;;
+                    # do not allow 'null' ALSA input device
+                    null)
+                        exit_program "the use of 'null' ALSA input device causes problems and is not allowed"
+                        ;;
+                    *)
+                        if command -v arecord >/dev/null 2>&1
+                        then
+                            if ! check_alsa_long_name && ! check_alsa_short_name
+                            then
+                                exit_program "'${audio_input}' is not a valid ALSA input device name on this system"
+                            fi
+                        else
+                            print_error "'arecord' was not found"
+                            printf '%s%s\n' '                       ' \
+                                            "please install 'arecord' (alsa-utils)" >&2
+                            exit 1
+                        fi
+                        ;;
+                esac
+            fi
+            
+        # check for PulseAudio support in ffmpeg (fallback mode if ALSA is not available)
+        elif check_component pulse demuxer
         then
             # check for PulseAudio support in ffmpeg
             if check_component pulse demuxer
@@ -2377,8 +2408,6 @@ check_cmd_line() {
                 audio_input_options="$(printf '%s' "$audio_input_options" | sed 's/alsa/pulse/')"
                 
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
-            else
-                component_error 'ALSA or PulseAudio' backend false
             fi
             
             if [ "$audio_input_setted" = 'false' ] 
@@ -2410,35 +2439,12 @@ check_cmd_line() {
                         ;;
                 esac
             fi
+        
+        # no ALSA ou PulseAudio support available in ffmpeg
         else
-            # check if user entered a valid ALSA input device name
-            if [ "$audio_input_setted" = 'true' ] 
-            then
-                case "$audio_input" in
-                    pulse|default)
-                        :
-                        ;;
-                    # do not allow 'null' ALSA input device
-                    null)
-                        exit_program "the use of 'null' ALSA input device causes problems and is not allowed"
-                        ;;
-                    *)
-                        if command -v arecord >/dev/null 2>&1
-                        then
-                            if ! check_alsa_long_name && ! check_alsa_short_name
-                            then
-                                exit_program "'${audio_input}' is not a valid ALSA input device name on this system"
-                            fi
-                        else
-                            print_error "'arecord' was not found"
-                            printf '%s%s\n' '                       ' \
-                                            "please install 'arecord' (alsa-utils)" >&2
-                            exit 1
-                        fi
-                        ;;
-                esac
-            fi
-        fi # end: else clause of: if ! check_component alsa demuxer
+            component_error 'ALSA or PulseAudio' backend false
+            
+        fi # end: else clause of: if check_component alsa demuxer
         
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
         
