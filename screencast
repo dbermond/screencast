@@ -621,19 +621,39 @@ get_pngoptmz_settings_advdef() {
 #           general functions           #
 #########################################
 
-# cleanup function: delete unneeded files
+# cleanup function: delete (or rename) temporary files
 # arguments: none
 # return value: none
 # return code (status): not relevant
 cleanup() {
-    # delete temporary files
-    rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
-    [ "$keep_video" = 'false' ] && rm -f "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    # delete temporary PNG (waterwark) image
+    [ "$watermark" = 'true' ] && rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
+    
+    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
+    then
+        # delete temporary (lossless) video
+        if [ "$keep_video" = 'false' ] 
+        then
+            rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
+            
+        # rename temporary (lossless) video to a better name if user selected to keep it (--keep/-K)
+        else
+            if [ "$auto_filename" = 'true' ] 
+            then
+                mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
+                      "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}"
+            else
+                mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
+                      "${tmpdir}/${output_file%.*}-lossless.${rec_extension}"
+            fi
+        fi
+    fi
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
     then
         output_filesize="$(du -k "${savedir}/${output_file}" | cut -f1)"
+        
         [ "$output_filesize" -eq '0' ] && rm -f "${savedir}/${output_file}"
     fi
 }
@@ -1646,9 +1666,21 @@ show_warnings() {
         unset msg
     fi
     
-    # warn: output file already exists
-    [ "$auto_filename" = 'false' ] && [ -f "${savedir}/${output_file}" ] &&
-        print_warn "output file '${output_file}' already exists, overwriting without prompt"
+    if [ "$auto_filename" = 'false' ] 
+    then
+        # warn: output file already exists
+        [ -f "${savedir}/${output_file}" ] &&
+            print_warn "output file '${output_file}' already exists, overwriting without prompt"
+            
+        # warn: lossless output file already exists
+        lossless_video="${output_file%.*}-lossless.${rec_extension}"
+        
+        [ "$streaming"  = 'false' ] && [ "$one_step" = 'false'  ] &&
+        [ "$keep_video" = 'true'  ] && [ -f "${tmpdir}/${lossless_video}" ] &&
+            print_warn "lossless output file '${lossless_video}' already exists, overwriting without prompt"
+            
+        unset lossless_video
+    fi
     
     if [ "$streaming" = 'true' ] 
     then
@@ -2232,12 +2264,14 @@ check_cmd_line() {
         # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
         
+        current_time="$(date +%Y-%m-%d_%H.%M.%S)" # get current time for placing on filename
+        
         # set the output filename
         if [ "$streaming" = 'true' ] 
         then
-            output_file="screencast-livestreaming-$(date +%Y-%m-%d_%H.%M.%S).${format}"
+            output_file="screencast-livestreaming-${current_time}.${format}"
         else
-            output_file="screencast-$(date +%Y-%m-%d_%H.%M.%S).${format}"
+            output_file="screencast-${current_time}.${format}"
         fi
     fi
     
@@ -2867,7 +2901,7 @@ videofade() {
     
     # get recorded video length in seconds
     video_length="$(ffprobe \
-                        -i "${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}" \
+                        -i "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
                         -show_entries format='duration' \
                         -v quiet \
                         -of csv='p=0')"
@@ -3217,7 +3251,7 @@ record_offline_two_steps() {
     
     ff_audio_codec="$audio_record_codec"
     ff_video_codec="$video_record_codec"
-    ff_output="${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+    ff_output="${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
     
     print_good 'recording'
     notify 'normal' '1700' 'media-record' 'recording...'
@@ -3244,7 +3278,7 @@ record_offline_two_steps() {
         set_volume
         
         ff_audio_options="${audio_channel_layout}"
-        ff_video_options="-i ${tmpdir}/screencast-tmpvideo-${$}-${rndstr_video}.${rec_extension}"
+        ff_video_options="-i ${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"
         ff_pixfmt_options="-pix_fmt ${pixel_format}"

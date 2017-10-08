@@ -277,7 +277,7 @@ default: `/tmp`
 
 #### `-K, --keep`
 
-When recording offline it will keep (don't delete) the temporary video. When doing a live streaming it will keep (save) the live streamed video.
+When recording offline, it will keep (don't delete) the temporary video in the temporary directory. When doing a live streaming, it will keep (save) a copy of the live streamed video in the output directory.
 
 #### `-u, --auto-filename`
 
