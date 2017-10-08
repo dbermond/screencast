@@ -725,7 +725,7 @@ show_help() {
     printf '%s\n' '  -L, --live-streaming=URL  enable live streaming, setting url to URL [disabled]'
     printf '%s\n' '  -1, --one-step            one step (record and encode at same time) [disabled]'
     printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
-    printf '%s\n' '  -n, --no-notifications    disable desktop notifications'
+    printf '%s\n' '  -n, --no-notifications    disable desktop and sound notifications'
     printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
     printf '%s\n' '  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]'
     printf '%s\n' "  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]"
@@ -3085,9 +3085,9 @@ finish() {
     notify 'normal' '3000' "$finish_icon" 'finish'
     
     # play a sound after finish if requirements are present
-    if command -v ffplay >/dev/null 2>&1
+    if [ "$notifications" = 'true' ] && [ -f "$finish_sound" ] && command -v ffplay >/dev/null 2>&1
     then
-        [ -f "$finish_sound" ] && ffplay -v quiet -nodisp -autoexit -volume "$ffplay_volume" "$finish_sound" >/dev/null 2>&1 &
+        ffplay -v quiet -nodisp -autoexit -volume "$ffplay_volume" "$finish_sound" >/dev/null 2>&1 &
     fi
 }
 
