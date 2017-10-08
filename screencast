@@ -666,9 +666,12 @@ print_error() {
 # return code (status): not relevant
 show_header() {
     # give error if --version/-V is not the unique command line option
-    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    if [ "$version_setted" = 'true' ] 
     then
-        exit_program "--version (-V) option can be used only alone"
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        then
+            exit_program "--version (-V) option can be used only alone"
+        fi
     fi
     
     printf '%s\n' "screencast ${screencast_version} - Command line interface to record a X11 desktop"
@@ -682,9 +685,12 @@ show_header() {
 # return code (status): not relevant
 show_help() {
     # give error if --help/-h/-? is not the unique command line option
-    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    if [ "$help_setted" = 'true' ] 
     then
-        exit_program "--help (-h) option can be used only alone"
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        then
+            exit_program "--help (-h) option can be used only alone"
+        fi
     fi
     
     show_header "$@"
@@ -888,9 +894,12 @@ remove_spaces() {
 # return code (status): not relevant
 show_list() {
     # give error if --list/-l is not the unique command line option
-    if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+    if [ "$list_setted" = 'true' ] 
     then
-        exit_program "--list (-l) option can be used only alone"
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        then
+            exit_program "--list (-l) option can be used only alone"
+        fi
     fi
     
     show_header "$@"
@@ -1527,16 +1536,19 @@ get_cmd_line() {
                 ;;
             
             -l|--list)  # option without argument
+                list_setted='true'
                 show_list "$@"
                 exit 0
                 ;;
             
             -h|-\?|--help)  # option without argument
+                help_setted='true'
                 show_help "$@"
                 exit 0
                 ;;
             
             -V|--version)  # option without argument
+                version_setted='true'
                 show_header "$@"
                 exit 0
                 ;;
