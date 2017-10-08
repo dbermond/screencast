@@ -674,8 +674,8 @@ show_header() {
         fi
     fi
     
-    printf '%s\n' "screencast ${screencast_version} - Command line interface to record a X11 desktop"
-    printf '%s\n' "Copyright (c) 2015-$(date +%Y) Daniel Bermond"
+    printf '%s\n' "screencast ${screencast_version} - Copyright (c) 2015-$(date +%Y) Daniel Bermond"
+    printf '%s\n' 'Command line interface to record a X11 desktop'
     printf '%s\n' "$screencast_website"
 }
 
@@ -3284,6 +3284,9 @@ fi
 
 # message header (colored, will fallback to non-colored if no color support)
 msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
+
+show_header
+print_good 'initializing'
 
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
