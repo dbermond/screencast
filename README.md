@@ -346,22 +346,14 @@ Show program version information.
 When not using the [`-x`](#-x---fixedn) option, press the **q** key in terminal window to end the recording.
 
 ## INSTALLATION
-Make the **screencast** file executable and copy it to a directory that is in your *PATH*.
-
-Copy the *screencast.1* man page file to your user commands man page directory, usually at `/usr/share/man/man1`. For convenience, firstly compress the man page with *gzip*.
-
-If you are using bash and bash-completion, copy the bash completion script to one of the auto sourced directories. This will enable a faster typing of options and arguments through tab expansion.
-
-You can acomplish this by doing:
+Installation is done through *make*. A simple installation procedure would be:
 
 ```
-$ chmod +x screencast
-$ sudo cp screencast /usr/local/bin
-$ gzip -9 -n -k screencast.1
-$ sudo cp screencast.1.gz /usr/share/man/man1
-$ sudo mkdir -p /etc/bash_completion.d
-$ sudo cp bash-completion/screencast /etc/bash_completion.d
+$ make
+$ sudo make install
 ```
+
+The provided Makefile supports the common `DESTDIR`, `PREFIX`, `BINDIR`, `DOCDIR` and `MANDIR` variables. If you are using bash and bash-completion, the bash-completion directory can be changed with the `BCOMPDIR` variable.
 
 ## REQUIREMENTS
 - The minimum requirements are a POSIX-compatible shell, a running X session, a recent *FFmpeg* version and *xdpyinfo*. It's advised to use *FFmpeg* version git master. *FFmpeg* needs to be compiled with support for x11grab (libxcb) and the desired encoders and muxers/formats. When recording offline in the default two step process behavior (see [REMARKS](#remarks)), *FFmpeg* needs to be compiled with support for ffv1 encoder, ffv1 decoder, matroska muxer and matroska demuxer (**screencast** will try to auto-fallback to ffvhuff or huffyuv encoder/decoder if ffv1 is not supported and to nut muxer/demuxer if matroska is not supported, but ffv1 and matroska are preferred). When live streaming, *FFmpeg* needs to be compiled with support for flv muxer. You can see a *FFmpeg* compilation guide and **screencast** packages at the [LINKS](#links) section.
