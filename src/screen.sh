@@ -114,8 +114,8 @@ adjust_dimension() {
 # note: needs $video_width, $video_position_x, $video_height and $video_position_y
 check_screen() {
     screen_size="$(xdpyinfo | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
-    screen_width="$( printf '%s' "$screen_size" | cut -d'x' -f1)"
-    screen_height="$(printf '%s' "$screen_size" | cut -d'x' -f2)"
+    screen_width="$( printf '%s' "$screen_size" | awk -F'x' '{ printf $1 }')"
+    screen_height="$(printf '%s' "$screen_size" | awk -F'x' '{ printf $2 }')"
     
     if [ "$((video_width + video_position_x))" -gt "$screen_width"  ] 
     then
@@ -148,10 +148,10 @@ get_region() {
         exit_program 'slop returned wrong values'
     fi
     
-    video_position_x="$(printf '%s' "$screen_region" | cut -d' ' -f1)"
-    video_position_y="$(printf '%s' "$screen_region" | cut -d' ' -f2)"
-    video_width="$(     printf '%s' "$screen_region" | cut -d' ' -f3)"
-    video_height="$(    printf '%s' "$screen_region" | cut -d' ' -f4)"
+    video_position_x="$(printf '%s' "$screen_region" | awk '{ printf $1 }')"
+    video_position_y="$(printf '%s' "$screen_region" | awk '{ printf $2 }')"
+    video_width="$(     printf '%s' "$screen_region" | awk '{ printf $3 }')"
+    video_height="$(    printf '%s' "$screen_region" | awk '{ printf $4 }')"
     
     # change video width and height if not a multiple of 8
     check_dimension "$video_width"  || adjust_dimension 'width'

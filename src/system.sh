@@ -53,7 +53,7 @@ cleanup() {
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ] 
     then
-        output_filesize="$(du -k "${savedir}/${output_file}" | cut -f1)"
+        output_filesize="$(du -k "${savedir}/${output_file}" | awk '{ printf $1 }')"
         
         [ "$output_filesize" -eq '0' ] && rm -f "${savedir}/${output_file}"
     fi

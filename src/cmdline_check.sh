@@ -35,10 +35,10 @@ check_cmd_line() {
         [ "$video_posi_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --position (-p) option'
     else
         # preparations for check_dimension() and check_screen()
-        video_position_x="$(printf '%s' "$video_position" | cut -d',' -f1)"
-        video_position_y="$(printf '%s' "$video_position" | cut -d',' -f2)"
-        video_width="$(     printf '%s' "$video_size"     | cut -d'x' -f1)"
-        video_height="$(    printf '%s' "$video_size"     | cut -d'x' -f2)"
+        video_position_x="$(printf '%s' "$video_position" | awk -F',' '{ printf $1 }')"
+        video_position_y="$(printf '%s' "$video_position" | awk -F',' '{ printf $2 }')"
+        video_width="$(     printf '%s' "$video_size"     | awk -F'x' '{ printf $1 }')"
+        video_height="$(    printf '%s' "$video_size"     | awk -F'x' '{ printf $2 }')"
         
         if [ "$video_size_setted" = 'true' ] 
         then
@@ -304,18 +304,18 @@ check_cmd_line() {
                } &&
                [ "$format" = 'mp4' ] 
             then
-                ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | cut -d' ' -f3)"
+                ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | awk '{ printf $3 }')"
                 
                 if {
                        printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
                        ! {
-                             [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f1)" -ge '3' ] &&
-                             [ "$(printf '%s' "$ffmpeg_version" | cut -d'.' -f2)" -ge '4' ] ;
+                             [ "$(printf '%s' "$ffmpeg_version" | awk -F'.' '{ printf $1 }')" -ge '3' ] &&
+                             [ "$(printf '%s' "$ffmpeg_version" | awk -F'.' '{ printf $2 }')" -ge '4' ] ;
                          } ;
                    } ||
                    {
                        printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-                       ! [ "$(printf '%s' "$ffmpeg_version" | cut -d'-' -f2)" -ge '86119' ] ;
+                       ! [ "$(printf '%s' "$ffmpeg_version" | awk -F'-' '{ printf $2 }')" -ge '86119' ] ;
                    }
                 then
                     msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
