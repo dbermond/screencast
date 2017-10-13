@@ -1,0 +1,41 @@
+## screencast
+Interface to record a X11 desktop
+Copyright 2015-2017 Daniel Bermond
+https://github.com/dbermond/screencast/
+
+### Installation instructions
+
+**screencast** is a POSIX-compliant shell script, so thre is nothing to build
+in terms of binary files.
+
+But the source code is splitted in modules for easy maintenance. The final
+program is intented to be a single script file, instead of a main script that
+loads the modules. This allows an easier development, deployment, testing,
+debugging, installation and redistribution.
+
+Being such, the script needs to be "built" from the modules in order to create
+the intended final program. A Makefile is provided for this. A simple
+installation procedure would be:
+```
+$ make
+$ sudo make install
+```
+
+The provided Makefile supports the `DESTDIR` variable for staged
+installations. Other common variables are also supported for the `install`
+target, like `PREFIX`, `BINDIR`, `DOCDIR` and `MANDIR`. Bash-completion
+directory can be changed with the `BCOMPDIR` variable. For example:
+```
+$ make
+$ sudo make \
+         DESTDIR='./pkg' \
+         PREFIX='/usr' \
+         BCOMPDIR='/usr/share/bash-completion/completions' \
+         install
+```
+
+### Uninstall
+
+Use the make `uninstall` target. It also supports the same variables of the
+`install` target. For proper uninstallation, these variables must be used
+with the same values used in the `install` target.
