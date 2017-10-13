@@ -32,7 +32,7 @@ show_header() {
     then
         if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
         then
-            exit_program "--version (-V) option can be used only alone"
+            exit_program '--version (-V) option can be used only alone'
         fi
     fi
     
@@ -51,7 +51,7 @@ show_help() {
     then
         if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
         then
-            exit_program "--help (-h) option can be used only alone"
+            exit_program '--help (-h) option can be used only alone'
         fi
     fi
     
@@ -110,7 +110,7 @@ show_list() {
     then
         if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
         then
-            exit_program "--list (-l) option can be used only alone"
+            exit_program '--list (-l) option can be used only alone'
         fi
     fi
     
