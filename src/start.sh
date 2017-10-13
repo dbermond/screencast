@@ -37,9 +37,6 @@ fi
 # message header (colored, will fallback to non-colored if no color support)
 msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
 
-show_header
-print_good 'initializing'
-
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ] 
 then
@@ -49,6 +46,9 @@ fi
 
 get_cmd_line "$@"
 shift "$shift_count" # destroy all arguments except a possible output filename
+
+show_header
+print_good 'initializing'
 
 # check if a X session is running
 [ -z "$DISPLAY" ] && exit_program 'it seems that a X session is not running'
