@@ -60,7 +60,7 @@ show_help() {
     printf '\n'
     printf '%s\n' 'Usage: screencast [options] <output>'
     printf '%s\n' '                  [options] -u'
-    printf '\n'
+    printf '%s\n' '                  [options] -L <URL>'
     printf 'Options:\n'
     printf '%s\n' "  -s, --size=NxN            video size (resolution) [${video_size}]"
     printf '%s\n' "  -p, --position=N,N        recording position (screen XY topleft offsets) [${video_position}]"
