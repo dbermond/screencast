@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 NAME    := screencast
-RELEASE := v1.4.0
+RELEASE := v1.4.0.next
 
 # source directory
 SOURCE_DIR   := src
@@ -144,7 +144,7 @@ $(NAME): $(SOURCE_FILES)
 	
 	@# set program version
 	@printf '%s\n' 'setting program version'
-	@sed -i "s/^$(NAME)_version=.*/$(NAME)_version='$(VERSION)'/" $(NAME)
+	@sed -i "s/^$(NAME)_version=$$/$(NAME)_version='$(VERSION)'/" $(NAME)
 	
 	@# set script file to be executable
 	@ chmod a+x $(NAME)
