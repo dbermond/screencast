@@ -335,12 +335,12 @@ randomstr() {
 
     else
         print_good 'generating random string with legacy method' >&2
-        rnd="$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
+        rnd="$(awk 'BEGIN { srand(); printf "%d\n", (rand() * 10^8) }')"
         
         while [ "$(printf '%s' "$rnd" | wc -m)" -lt "$1" ] 
         do
             sleep 1
-            rnd="${rnd}$(awk 'BEGIN{srand(); printf "%d\n",(rand() * 10^8)}')"
+            rnd="${rnd}$(awk 'BEGIN { srand(); printf "%d\n", (rand() * 10^8) }')"
         done
         
         printf '%s' "$rnd" | cut -c-"$1"

@@ -67,7 +67,7 @@ check_lossless_component() {
                 elif [ "$component" = "$last_component" ] 
                 then
                     previous_components="$(printf '%s' "$previous_components" | sed 's/,[[:space:]]$//')"
-                    last_word="$(          printf '%s' "$previous_components" | awk '{print $NF}')"
+                    last_word="$(          printf '%s' "$previous_components" | awk '{ print $NF }')"
                     previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]${last_word}$/ or ${last_word}/")"
                 fi
                 
