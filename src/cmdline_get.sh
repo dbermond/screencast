@@ -225,7 +225,7 @@ get_cmd_line() {
                 fi
                 ;;
             --vaapi-device=?*)
-                vaapi_device="$2"
+                vaapi_device="${1#*=}"
                 vaapi_device_setted='true'
                 ;;
             --vaapi-device=)
