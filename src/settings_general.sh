@@ -69,6 +69,7 @@ webcam_rate_setted='false'   # if webcam fps     was setted by cmd line with -R
 fixed_length_setted='false'  # if fixed length   was setted by cmd line with -x
 pngoptimizer_setted='false'  # if png optimizer  was setted by cmd line with -g
 outputdir_setted='false'     # if output dir     was setted by cmd line with -o
+tmpdir_setted='false'        # if tmp dir        was setted by cmd line with -t
 
 # audio settings
 audio_input='default'        # audio input

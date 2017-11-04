@@ -135,6 +135,38 @@ check_cmd_line() {
         # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
         
+        if [ "$outputdir_setted" = 'true' ] 
+        then
+            # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
+            if printf '%s' "$savedir" | grep -Eq '^\.\.[/]?.*'
+            then
+                savedir="$(printf '%s' "$savedir" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+                savedir="${savedir%/}" # remove ending '/' if present
+                
+            # output dir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
+            elif printf '%s' "$savedir" | grep -Eq '^\.[/]?.*'
+            then
+                savedir="$(printf '%s' "$savedir" | sed "s|^\.|$(pwd)|")"
+                savedir="${savedir%/}" # remove ending '/' if present
+            fi
+        fi
+        
+        if [ "$tmpdir_setted" = 'true' ] 
+        then
+            # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
+            if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
+            then
+                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+                tmpdir="${tmpdir%/}" # remove ending '/' if present
+                
+            # tmpdir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
+            elif printf '%s' "$tmpdir" | grep -Eq '^\.[/]?.*'
+            then
+                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\.|$(pwd)|")"
+                tmpdir="${tmpdir%/}" # remove ending '/' if present
+            fi
+        fi
+        
         current_time="$(date +%Y-%m-%d_%H.%M.%S)" # get current time for placing on filename
         
         # set the output filename

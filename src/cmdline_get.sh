@@ -550,7 +550,7 @@ get_cmd_line() {
                     then
                         command_error '--output-dir (-o)'
                     else
-                        savedir="${2%/}" # remove ending '/' if present
+                        savedir="$2"
                         outputdir_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
@@ -560,7 +560,6 @@ get_cmd_line() {
                 ;;
             --output-dir=?*)
                 savedir="${1#*=}"
-                savedir="${savedir%/}" # remove ending '/' if present
                 outputdir_setted='true'
                 ;;
             --output-dir=)
@@ -574,7 +573,8 @@ get_cmd_line() {
                     then
                         command_error '--tmp-dir (-t)'
                     else
-                        tmpdir="${2%/}" # remove ending '/' if present
+                        tmpdir="$2"
+                        tmpdir_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
@@ -583,7 +583,7 @@ get_cmd_line() {
                 ;;
             --tmp-dir=?*)
                 tmpdir="${1#*=}"
-                tmpdir="${tmpdir%/}" # remove ending '/' if present
+                tmpdir_setted='true'
                 ;;
             --tmp-dir=)
                 command_error '--tmp-dir (-t)'
