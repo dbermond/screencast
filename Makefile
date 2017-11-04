@@ -28,14 +28,14 @@ settings_format.sh
 settings_audio.sh
 settings_video.sh
 settings_effects.sh
+cmdline_get.sh
+cmdline_check.sh
 system.sh
 message.sh
 error.sh
 show.sh
-cmdline_get.sh
 screen.sh
 effects.sh
-cmdline_check.sh
 set_configs.sh
 ffmpeg.sh
 record.sh
