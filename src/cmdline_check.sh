@@ -183,19 +183,20 @@ check_cmd_line() {
                       (when not using '-u', set output directory with the output filename)"
         fi
         
-        # if user specified a save directory directly with output filename that
-        # is different than the current working directory, use it
-        [ "$(dirname "$1")" != '.' ] && savedir="$(dirname "$1")"
-        
-        # if user specified './' as a save directory directly with output
-        # filename, use it ('pwd' makes the program output more clear)
-        printf '%s' "$1" | grep -q '^\./.*' && savedir="$(pwd)"
-        
-        # the case that user specifies '../' as a save directory directly with
-        # output filename is already covered above in
-        # 'if [ "$(dirname "$1")" != "." ]'. here we just use 'dirname "$(pwd)"'
-        # to make the program output more clear
-        printf '%s' "$1" | grep -q '^\.\./.*' && savedir="$(printf '%s' "$(dirname "$(pwd)")")"
+        # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
+        if printf '%s' "$1" | grep -q '^\.\./.*'
+        then
+            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+            
+        # output dir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
+        elif printf '%s' "$1" | grep -q '^\./.*'
+        then
+            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\.|$(pwd)|")"
+            
+        # any other output dir format, no need of special handling 
+        else
+            savedir="$(dirname "$1")"
+        fi
         
         # set the output filename and get the container format (only if saving the output video)
         if [ "$saving_output" = 'true' ] 
