@@ -100,6 +100,7 @@ $(NAME): $(SOURCE_FILES)
 	@desc_line="$$(sed -n '/$(COPYRIGHT_LINE)/=' $(NAME))" ; \
 	 desc_line=$$((desc_line - 2)) ; \
 	 sed -i "$${desc_line}s/^.*$$/$(HEADER_DESC)/" $(NAME)
+	@sed -i "s/2015-[0-9]\{4\}/2015-$$(date +%Y)/" $(NAME)
 	
 	@# add source files
 	@for file in $(SOURCE_FILES) ; \
