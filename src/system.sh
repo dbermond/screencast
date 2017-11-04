@@ -32,13 +32,9 @@ cleanup() {
     
     if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
     then
-        # delete temporary (lossless) video
-        if [ "$keep_video" = 'false' ] 
-        then
-            rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
-            
         # rename temporary (lossless) video to a better name if user selected to keep it (--keep/-K)
-        else
+        if [ "$keep_video" = 'true' ] 
+        then
             if [ "$auto_filename" = 'true' ] 
             then
                 mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
@@ -47,6 +43,10 @@ cleanup() {
                 mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
                       "${tmpdir}/${output_file%.*}-lossless.${rec_extension}"
             fi
+            
+        # delete temporary (lossless) video
+        else
+            rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
         fi
     fi
     

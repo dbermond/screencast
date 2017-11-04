@@ -127,8 +127,24 @@ check_cmd_line() {
     fi
     
     # checks and settings based on usage of the '-u' option
-    if [ "$auto_filename" = 'false' ] 
+    if [ "$auto_filename" = 'true' ] 
     then
+        # do not allow to use '-u' when not saving the live streaming
+        [ "$saving_output" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
+        
+        # if '-u' is set, don't allow to set an output filename in command line
+        [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
+        
+        current_time="$(date +%Y-%m-%d_%H.%M.%S)" # get current time for placing on filename
+        
+        # set the output filename
+        if [ "$streaming" = 'true' ] 
+        then
+            output_file="screencast-livestreaming-${current_time}.${format}"
+        else
+            output_file="screencast-${current_time}.${format}"
+        fi
+    else
         # check if user have not entered an output filename after the options (only if saving the output video)
         [ "$#" -eq '0' ] && [ "$saving_output" = 'true' ] && exit_program "you must enter an output filename with extension (or use '-u')"
         
@@ -186,22 +202,6 @@ check_cmd_line() {
         then
             output_file="$(basename "$1")" # set the output filename
             format="${output_file##*.}"    # set container format (output filename extension)
-        fi
-    else
-        # do not allow to use '-u' when not saving the live streaming
-        [ "$saving_output" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
-        
-        # if '-u' is set, don't allow to set an output filename in command line
-        [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
-        
-        current_time="$(date +%Y-%m-%d_%H.%M.%S)" # get current time for placing on filename
-        
-        # set the output filename
-        if [ "$streaming" = 'true' ] 
-        then
-            output_file="screencast-livestreaming-${current_time}.${format}"
-        else
-            output_file="screencast-${current_time}.${format}"
         fi
     fi
     
@@ -386,10 +386,8 @@ check_cmd_line() {
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             fi
             
-            if [ "$audio_input_setted" = 'false' ] 
+            if [ "$audio_input_setted" = 'true' ] 
             then
-                print_warn "auto setting audio input device to 'default'"
-            else
                 # check if user entered a valid PulseAudio input source
                 case "$audio_input" in
                     default)
@@ -414,6 +412,8 @@ check_cmd_line() {
                         fi
                         ;;
                 esac
+            else
+                print_warn "auto setting audio input device to 'default'"
             fi
         
         # no ALSA ou PulseAudio support available in ffmpeg

@@ -182,11 +182,11 @@ fix_pass_duration() {
 set_vaapi_qsv() {
     case "$video_encoder" in
         *_vaapi)
-            if [ "$one_step" = 'false' ] 
+            if [ "$one_step" = 'true' ] 
             then
-                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
-            else
                 [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
+            else
+                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
             fi
             
             ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=nv12,hwupload"}"

@@ -111,11 +111,11 @@ videocodec_settings_x264() {
     then
         video_encode_codec='libx264 -crf 30 -preset veryfast'
     else
-        if [ "$one_step" = 'false' ] 
+        if [ "$one_step" = 'true' ] 
         then
-            video_encode_codec='libx264 -crf 21 -preset veryslow'
-        else
             video_encode_codec='libx264 -crf 21 -preset ultrafast'
+        else
+            video_encode_codec='libx264 -crf 21 -preset veryslow'
         fi
     fi
 }
@@ -139,22 +139,22 @@ videocodec_settings_h264_qsv() {
 videocodec_settings_x265() {
     check_component libx265 encoder || component_error libx265 'video encoder' true
     
-    if [ "$one_step" = 'false' ] 
+    if [ "$one_step" = 'true' ] 
     then
-        video_encode_codec='libx265 -crf 25 -preset veryslow'
-    else
         video_encode_codec='libx265 -crf 25 -preset ultrafast'
+    else
+        video_encode_codec='libx265 -crf 25 -preset veryslow'
     fi
 }
 
 videocodec_settings_kvazaar() {
     check_component libkvazaar encoder || component_error libkvazaar 'video encoder' true
     
-    if [ "$one_step" = 'false' ] 
+    if [ "$one_step" = 'true' ] 
     then
-        video_encode_codec='libkvazaar -kvazaar-params preset=veryslow'
-    else
         video_encode_codec='libkvazaar -kvazaar-params preset=ultrafast'
+    else
+        video_encode_codec='libkvazaar -kvazaar-params preset=veryslow'
     fi
 }
 
