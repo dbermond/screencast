@@ -33,6 +33,7 @@ https://github.com/dbermond/screencast/
 - fix: possible wrong generation of random string
 - fix: eliminated a FFmpeg warning with the shine audio encoder
 - fix: vp8 pixel format in the lossless recording step
+- fix: single and double dot folder hardlinks with additional path in output filename not working
 - code restructuration for a better readability and maintenance
 - documentation updates, improvements and fixes
 - minor improvements and fixes
