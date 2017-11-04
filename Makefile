@@ -97,10 +97,9 @@ $(NAME): $(SOURCE_FILES)
 	@# add header
 	@printf '%s\n' 'adding copyright and license header'
 	@sed -n '/$(HEADER_START)/,/$(HEADER_END)/p' $(SOURCE_MAIN) > $(NAME)
-	@description='$(HEADER_DESC)' ; \
-	 desc_line="$$(sed -n '/$(COPYRIGHT_LINE)/=' $(NAME))" ; \
+	@desc_line="$$(sed -n '/$(COPYRIGHT_LINE)/=' $(NAME))" ; \
 	 desc_line=$$((desc_line - 2)) ; \
-	 sed -i "$${desc_line}s/^.*$$/$${description}/" $(NAME)
+	 sed -i "$${desc_line}s/^.*$$/$(HEADER_DESC)/" $(NAME)
 	
 	@# add source files
 	@for file in $(SOURCE_FILES) ; \
