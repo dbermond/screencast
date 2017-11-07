@@ -236,7 +236,8 @@ check_cmd_line() {
             output_file="$(basename "$1")" # set the output filename
             format="${output_file##*.}"    # set container format (output filename extension)
         fi
-    fi
+        
+    fi # end: else clause of: if [ "$auto_filename" = 'true' ]
     
     # check if user entered a valid container format
     if [ "$format_setted" = 'true' ] ||
