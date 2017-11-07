@@ -110,7 +110,7 @@ check_cmd_line() {
     fi
     
     # check if user is saving an output video (if not, modify the corresponding control variable)
-    [ "$streaming"  = 'true' ] && [ "$keep_video" = 'false' ] && saving_output='false'
+    [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && saving_output='false'
     
     # check if user entered a valid fade effect (-e/--fade)
     if [ "$fade_setted" = 'true' ] 
@@ -120,7 +120,7 @@ check_cmd_line() {
         if printf '%s' "$supported_fade" | grep -q "^${fade}$"
         then
             # do not allow to use fade effect when using a one step process (-1/--one-step)
-            [ "$one_step"  = 'true' ] && [ "$fade" != 'none' ] && exit_program 'fade effect (-e) cannot be used when using a one step process (-1)'
+            [ "$one_step" = 'true' ] && [ "$fade" != 'none' ] && exit_program 'fade effect (-e) cannot be used when using a one step process (-1)'
         else
             exit_program "'${fade}' is not a valid fade effect for this program"
         fi
