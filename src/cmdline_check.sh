@@ -112,6 +112,10 @@ check_cmd_line() {
     # check if user is saving an output video (if not, modify the corresponding control variable)
     [ "$streaming" = 'true' ] && [ "$keep_video" = 'false' ] && saving_output='false'
     
+    # do not allow to use -K/--keep with -1/--one-step
+    [ "$one_step" = 'true' ] && [ "$keep_video" = 'true' ] &&
+        exit_program "'-K' is set but there is no temporary video to keep when using --one-step"
+    
     # check if user entered a valid fade effect (-e/--fade)
     if [ "$fade_setted" = 'true' ] 
     then
