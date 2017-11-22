@@ -1,4 +1,4 @@
-#!/bin/dash
+#!/bin/sh
 
 # checksc - POSIX-compliant shell script to execute screencast tests
 #
