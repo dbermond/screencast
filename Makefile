@@ -89,7 +89,7 @@ else
     
 endif
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all clean distclean check shellcheck shellcheck-src shellcheck-modules shellcheck-all install uninstall
 
 all: $(NAME)
 
@@ -157,6 +157,17 @@ clean:
 	fi
 
 distclean: clean
+
+check: all
+	@./test/checksc
+
+shellcheck: all
+	@shellcheck ./$(NAME)
+
+shellcheck-src shellcheck-modules:
+	@shellcheck ./src/*
+
+shellcheck-all: shellcheck-src shellcheck
 
 install: all
 	install -D -m755 $(NAME)                 $(DESTDIR)$(BINDIR)/$(NAME)

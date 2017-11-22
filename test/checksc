@@ -1,0 +1,521 @@
+#!/bin/dash
+
+# checksc - POSIX-compliant shell script to execute screencast tests
+#
+# Copyright (c) 2015-2017 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+tests_per_group='10'   # number of tests for each group
+scfile='./screencast'  # screencast file to modify and execute
+outdir='test/output'   # output directory for resulting test videos
+
+supported_shells='bash dash yash ksh zsh'
+
+# screencast splitted command and options
+if [ -n "$AUDIOIN" ] 
+then
+    audio_input="--audio-input=${AUDIOIN}"
+fi
+audio_encoder='--audio-encoder=aac'
+video_encoder_soft='--video-encoder=x264'
+video_encoder_vaapi='--video-encoder=h264_vaapi'
+common_cmd="${scfile} --no-notifications --fixed=3.0 ${audio_input} ${audio_encoder} ${video_encoder_soft}"
+live="--live-streaming="
+keep="--keep"
+one_step='--one-step'
+fade_vol='--fade=both --volume-factor=1.5'
+wmark='--watermark=www.mysitehere.com'
+wcam="--webcam --webcam-input=${WEBCAM}"
+
+#########################################
+#              functions                #
+#########################################
+
+# cleanup function: restore screencast script to original state and
+#                   delete duplicated live streaming videos
+cleanup() {
+    # restore original shell (shebang) in screencast script file
+    [ -n "$USESHELL" ] && ./tools/chshell "$original_shell" >/dev/null 2>&1
+    
+    # restore original border value in screencast script file
+    sed -i 's/-show_region[[:space:]]0/-show_region 1/' "$scfile"
+    
+    # delete duplicated live streaming videos
+    for shell in $test_shells
+    do
+        [ "$shell" = 'sh' ] && [ -h "$shell" ] && shell="$pointed_shell" && last_shell="$pointed_shell"
+        
+        rm -f "$(printf '%s' "$out_live_save_soft_noeffects"   | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_soft_wmark"       | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_soft_wcam"        | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_soft_wcam_wmark"  | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_vaapi_noeffects"  | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_vaapi_wmark"      | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_vaapi_wcam"       | sed "s|/${last_shell}|/${shell}-url|")"
+        rm -f "$(printf '%s' "$out_live_save_vaapi_wcam_wmark" | sed "s|/${last_shell}|/${shell}-url|")"
+    done
+}
+
+# check_requirements function - check if needed programs are installed
+check_requirements() {
+    # some optional dependencies must be installed for making the tests
+    for requirement in ffmpeg xdpyinfo ffprobe bc convert magick
+    do
+        if ! command -v "$requirement" >/dev/null 2>&1
+        then
+            if [ "$requirement"  = 'magick' ] 
+            then
+                # in this case IM6 was found because 'convert' goes first
+                magick() {
+                    convert "$@"
+                }
+                continue
+            else
+                [ "$requirement"  = 'convert' ] && requirement='ImageMagick'
+                
+                printf '%s\n' "error: '${requirement}' is needed for tests but was not found"  >&2
+                exit 1
+            fi
+        fi
+    done
+}
+
+# set_tests function: set tests command line, including output filenames
+set_tests() {
+    ####################
+    # output filenames #
+    ####################
+    
+    # software-based video encoder, two steps process, no live streaming, no webcam (always executed)
+    out_offline_2st_soft_noeffects="${outdir}/${shell}-offline-twosteps-software-noeffects.mp4"
+    out_offline_2st_soft_fade_vol="${outdir}/${shell}-offline-twosteps-software-fade-vol.mp4"
+    out_offline_2st_soft_wmark="${outdir}/${shell}-offline-twosteps-software-watermark.mp4"
+    out_offline_2st_soft_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-watermark-fade-vol.mp4"
+    
+    # software-based video encoder, one step process, no live streaming, no webcam (always executed)
+    out_offline_1st_soft_noeffects="${outdir}/${shell}-offline-onestep-software-noeffects.mp4"
+    out_offline_1st_soft_wmark="${outdir}/${shell}-offline-onestep-software-watermark.mp4"
+    
+    # software-based video encoder, live streaming without saving, no webcam (always executed)
+    out_live_nosave_soft_noeffects="${outdir}/${shell}-live-nosave-software-noeffects.flv"
+    out_live_nosave_soft_wmark="${outdir}/${shell}-live-nosave-software-watermark.flv"
+    
+    # software-based video encoder, live streaming with saving, no webcam (always executed)
+    out_live_save_soft_noeffects="${outdir}/${shell}-live-save-software-noeffects.flv"
+    out_live_save_soft_wmark="${outdir}/${shell}-live-save-software-watermark.flv"
+    
+    # software-based video encoder, with webcam (executed only if webcam is enabled)
+    if [ "$use_webcam" = 'true' ] 
+    then
+        # two steps process, no live streaming
+        out_offline_2st_soft_wcam="${outdir}/${shell}-offline-twosteps-software-webcam.mp4"
+        out_offline_2st_soft_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-fade-vol.mp4"
+        out_offline_2st_soft_wcam_wmark="${outdir}/${shell}-offline-twosteps-software-webcam-watermark.mp4"
+        out_offline_2st_soft_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-watermark-fade-vol.mp4"
+        
+        # one step process, no live streaming
+        out_offline_1st_soft_wcam="${outdir}/${shell}-offline-onestep-software-webcam.mp4"
+        out_offline_1st_soft_wcam_wmark="${outdir}/${shell}-offline-onestep-software-webcam-watermark.mp4"
+        
+        # live streaming without saving
+        out_live_nosave_soft_wcam="${outdir}/${shell}-live-nosave-software-webcam.flv"
+        out_live_nosave_soft_wcam_wmark="${outdir}/${shell}-live-nosave-software-webcam-watermark.flv"
+        
+        # live streaming with saving
+        out_live_save_soft_wcam="${outdir}/${shell}-live-save-software-webcam-noeffects.flv"
+        out_live_save_soft_wcam_wmark="${outdir}/${shell}-live-save-software-webcam-watermark.flv"
+    fi
+    
+    # VAAPI video encoder (executed only if vaapi is enabled)
+    if [ "$use_vaapi" = 'true' ] 
+    then
+        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed)
+        out_offline_2st_vaapi_noeffects="${outdir}/${shell}-offline-twosteps-vaapi-noeffects.mp4"
+        out_offline_2st_vaapi_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-fade-vol.mp4"
+        out_offline_2st_vaapi_wmark="${outdir}/${shell}-offline-twosteps-vaapi-watermark.mp4"
+        out_offline_2st_vaapi_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-watermark-fade-vol.mp4"
+        
+        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed)
+        out_offline_1st_vaapi_noeffects="${outdir}/${shell}-offline-onestep-vaapi-noeffects.mp4"
+        out_offline_1st_vaapi_wmark="${outdir}/${shell}-offline-onestep-vaapi-watermark.mp4"
+        
+        # VAAPI video encoder, live streaming without saving, no webcam (always executed)
+        out_live_nosave_vaapi_noeffects="${outdir}/${shell}-live-nosave-vaapi-noeffects.flv"
+        out_live_nosave_vaapi_wmark="${outdir}/${shell}-live-nosave-vaapi-watermark.flv"
+        
+        # VAAPI video encoder, live streaming with saving, no webcam (always executed)
+        out_live_save_vaapi_noeffects="${outdir}/${shell}-live-save-vaapi-noeffects.flv"
+        out_live_save_vaapi_wmark="${outdir}/${shell}-live-save-vaapi-watermark.flv"
+        
+        # VAAPI video encoder, with webcam (executed only if webcam is enabled)
+        if [ "$use_webcam" = 'true' ] 
+        then
+            # two steps process, no live streaming
+            out_offline_2st_vaapi_wcam="${outdir}/${shell}-offline-twosteps-vaapi-webcam.mp4"
+            out_offline_2st_vaapi_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-fade-vol.mp4"
+            out_offline_2st_vaapi_wcam_wmark="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark.mp4"
+            out_offline_2st_vaapi_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark-fade-vol.mp4"
+            
+            # one step process, no live streaming
+            out_offline_1st_vaapi_wcam="${outdir}/${shell}-offline-onestep-vaapi-webcam.mp4"
+            out_offline_1st_vaapi_wcam_wmark="${outdir}/${shell}-offline-onestep-vaapi-webcam-watermark.mp4"
+            
+            # live streaming without saving
+            out_live_nosave_vaapi_wcam="${outdir}/${shell}-live-nosave-vaapi-webcam.flv"
+            out_live_nosave_vaapi_wcam_wmark="${outdir}/${shell}-live-nosave-vaapi-webcam-watermark.flv"
+            
+            # live streaming with saving
+            out_live_save_vaapi_wcam="${outdir}/${shell}-live-save-vaapi-webcam-noeffects.flv"
+            out_live_save_vaapi_wcam_wmark="${outdir}/${shell}-live-save-vaapi-webcam-watermark.flv"
+        fi
+    fi
+    
+    ################################
+    # screencast complete commands #
+    ################################
+    
+    # software-based video encoder, two steps process, no live streaming, no webcam (always executed)
+    test01="${common_cmd} ${out_offline_2st_soft_noeffects}"
+    test02="${common_cmd} ${fade_vol} ${out_offline_2st_soft_fade_vol}"
+    test03="${common_cmd} ${wmark} ${out_offline_2st_soft_wmark}"
+    test04="${common_cmd} ${wmark} ${fade_vol} ${out_offline_2st_soft_wmark_fade_vol}"
+    
+    # software-based video encoder, one step process, no live streaming, no webcam (always executed)
+    test05="${common_cmd} ${one_step} ${out_offline_1st_soft_noeffects}"
+    test06="${common_cmd} ${one_step} ${wmark} ${out_offline_1st_soft_wmark}"
+    
+    # software-based video encoder, live streaming without saving, no webcam (always executed)
+    test07="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_soft_noeffects" | sed "s|/${shell}|/${shell}-url|")"
+    test08="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+    
+    # software-based video encoder, live streaming with saving, no webcam (always executed)
+    test09="${common_cmd} ${live}$(printf '%s' "$out_live_save_soft_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_noeffects}"
+    test10="${common_cmd} ${live}$(printf '%s' "$out_live_save_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wmark}"
+    
+    # software-based video encoder, with webcam (executed only if webcam is enabled)
+    if [ "$use_webcam" = 'true' ] 
+    then
+        # two steps process, no live streaming
+        test11="${common_cmd} ${wcam} ${out_offline_2st_soft_wcam}"
+        test12="${common_cmd} ${wcam} ${fade_vol} ${out_offline_2st_soft_wcam_fade_vol}"
+        test13="${common_cmd} ${wcam} ${wmark} ${out_offline_2st_soft_wcam_wmark}"
+        test14="${common_cmd} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_soft_wcam_wmark_fade_vol}"
+        
+        # one step process, no live streaming
+        test15="${common_cmd} ${wcam} ${one_step} ${out_offline_1st_soft_wcam}"
+        test16="${common_cmd} ${wcam} ${one_step} ${wmark} ${out_offline_1st_soft_wcam_wmark}"
+        
+        # live streaming without saving
+        test17="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam"       | sed "s|/${shell}|/${shell}-url|")"
+        test18="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+        
+        # live streaming with saving
+        test19="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_wcam}"
+        test20="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wcam_wmark}"
+    fi
+    
+    # VAAPI video encoder (executed only if vaapi is enabled)
+    if [ "$use_vaapi" = 'true' ] 
+    then
+        # change video encoder to VAAPI
+        common_cmd="$(printf '%s' "$common_cmd" | sed "s|${video_encoder_soft}|${video_encoder_vaapi} -A ${VAAPI}|")"
+        
+        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed)
+        test21="${common_cmd} ${out_offline_2st_vaapi_noeffects}"
+        test22="${common_cmd} ${fade_vol} ${out_offline_2st_vaapi_fade_vol}"
+        test23="${common_cmd} ${wmark} ${out_offline_2st_vaapi_wmark}"
+        test24="${common_cmd} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wmark_fade_vol}"
+        
+        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed)
+        test25="${common_cmd} ${one_step} ${out_offline_1st_vaapi_noeffects}"
+        test26="${common_cmd} ${one_step} ${wmark} ${out_offline_1st_vaapi_wmark}"
+        
+        # VAAPI video encoder, live streaming without saving, no webcam (always executed)
+        test27="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|")"
+        test28="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+        
+        # VAAPI video encoder, live streaming with saving, no webcam (always executed)
+        test29="${common_cmd} ${live}$(printf '%s' "$out_live_save_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_noeffects}"
+        test30="${common_cmd} ${live}$(printf '%s' "$out_live_save_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wmark}"
+        
+        # VAAPI video encoder, with webcam (executed only if webcam is enabled)
+        if [ "$use_webcam" = 'true' ] 
+        then
+            # two steps process, no live streaming
+            test31="${common_cmd} ${wcam} ${out_offline_2st_vaapi_wcam}"
+            test32="${common_cmd} ${wcam} ${fade_vol} ${out_offline_2st_vaapi_wcam_fade_vol}"
+            test33="${common_cmd} ${wcam} ${wmark} ${out_offline_2st_vaapi_wcam_wmark}"
+            test34="${common_cmd} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wcam_wmark_fade_vol}"
+            
+            # one step process, no live streaming
+            test35="${common_cmd} ${wcam} ${one_step} ${out_offline_1st_vaapi_wcam}"
+            test36="${common_cmd} ${wcam} ${one_step} ${wmark} ${out_offline_1st_vaapi_wcam_wmark}"
+            
+            # live streaming without saving
+            test37="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam "      | sed "s|/${shell}|/${shell}-url|")"
+            test38="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+            
+            # live streaming with saving
+            test39="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_wcam}"
+            test40="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wcam_wmark}"
+        fi
+        
+        # change video encoder back to software-base (for the next shell tests)
+        common_cmd="$(printf '%s' "$common_cmd" | sed "s|${video_encoder_vaapi}[[:space:]]-A[[:space:]]${VAAPI}|${video_encoder_soft}|")"
+    fi
+}
+
+# run_tests function: execute the tests
+run_tests() {
+    shell_fullpath=$(sed -n '1p' "$scfile" | sed 's/#!//')
+    
+    printf '%s' "${color_green}using shell: ${shell_fullpath}${color_off}"
+    
+    if [ "$shell_fullpath" = '/bin/sh' ] && [ -h "$shell_fullpath" ] 
+    then
+        # get symlink target in POSIX
+        # shellcheck disable=SC2012
+        pointed_shell="$(ls -dl /bin/sh | awk '{ printf $NF }')"
+        shell="$pointed_shell"
+        
+        printf '%s\n' "${color_green} (points to '${shell}')${color_off}"
+    else
+        printf '\n'
+    fi
+    
+    set_tests
+    
+    # cicle through the tests for a single shell (POSIX)
+    for cmd in "$test01" "$test02" "$test03" "$test04" "$test05" "$test06" "$test07" "$test08" "$test09" "$test10" \
+               "$test11" "$test12" "$test13" "$test14" "$test15" "$test16" "$test17" "$test18" "$test19" "$test20" \
+               "$test21" "$test22" "$test23" "$test24" "$test25" "$test26" "$test27" "$test28" "$test29" "$test30" \
+               "$test31" "$test32" "$test33" "$test34" "$test35" "$test36" "$test37" "$test38" "$test39" "$test40"
+    do
+        [ -z "$cmd" ] && continue # skip undefined/null tests
+        
+        printf '%s' "${color_green}running test [$(printf '%03d' "$n")/$(printf '%03d' "$total")]...${color_off} "
+        
+        if $cmd >/dev/null 2>&1
+        then
+            printf '%s\n' "${color_green}passed${color_off}"
+        else
+            failed_cdms="$(printf '%s\n%s' "$failed_cdms" "${color_red}${shell}:${color_off} ${cmd}")"
+            
+            printf '%s\n' "${color_red}failed!${color_off}"
+            
+            errors="$((errors + 1))"
+        fi
+        
+        n="$((n + 1))"
+    done
+}
+
+#########################################
+#            program start              #
+#########################################
+
+trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
+
+check_requirements
+
+# check for color output support
+if command -v tput >/dev/null 2>&1
+then
+    color_off="$(tput sgr0)"
+    color_bold="$(tput bold)"
+    color_red="${color_bold}$(tput setaf 1)"
+    color_green="$(tput setaf 2)"
+    color_yellow="${color_bold}$(tput setaf 3)"
+fi
+
+# enable some options if the executing shell is zsh
+if [ -n "$ZSH_VERSION" ] 
+then
+    if command -v setopt >/dev/null 2>&1
+    then
+        setopt SH_WORD_SPLIT # enable variable word splitting
+    else
+        printf '%s\n' "${color_red}error:${color_off} script appears to be running in zsh but setopt was not found, aborting tests"
+    fi
+fi
+
+# check if a X session is running
+if [ -z "$DISPLAY" ] 
+then
+    printf '%s\n' "${color_red}error:${color_off} it seems that a X session is not running, aborting tests"
+    exit 1
+fi
+
+# use another shell(s) if selected
+if [ -n "$USESHELL" ] 
+then
+    original_shell="$(sed -n '1p' "$scfile" | sed 's|^#!/bin/||')"
+    
+    if [ "$USESHELL" = 'all' ] 
+    then
+        # check for installed shells
+        for shell in $supported_shells
+        do
+            if command -v "$shell" >/dev/null 2>&1
+            then
+                test_shells="${test_shells} ${shell}"
+            else
+                printf '%s\n' "${color_yellow}warning:${color_off} '${shell}' was not found (skipping '${shell}' tests)"
+            fi
+        done
+        
+        if [ -z "$supported_shells" ] 
+        then
+            if command -v /bin/sh >/dev/null 2>&1
+            then
+                test_shells='sh'
+            else
+                printf '%s\n' "${color_red}error:${color_off} no supported shells were found, aborting tests"  >&2
+                exit 1
+            fi
+        fi
+        
+        test_shells="$(printf '%s' "$test_shells" | sed 's/^[[:space:]]*//')"
+    else
+        if ! command -v "$USESHELL" >/dev/null 2>&1
+        then
+            printf '%s\n' "${color_red}error:${color_off} '${USESHELL}' shell not found, aborting tests"  >&2
+            exit 1
+        fi
+        
+        ./tools/chshell "$USESHELL" >/dev/null 2>&1
+        
+        test_shells="$USESHELL"
+    fi
+else
+    test_shells="$(sed -n '1p' "$scfile" | sed 's@^#!.*/@@')"
+fi
+
+sed -i 's/-show_region[[:space:]]1/-show_region 0/' "$scfile" # do not show border on tests
+
+# check if webcam tests are enabled
+if [ -n "$WEBCAM" ] 
+then
+    if [ -c "$WEBCAM" ] 
+    then
+        use_webcam='true'
+        webcam_info="${color_green}yes (${WEBCAM})${color_off}"
+    else
+        printf '%s\n' "${color_red}error:${color_off} '${WEBCAM}' is not a valid webcam input device on this system, aborting tests"
+        exit 1
+    fi
+else
+    use_webcam='false'
+    webcam_info="${color_red}no${color_off}"
+fi
+
+# check if vaapi tests are enabled
+if [ -n "$VAAPI" ] 
+then
+    if [ -c "$VAAPI" ] 
+    then
+        use_vaapi='true'
+        vaapi_info="${color_green}yes (${VAAPI})${color_off}"
+    else
+        printf '%s\n' "${color_red}error:${color_off} '${VAAPI}' is not a valid DRM render node (VAAPI device) on this system, aborting tests"
+        exit 1
+    fi
+else
+    use_vaapi='false'
+    vaapi_info="${color_red}no${color_off}"
+fi
+
+printf '%s\n' "${color_green}webcam tests:${color_off} ${webcam_info}"
+printf '%s\n' "${color_green}VAAPI  tests:${color_off} ${vaapi_info}"
+printf '%s\n' "${color_green}testing sheells: ${test_shells}${color_off}"
+printf '%s\n' "${color_green}starting screencast tests${color_off}"
+
+errors='0' # failed tests counter
+n='1'      # all    tests counter
+
+# set total number of tests
+total='0'
+
+for shell in $test_shells
+do
+    total="$((total + tests_per_group))"
+        
+    [ "$use_webcam" = 'true' ] && total="$((total + tests_per_group))"
+done
+
+[ "$use_vaapi"  = 'true' ] && total="$((total * 2))"
+
+# output directory creation and checks
+! [ -e "$outdir" ] && mkdir -p "$outdir"
+
+if ! [ -d "$outdir" ] 
+then
+    printf '%s\n' "${color_red}error:${color_off} '${outdir}' is not a directory, aborting tests"
+    exit 1
+fi
+
+if ! [ -w "$outdir" ] 
+then
+    printf '%s\n' "${color_red}error:${color_off} no write permission for directory '${outdir}', aborting tests"
+    exit 1
+fi
+
+# delete previous tests
+# shellcheck disable=SC2010
+if ls -1qA "${outdir}/" | grep -q '.'
+then
+    rm -f "${outdir}/"*.mp4
+    rm -f "${outdir}/"*.flv
+fi
+
+# run tests for all detected shells (can take very long depending on the settings)
+if [ "$USESHELL" = 'all' ] 
+then
+    for shell in $test_shells
+    do
+        last_shell="$shell"
+        
+        ./tools/chshell "$shell" >/dev/null 2>&1
+        
+        run_tests
+    done
+    
+# run test for a single shell
+else
+    last_shell="$shell"
+    run_tests
+fi
+
+# results
+if [ "$errors" -eq '0' ] 
+then
+    printf '\n%s\n' "${color_green}Result: all tests passed successfully!${color_off}"
+else
+    printf '\n'
+    printf '%s\n' "${color_green}Result:${color_off}"
+    printf '%s\n' "  ${color_green}- $(printf '%03d' $((total - errors))) test(s) passed successfully${color_off}"
+    printf '%s\n' "  ${color_red}- $(printf '%03d' "$errors") test(s) failed${color_off}"
+    printf '\n'
+    printf '%s\n' "${color_red}The following commands failed:${color_off}"
+    
+    IFS='
+'
+    for cmd in $failed_cdms
+    do
+        printf '%s\n' "  ${color_red}- ${cmd}${color_off}"
+    done
+    
+    IFS=' '
+fi

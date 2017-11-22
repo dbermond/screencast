@@ -39,3 +39,24 @@ $ sudo make \
 Use the make `uninstall` target. It also supports the same variables of the
 `install` target. For proper uninstallation, these variables must be used
 with the same values used in the `install` target.
+
+### Tests
+
+**screencast** tests can be performed with the make `check` target. This
+target supports the following environment variables:
+
+- `AUDIOIN`: select the audio input device for tests
+- `WEBCAM`: include webcam tests, using the specified webcam input device
+- `VAAPI`: include VAAPI tests, using the specified DRM render node
+- `USESHELL`: use the specified shell to perform the tests (the special value
+`all` will perfom tests with the shells bash, dash, yash, ksh, and zsh)
+
+Test example:
+```
+$ make \
+    AUDIOIN='pulse' \
+    WEBCAM='/dev/video0' \
+    VAAPI='/dev/dri/renderD129' \
+    USESHELL='all' \
+    check
+```
