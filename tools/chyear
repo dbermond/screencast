@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# chyear - change copyright year of all files in directory
+#
+# Copyright (c) 2015-2017 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+initial_year='2015'
+
+if [ "$#" -eq '0' ] ||
+   [ "$#" -gt '1' ] 
+then
+    printf '%s\n' 'error: invalid usage'
+    printf '%s\n' '       use --help for help'
+    exit 1
+fi
+
+if [ "$1" = '-h'     ] ||
+   [ "$1" = '--help' ] 
+then
+    printf '%s\n' 'chyear - change copyright year of all files in directory'
+    printf '%s\n' 'Usage: chyear <year>'
+    exit 0
+fi
+
+if printf '%s' "$1" | grep -q '[[:digit:]]\{4\}'
+then
+    actual_year="$1"
+else
+    printf '%s\n' "error: '${1}' is not a valid argument for this program"
+    exit 1
+fi
+
+if command -v tput >/dev/null 2>&1
+then
+    color_off="$(tput sgr0)"
+    color_green="$(tput setaf 2)"
+    color_blue="$(tput setaf 12)"
+fi
+
+for file in * .* */*
+do
+    ! [ -f "$file" ] && continue
+    
+    printf '%s' "Parsing file '${file}'...  "
+    
+    if grep -q "${initial_year}-[[:digit:]]\{4\}" "$file"
+    then
+        sed -i "s/${initial_year}-[[:digit:]]\{4\}/${initial_year}-${actual_year}/g" "$file"
+        
+        printf '%s\n' "${color_green:-}changed to '${initial_year}-${actual_year}'${color_off:-}"
+    else
+        printf '%s\n' "${color_blue:-}no changes${color_off:-}"
+    fi
+done

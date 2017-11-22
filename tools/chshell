@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# chshell - change shell in screencast shebang
+#
+# Copyright (c) 2015-2017 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+if [ "$#" -eq '0' ] ||
+   [ "$#" -gt '1' ] 
+then
+    printf '%s\n' 'error: invalid usage'
+    printf '%s\n' '       use --help for help'
+    exit 1
+fi
+
+if [ "$1" = '-h'     ] ||
+   [ "$1" = '--help' ] 
+then
+    printf '%s\n' 'chshell - change shell in screencast shebang'
+    printf '%s\n' 'Usage: chshell <shell>'
+    exit 0
+fi
+
+if [ -f './screencast' ] 
+then
+    sed -i "1s|^#!/bin/.*$|#!/bin/${1}|" ./screencast
+    
+    case "$1" in
+        ash|bash|csh|dash|ksh|posh|sh|tcsh|yash|zsh)
+            :
+            ;;
+        *)
+            printf '%s\n' "warning: '${1}' is not a commonly used shell (screencast may not work with it)"
+            ;;
+    esac
+    
+    printf '%s\n' "Changed screencast shell to '${1}'"
+else
+    printf '%s\n' "error: no 'screencast' file to process, please run make first"
+    exit 1
+fi
