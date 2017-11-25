@@ -69,7 +69,7 @@ SHELLCHECK_LINE := ^\#[[:space:]]shellcheck[[:space:]]disable=.*
 # skip these global shellcheck ignores (should be used only in module files)
 SHELLCHECK_SKIP := SC2034 SC2154
 
-# correctly assign program version (development/git or release)
+# correctly assign program version (development/git or stable release)
 ifeq ($(shell [ -d '.git' ] ; printf '%s' "$$?"), 0)
     
     # git "repository name"
@@ -78,6 +78,12 @@ ifeq ($(shell [ -d '.git' ] ; printf '%s' "$$?"), 0)
     ifeq ($(REPONAME), $(NAME))
     
         VERSION := $(shell git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
+        
+        ifneq (,$(findstring .r0., $(VERSION)))
+        
+            VERSION := $(RELEASE)
+            
+        endif
         
     else
         $(error you are not in a $(NAME) git repository)
