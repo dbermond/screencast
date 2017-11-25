@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC1091
 
 # checksc - POSIX-compliant shell script to execute screencast tests
 #
@@ -364,6 +365,35 @@ then
     printf '%s\n' "${color_red}error:${color_off} it seems that a X session is not running, aborting tests" >&2
     exit 1
 fi
+
+# get the components supported by the detected ffmpeg build
+# shellcheck disable=SC2034
+ffmpeg_formats="$(ffmpeg -formats -v quiet)" # muxers   and demuxers (formats)
+# shellcheck disable=SC2034
+ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
+
+. src/message.sh
+. src/error.sh
+. src/ffmpeg.sh
+
+# check for some required ffmpeg components
+for component in mp4 flv aac x264
+do
+    case "$component" in
+        mp4|flv)
+            type='muxer'
+            ;;
+        aac|264)
+            type='encoder'
+            ;;
+    esac
+    
+    if ! check_component "$component" "$type"
+    then
+        printf '%s\n' "${color_red}error:${color_off} the detected ffmpeg build has no support for '${component}' ${type}, aborting tests..." >&2
+        exit 1
+    fi
+done
 
 # use another shell(s) if selected
 if [ -n "$USESHELL" ] 
