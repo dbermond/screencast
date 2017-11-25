@@ -157,11 +157,18 @@ $(NAME): $(SOURCE_FILES)
 	@# set script file to be executable
 	@ chmod a+x $(NAME)
 
-clean distclean:
+clean:
 	@if [ -f '$(NAME)' ] ; \
 	then \
 	    printf '%s\n' "removing file '$(NAME)'" ; \
 	    rm -f $(NAME) ; \
+	fi
+
+distclean: clean
+	@if [ -d './test/output' ] ; \
+	then \
+	    printf '%s\n' "removing tests output directory './test/output/'" ; \
+	    rm -rf ./test/output ; \
 	fi
 
 check: all
