@@ -95,7 +95,9 @@ else
     
 endif
 
-.PHONY: all clean distclean check shellcheck shellcheck-src shellcheck-modules shellcheck-all install uninstall
+.PHONY: all clean distclean check install uninstall
+
+.PHONY: shellcheck shellcheck-src shellcheck-modules shellcheck-tests shellcheck-tools shellcheck-all
 
 all: $(NAME)
 
@@ -155,14 +157,12 @@ $(NAME): $(SOURCE_FILES)
 	@# set script file to be executable
 	@ chmod a+x $(NAME)
 
-clean:
+clean distclean:
 	@if [ -f '$(NAME)' ] ; \
 	then \
 	    printf '%s\n' "removing file '$(NAME)'" ; \
 	    rm -f $(NAME) ; \
 	fi
-
-distclean: clean
 
 check: all
 	@./test/checksc
@@ -171,9 +171,15 @@ shellcheck: all
 	@shellcheck ./$(NAME)
 
 shellcheck-src shellcheck-modules:
-	@shellcheck ./src/*
+	@shellcheck ./src/*.sh
 
-shellcheck-all: shellcheck-src shellcheck
+shellcheck-tests:
+	@shellcheck ./test/checksc
+
+shellcheck-tools:
+	@shellcheck ./tools/*
+
+shellcheck-all: shellcheck shellcheck-src shellcheck-tests shellcheck-tools
 
 install: all
 	install -D -m755 $(NAME)                 $(DESTDIR)$(BINDIR)/$(NAME)
