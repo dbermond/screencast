@@ -85,7 +85,7 @@ check_requirements() {
             else
                 [ "$requirement"  = 'convert' ] && requirement='ImageMagick'
                 
-                printf '%s\n' "error: '${requirement}' is needed for tests but was not found"  >&2
+                printf '%s\n' "error: '${requirement}' is needed for tests but was not found" >&2
                 exit 1
             fi
         fi
@@ -347,14 +347,14 @@ then
     then
         setopt SH_WORD_SPLIT # enable variable word splitting
     else
-        printf '%s\n' "${color_red}error:${color_off} script appears to be running in zsh but setopt was not found, aborting tests"
+        printf '%s\n' "${color_red}error:${color_off} script appears to be running in zsh but setopt was not found, aborting tests" >&2
     fi
 fi
 
 # check if a X session is running
 if [ -z "$DISPLAY" ] 
 then
-    printf '%s\n' "${color_red}error:${color_off} it seems that a X session is not running, aborting tests"
+    printf '%s\n' "${color_red}error:${color_off} it seems that a X session is not running, aborting tests" >&2
     exit 1
 fi
 
@@ -382,7 +382,7 @@ then
             then
                 test_shells='sh'
             else
-                printf '%s\n' "${color_red}error:${color_off} no supported shells were found, aborting tests"  >&2
+                printf '%s\n' "${color_red}error:${color_off} no supported shells were found, aborting tests" >&2
                 exit 1
             fi
         fi
@@ -391,7 +391,7 @@ then
     else
         if ! command -v "$USESHELL" >/dev/null 2>&1
         then
-            printf '%s\n' "${color_red}error:${color_off} '${USESHELL}' shell not found, aborting tests"  >&2
+            printf '%s\n' "${color_red}error:${color_off} '${USESHELL}' shell not found, aborting tests" >&2
             exit 1
         fi
         
@@ -413,7 +413,7 @@ then
         use_webcam='true'
         webcam_info="${color_green}yes (${WEBCAM})${color_off}"
     else
-        printf '%s\n' "${color_red}error:${color_off} '${WEBCAM}' is not a valid webcam input device on this system, aborting tests"
+        printf '%s\n' "${color_red}error:${color_off} '${WEBCAM}' is not a valid webcam input device on this system, aborting tests" >&2
         exit 1
     fi
 else
@@ -429,7 +429,7 @@ then
         use_vaapi='true'
         vaapi_info="${color_green}yes (${VAAPI})${color_off}"
     else
-        printf '%s\n' "${color_red}error:${color_off} '${VAAPI}' is not a valid DRM render node (VAAPI device) on this system, aborting tests"
+        printf '%s\n' "${color_red}error:${color_off} '${VAAPI}' is not a valid DRM render node (VAAPI device) on this system, aborting tests" >&2
         exit 1
     fi
 else
@@ -462,13 +462,13 @@ done
 
 if ! [ -d "$outdir" ] 
 then
-    printf '%s\n' "${color_red}error:${color_off} '${outdir}' is not a directory, aborting tests"
+    printf '%s\n' "${color_red}error:${color_off} '${outdir}' is not a directory, aborting tests" >&2
     exit 1
 fi
 
 if ! [ -w "$outdir" ] 
 then
-    printf '%s\n' "${color_red}error:${color_off} no write permission for directory '${outdir}', aborting tests"
+    printf '%s\n' "${color_red}error:${color_off} no write permission for directory '${outdir}', aborting tests" >&2
     exit 1
 fi
 
