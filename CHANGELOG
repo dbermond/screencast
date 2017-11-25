@@ -20,6 +20,7 @@ https://github.com/dbermond/screencast/
 - added predefined special values for watermark and webcam position: topleft/tl, topright/tr, bottomleft/bl and bottomright/br
 - added checks for all the needed FFmpeg encoders, decoders, muxers and demuxers to avoid failures
 - added check  for the selected audio input name to avoid failures
+- added tests
 - faster VP9 encoding speed with software-based encoder (vp9)
 - only show a setting as 'default' if not setted at command line
 - changed some notification icons
