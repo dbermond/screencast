@@ -26,7 +26,13 @@ supported_shells='bash dash yash ksh zsh'
 # screencast splitted command and options
 if [ -n "$AUDIOIN" ] 
 then
-    audio_input="--audio-input=${AUDIOIN}"
+    if [ "$AUDIOIN" = 'none' ] 
+    then
+        printf '%s\n' "error: tests must be performed with audio input enabled (AUDIOIN cannot be 'none')" >&2
+        exit 1
+    else
+        audio_input="--audio-input=${AUDIOIN}"
+    fi
 fi
 audio_encoder='--audio-encoder=aac'
 video_encoder_soft='--video-encoder=x264'
