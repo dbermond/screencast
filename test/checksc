@@ -348,6 +348,7 @@ then
         setopt SH_WORD_SPLIT # enable variable word splitting
     else
         printf '%s\n' "${color_red}error:${color_off} script appears to be running in zsh but setopt was not found, aborting tests" >&2
+        exit 1
     fi
 fi
 
