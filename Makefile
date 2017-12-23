@@ -19,7 +19,7 @@ NAME    := screencast
 RELEASE := v1.4.0.next
 
 # source directory
-SOURCE_DIR   := src
+SOURCE_DIR := src
 
 # source files (the order of files is important for creating the final script)
 define SOURCE_FILES :=
