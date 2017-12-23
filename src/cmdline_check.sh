@@ -144,13 +144,13 @@ check_cmd_line() {
             # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
             if printf '%s' "$savedir" | grep -Eq '^\.\.[/]?.*'
             then
-                savedir="$(printf '%s' "$savedir" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+                savedir="$(printf '%s' "$savedir" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
                 savedir="${savedir%/}" # remove ending '/' if present
                 
             # output dir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
             elif printf '%s' "$savedir" | grep -Eq '^\.[/]?.*'
             then
-                savedir="$(printf '%s' "$savedir" | sed "s|^\.|$(pwd)|")"
+                savedir="$(printf '%s' "$savedir" | sed "s|^\\.|$(pwd)|")"
                 savedir="${savedir%/}" # remove ending '/' if present
             fi
         fi
@@ -160,13 +160,13 @@ check_cmd_line() {
             # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
             if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
             then
-                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
                 tmpdir="${tmpdir%/}" # remove ending '/' if present
                 
             # tmpdir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
             elif printf '%s' "$tmpdir" | grep -Eq '^\.[/]?.*'
             then
-                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\.|$(pwd)|")"
+                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.|$(pwd)|")"
                 tmpdir="${tmpdir%/}" # remove ending '/' if present
             fi
         fi
@@ -222,12 +222,12 @@ check_cmd_line() {
         # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
         if printf '%s' "$1" | grep -q '^\.\./.*'
         then
-            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\.\.|$(dirname "$(pwd)")|")"
+            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
             
         # output dir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
         elif printf '%s' "$1" | grep -q '^\./.*'
         then
-            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\.|$(pwd)|")"
+            savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\\.|$(pwd)|")"
             
         # any other output dir format, no need of special handling 
         else

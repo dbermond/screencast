@@ -56,9 +56,9 @@ do
     
     printf '%s' "Parsing file '${file}'...  "
     
-    if grep -q "${initial_year}-[[:digit:]]\{4\}" "$file"
+    if grep -q "${initial_year}-[[:digit:]]\\{4\\}" "$file"
     then
-        sed -i "s/${initial_year}-[[:digit:]]\{4\}/${initial_year}-${actual_year}/g" "$file"
+        sed -i "s/${initial_year}-[[:digit:]]\\{4\\}/${initial_year}-${actual_year}/g" "$file"
         
         printf '%s\n' "${color_green:-}changed to '${initial_year}-${actual_year}'${color_off:-}"
     else
