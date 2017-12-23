@@ -139,6 +139,7 @@ check_cmd_line() {
         # if '-u' is set, don't allow to set an output filename in command line
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
         
+        # show full path when using dot folder hardlinks in -o/--output-dir
         if [ "$outputdir_setted" = 'true' ] 
         then
             # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
@@ -152,22 +153,6 @@ check_cmd_line() {
             then
                 savedir="$(printf '%s' "$savedir" | sed "s|^\\.|$(pwd)|")"
                 savedir="${savedir%/}" # remove ending '/' if present
-            fi
-        fi
-        
-        if [ "$tmpdir_setted" = 'true' ] 
-        then
-            # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
-            if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
-            then
-                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
-                tmpdir="${tmpdir%/}" # remove ending '/' if present
-                
-            # tmpdir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
-            elif printf '%s' "$tmpdir" | grep -Eq '^\.[/]?.*'
-            then
-                tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.|$(pwd)|")"
-                tmpdir="${tmpdir%/}" # remove ending '/' if present
             fi
         fi
         
@@ -242,6 +227,23 @@ check_cmd_line() {
         fi
         
     fi # end: else clause of: if [ "$auto_filename" = 'true' ]
+    
+    # show full path when using dot folder hardlinks in -t/--tmp-dir
+    if [ "$tmpdir_setted" = 'true' ] 
+    then
+        # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
+        if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
+        then
+            tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
+            tmpdir="${tmpdir%/}" # remove ending '/' if present
+            
+        # tmpdir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
+        elif printf '%s' "$tmpdir" | grep -Eq '^\.[/]?.*'
+        then
+            tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.|$(pwd)|")"
+            tmpdir="${tmpdir%/}" # remove ending '/' if present
+        fi
+    fi
     
     # check if user entered a valid container format
     if [ "$format_setted" = 'true' ] ||
