@@ -393,7 +393,7 @@ get_cmd_line() {
                 webcam_input="${1#*=}"
                 webcam_input_setted='true'
                 ;;
-            --audio-input=)
+            --webcam-input=)
                 command_error '--webcam-input (-I)'
                 ;;
             
@@ -458,11 +458,11 @@ get_cmd_line() {
                     command_error '--webcam-fps (-R)'
                 fi
                 ;;
-            --webcam-position=?*)
+            --webcam-fps=?*)
                 webcam_rate="${1#*=}"
                 webcam_rate_setted='true'
                 ;;
-            --webcam-position=)
+            --webcam-fps=)
                 command_error '--webcam-fps (-R)'
                 ;;
             
