@@ -106,7 +106,7 @@ _screencast() {
             return 0
             ;;
         -g|--png-optimizer)
-            local png_optimizers='none optipng opt-png truepng pingo'
+            local png_optimizers='none optipng oxipng opt-png truepng pingo'
             COMPREPLY=( $(compgen -W "$png_optimizers" -- $cur) )
             return 0
             ;;

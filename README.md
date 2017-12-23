@@ -261,7 +261,7 @@ Use PNG optimizer *NAME* and *advdef* (advancecomp) in the PNG image generated b
 
 default: `none`
 
-supported ones: `truepng`, `pingo`, `optipng`, `opt-png`, `none`
+supported ones: `optipng`, `oxipng`, `opt-png`, `truepng`, `pingo`, `none`
 
 #### `-o, --output-dir=DIR`
 

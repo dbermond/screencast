@@ -49,7 +49,7 @@ get_supported_fade() {
 }
 
 get_supported_pngoptmz() {
-    supported_pngoptmz="$(printf 'none\noptipng\nopt-png\ntruepng\npingo')"
+    supported_pngoptmz="$(printf 'none\noptipng\noxipng\nopt-png\ntruepng\npingo')"
 }
 
 get_fade_settings() {
@@ -77,6 +77,10 @@ get_pngoptmz_settings_pingo() {
 
 get_pngoptmz_settings_optipng() {
     pngoptmz_settings='-o 7'
+}
+
+get_pngoptmz_settings_oxipng() {
+    pngoptmz_settings='-o 6 --strip safe'
 }
 
 get_pngoptmz_settings_advdef() {
