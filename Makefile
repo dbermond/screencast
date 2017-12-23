@@ -21,26 +21,24 @@ RELEASE := v1.4.0.next
 # source directory
 SOURCE_DIR := src
 
-# source files (the order of files is important for creating the final script)
-define SOURCE_FILES :=
-settings_general.sh
-settings_format.sh
-settings_audio.sh
-settings_video.sh
-settings_effects.sh
-cmdline_get.sh
-cmdline_check.sh
-system.sh
-message.sh
-error.sh
-show.sh
-screen.sh
-effects.sh
-set_configs.sh
-ffmpeg.sh
-record.sh
-start.sh
-endef
+# source files (the order of files in '$(SOURCE_FILES)' is important)
+SOURCE_FILES := settings_general.sh
+SOURCE_FILES += settings_format.sh
+SOURCE_FILES += settings_audio.sh
+SOURCE_FILES += settings_video.sh
+SOURCE_FILES += settings_effects.sh
+SOURCE_FILES += cmdline_get.sh
+SOURCE_FILES += cmdline_check.sh
+SOURCE_FILES += system.sh
+SOURCE_FILES += message.sh
+SOURCE_FILES += error.sh
+SOURCE_FILES += show.sh
+SOURCE_FILES += screen.sh
+SOURCE_FILES += effects.sh
+SOURCE_FILES += set_configs.sh
+SOURCE_FILES += ffmpeg.sh
+SOURCE_FILES += record.sh
+SOURCE_FILES += start.sh
 SOURCE_FILES := $(addprefix $(SOURCE_DIR)/, $(SOURCE_FILES))
 SOURCE_MAIN  := $(SOURCE_DIR)/start.sh
 
