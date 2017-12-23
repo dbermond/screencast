@@ -49,7 +49,7 @@ BINDIR   := $(PREFIX)/bin
 DATADIR  := $(PREFIX)/share
 DOCDIR   := $(DATADIR)/doc
 MANDIR   := $(DATADIR)/man
-BCOMPDIR := $(CONFDIR)/bash_completion.d
+BCOMPDIR := $(DATADIR)/bash-completion/completions
 
 # shell commands
 PRINT_SCLINE_SRCFILE := head -n2 "$$file" | tail -n1
