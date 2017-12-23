@@ -15,6 +15,7 @@ https://github.com/dbermond/screencast/
 - added support for VP9 encoder on MP4 cotainer format (needs FFmpeg 3.4 or newer - or git master)
 - added support for Windows Media Audio and Video encoders (wma and wmv encoders)
 - added support for FFmpeg builds that do not have ALSA enabled, like the Fedora build from the RPM Fusion repository
+- added support for oxipng optimizer
 - added support for bash-completion
 - added video metadata information referencing the program
 - added predefined special values for watermark and webcam position: topleft/tl, topright/tr, bottomleft/bl and bottomright/br
