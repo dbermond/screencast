@@ -110,6 +110,10 @@ _screencast() {
             COMPREPLY=( $(compgen -W "$png_optimizers" -- $cur) )
             return 0
             ;;
+        -o|--output-dir|-t|--tmp-dir)
+            _filedir -d
+            return 0
+            ;;
     esac
 
     COMPREPLY=( $(compgen -W "$opts" -- $cur) )
