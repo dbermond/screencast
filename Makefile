@@ -70,24 +70,13 @@ SHELLCHECK_SKIP := SC2034 SC2154
 # correctly assign program version (development/git or stable release)
 ifeq ($(shell [ -d '.git' ] ; printf '%s' "$$?"), 0)
     
-    # git "repository name"
-    REPONAME := $(shell git remote -v 2>/dev/null | grep 'fetch' | head -n1 | awk '{ print $$2 }' | sed 's@.*/@@;s@\.git@@')
+    VERSION := $(shell git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
+
+    ifneq (,$(findstring .r0., $(VERSION)))
     
-    ifeq ($(REPONAME), $(NAME))
-    
-        VERSION := $(shell git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
-        
-        ifneq (,$(findstring .r0., $(VERSION)))
-        
-            VERSION := $(RELEASE)
-            
-        endif
-        
-    else
-        $(error you are not in a $(NAME) git repository)
+        VERSION := $(RELEASE)
         
     endif
-    
 else
     VERSION := $(RELEASE)
     
