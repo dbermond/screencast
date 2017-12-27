@@ -70,11 +70,12 @@ SHELLCHECK_SKIP := SC2034 SC2154
 # correctly assign program version (development/git or stable release)
 ifeq ($(shell [ -d '.git' ] ; printf '%s' "$$?"), 0)
     
-    VERSION := $(shell git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
-
     ifneq (,$(findstring .r0., $(VERSION)))
     
         VERSION := $(RELEASE)
+        
+    else
+        VERSION := $(shell git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
         
     endif
 else
