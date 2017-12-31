@@ -338,7 +338,7 @@ Show program version information.
     
         - `$ screencast -L <URL> -v h264_nvenc -K -u`
 
-- 1280x720 video from screen positon 200,234 , 30 fps, `mp3lame` audio encoder, `x265` video encoder, `mkv` container format, fade-in video effect, volume increase effect of 50%, small text watermark effect in bottom right video corner (using the default values for watermark size, position and font) and webcam overlay effect at top right video corner (using the default values for webcam input, size position and framerate):
+- 1280x720 video from screen positon 200,234 , 30 fps, `mp3lame` audio encoder, `x265` video encoder, `mkv` container format, fade-in video effect, volume increase effect of 50%, small text watermark effect in bottom right video corner (using the default values for watermark size, position and font) and webcam overlay effect at top right video corner (using the default values for webcam input, size, position and framerate):
 
     - `$ screencast -s 1280x720 -p 200,234 -r 30 -a mp3lame -v x265 -e in -m 1.5 -w www.mysitehere.com -W myvideo.mkv`
 
