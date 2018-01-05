@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# chver - change screencast release version
+#
+# Copyright (c) 2015-2018 Daniel Bermond < yahoo.com: danielbermond >
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+if [ "$#" -eq '0' ] ||
+   [ "$#" -gt '1' ] 
+then
+    printf '%s\n' 'error: invalid usage'
+    printf '%s\n' '       use --help for help'
+    exit 1
+fi
+
+if [ "$1" = '-h'     ] ||
+   [ "$1" = '--help' ] 
+then
+    printf '%s\n' 'chver - change screencast release version'
+    printf '%s\n' 'Usage: chver <version>'
+    printf '\n'
+    printf '%s\n' 'Special values for <version>:'
+    printf '%s\n' 'next, dev or devel: bump to development version'
+    exit 0
+fi
+
+if command -v tput >/dev/null 2>&1
+then
+    color_off="$(tput sgr0)"
+    color_green="$(tput setaf 2)"
+    color_blue="$(tput setaf 12)"
+fi
+
+if printf '%s' "$1" | grep -q '\([[:digit:]]*\.\)\{2\}[[:digit:]]*'
+then
+    version="$1"
+    
+    sed -i "8s/[[:alnum:]]*$/${version} - $(date +%Y-%m-%d)/" CHANGELOG
+    
+    printf '%s\n' "      CHANGELOG: ${color_green:-}changed version to ${color_blue:-}'$(sed -n '8p' CHANGELOG | \
+                                                                                         awk '{ print $3, $4, $5 }')'${color_off:-}"
+    
+    sed -i "s/RELEASE[[:space:]]:=[[:space:]].*$/RELEASE := v${version}/" Makefile
+    
+    sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $7 }')/${version}\"/" doc/screencast.1
+    
+elif [ "$1" = 'next' ] || [ "$1" = 'dev' ] || [ "$1" = 'devel' ] 
+then
+    version='next'
+    
+    sed -i '7G'                 CHANGELOG
+    sed -i '8i### version next' CHANGELOG
+    printf '%s\n' "      CHANGELOG: ${color_green:-}changed version to ${color_blue:-}'$(sed -n '8p' CHANGELOG | \
+                                                                                         awk '{ print $NF }')'${color_off:-}"
+    
+    sed -i '/RELEASE[[:space:]]:=[[:space:]].*$/s/$/\.next/' Makefile
+    
+    previous_version="$(sed -n '2p' doc/screencast.1 | awk '{ print $7 }' | sed 's/.$//')"
+    
+    sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $7 }')/${previous_version}.next\"/" doc/screencast.1
+    
+else
+    printf '%s\n' "error: '${1}' is not a valid argument for this program"
+    exit 1
+fi
+
+printf '%s\n' "       Makefile: ${color_green:-}changed version to ${color_blue:-}'$(grep 'RELEASE[[:space:]]:=[[:space:]].*$' Makefile | \
+                                                                           awk '{ print $NF }')'${color_off:-}"
+
+sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $4 }')/\"$(LANG='en_US.UTF.8' date +%B)/" doc/screencast.1
+sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $5 }')/$(date +%Y)\"/"                    doc/screencast.1
+
+printf '%s\n' "doc/screencast1: ${color_green:-}changed version to ${color_blue:-}'$(sed -n '2p' doc/screencast.1 | \
+                                                                                     awk '{ print $4, $5, $6, $7}')'${color_off:-}"
