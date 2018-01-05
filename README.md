@@ -415,7 +415,7 @@ Daniel Bermond
 [https://github.com/dbermond/screencast/](https://github.com/dbermond/screencast/)
 
 ## COPYRIGHT
-Copyright © 2015-2017 Daniel Bermond
+Copyright © 2015-2018 Daniel Bermond
 
 ## LICENSE
 GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
