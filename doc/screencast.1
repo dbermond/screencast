@@ -417,13 +417,15 @@ default: the local directory
 .TP
 \fB\-t\fR, \fB\-\-tmp\-dir\fR=\fIDIR\fR
 .RS
-Set temporary files to be placed in \fIDIR\fR. By default, the \fI/tmp\fR
-directory will be used for temporary files, which usually is a ramdisk
-filesystem in most systems. You may want to change it if you have limited RAM
-and/or are recording very long videos. Make sure to have enough free space in
-the specified directory.
+Set temporary files to be placed in \fIDIR\fR. By default, the
+\fI${XDG_CACHE_HOME}/screencast\fR directory will be used for temporary files
+(which usually points to \fI${HOME}/.cache\fR on most systems). If the
+\fI$XDG_CACHE_HOME\fR environment variable is not set, it will default to
+\fI${HOME}/.screencast\fR. Make sure to have enough free space in the
+specified directory.
 .PP
-default: /tmp
+default: \fI${XDG_CACHE_HOME}/screencast\fR (\fI${HOME}/.screencast\fR if the
+\fI$XDG_CACHE_HOME\fR environment variable is not set)
 .RE
 .TP
 \fB\-K\fR, \fB\-\-keep\fR

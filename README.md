@@ -271,9 +271,9 @@ default: the local directory
 
 #### `-t, --tmp-dir=DIR`
 
-Set temporary files to be placed in *DIR*. By default, the `/tmp` directory will be used for temporary files, which usually is a ramdisk filesystem in most systems. You may want to change it if you have limited RAM and/or are recording very long videos. Make sure to have enough free space in the specified directory.
+Set temporary files to be placed in *DIR*. By default, the `${XDG_CACHE_HOME}/screencast` directory will be used for temporary files (which usually points to `${HOME}/.cache` on most systems). If the `$XDG_CACHE_HOME` environment variable is not set, it will default to `${HOME}/.screencast`. Make sure to have enough free space in the specified directory.
 
-default: `/tmp`
+default: `${XDG_CACHE_HOME}/screencast` (`${HOME}/.screencast` if the `$XDG_CACHE_HOME` environment variable is not set)
 
 #### `-K, --keep`
 

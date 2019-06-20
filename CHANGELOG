@@ -6,6 +6,7 @@ https://github.com/dbermond/screencast/
 ### changelog
 
 ### version next
+- fix: security issue with temporary directory (https://github.com/dbermond/screencast/issues/3)
 
 ### version 1.5.0 - 2018-01-05
 - new feature: webcam overlay effect

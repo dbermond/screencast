@@ -71,7 +71,6 @@ then
 fi
 
 check_cmd_line "$@"
-check_dirs
 show_settings
 show_warnings
 

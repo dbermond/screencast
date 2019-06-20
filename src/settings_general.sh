@@ -28,7 +28,6 @@ screencast_website='https://github.com/dbermond/screencast/'
 
 # system related settings
 savedir="$(pwd)"             # path to save output files
-tmpdir='/tmp'                # path for temporary files
 queue_size='3096'            # ffmpeg thread queue size
 ffplay_volume='35'           # ffplay playback volume (0-100)
 finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'

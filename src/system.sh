@@ -48,6 +48,23 @@ cleanup() {
         else
             rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
         fi
+        
+        # delete temporary directory if it was created
+        if [ "$tmpdir_setted" = 'false' ] 
+        then
+            if [ "$keep_video" = 'true' ] 
+            then
+                # move the temporary video to the parent dir (without random string)
+                if [ "$auto_filename" = 'true' ] 
+                then
+                    mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
+                else
+                    mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
+                fi
+            fi
+            
+            rm -rf "$tmpdir"
+        fi
     fi
     
     # delete zero-sized output file in case some unexpected error occurred
@@ -261,51 +278,91 @@ check_alsa_short_name() {
     fi
 }
 
-# check_dirs function: check for valid output and tmp directories (-o and -t)
-#                      (will exit with error if any problem is encountered)
+# check_dir function: check for valid output and tmp directories (-o and -t)
+#                     (will exit with error if any problem is encountered)
+# arguments: $1 - the directory to check
+# return value: not relevant
+# return code (status): not relevant
+check_dir() {
+    # check if the entered $savedir/$tmpdir already exists and mkdir if not
+    if ! [ -e "$1" ] 
+    then
+        [ "$1" = "$tmpdir" ] && mode='-m 700'
+        
+        # shellcheck disable=SC2174
+        if ! mkdir -p $mode "$1"
+        then
+            case "$1" in
+                "$savedir")
+                    msg='output'
+                    ;;
+                "$tmpdir")
+                    msg='temporary files'
+                    ;;
+            esac
+            exit_program "failed to create ${msg} directory '${1}'"
+        fi
+    fi
+    
+    # check if the entered $savedir/$tmpdir is a directory
+    if [ -d "$1" ] 
+    then
+        # check if the entered $savedir/$tmpdir has write permission
+        if ! [ -w "$1" ] 
+        then
+            case "$1" in
+                "$savedir")
+                    msg='output'
+                    ;;
+                "$tmpdir")
+                    msg='temporary files'
+                    ;;
+            esac
+            exit_program "no write permission for ${msg} directory '${1}'"
+        fi
+    else
+        exit_program "'${1}' is not a directory"
+    fi
+}
+
+# set_tmpdir function: set a temporary directory for holding temporary files
+#                      (defauls to '${XDG_CACHE_HOME}/screencast', or to
+#                      '${HOME}/.screencast' if $XDG_CACHE_HOME is not set)
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
-check_dirs() {
-    for directory in "$savedir" "$tmpdir"
-    do
-        # check if the entered $savedir/$tmpdir already exists and mkdir if not
-        if ! [ -e "$directory" ] 
+set_tmpdir() {
+    if [ "$tmpdir_setted" = 'false' ] 
+    then
+        if [ -n "$XDG_CACHE_HOME" ] 
         then
-            if ! mkdir -p "$directory"
+            # shellcheck disable=SC2174
+            if mkdir -p -m 700 "${XDG_CACHE_HOME}/screencast"
             then
-                case "$directory" in
-                    "$savedir")
-                        msg='output'
-                        ;;
-                    "$tmpdir")
-                        msg='temporary files'
-                        ;;
-                esac
-                exit_program "failed to create ${msg} directory '${directory}'"
-            fi
-        fi
-        
-        # check if the entered $savedir/$tmpdir is a directory
-        if [ -d "$directory" ] 
-        then
-            # check if the entered $savedir/$tmpdir has write permission
-            if ! [ -w "$directory" ] 
-            then
-                case "$directory" in
-                    "$savedir")
-                        msg='output'
-                        ;;
-                    "$tmpdir")
-                        msg='temporary files'
-                        ;;
-                esac
-                exit_program "no write permission for ${msg} directory '${directory}'"
+                if command -v mktemp >/dev/null 2>&1
+                then
+                    tmpdir="$(mktemp -d "${XDG_CACHE_HOME}/screencast/tmp.XXXXXX")"
+                else
+                    tmpdir="${XDG_CACHE_HOME}/screencast/tmp.$(randomstr '20')"
+                fi
+            else
+                exit_program "failed to create directory '${XDG_CACHE_HOME}/screencast'"
             fi
         else
-            exit_program "'${directory}' is not a directory"
+            # shellcheck disable=SC2174
+            if mkdir -p -m 700 "${HOME}/.screencast"
+            then
+                if command -v mktemp >/dev/null 2>&1
+                then
+                    tmpdir="$(mktemp -d "${HOME}/.screencast/tmp.XXXXXX")"
+                else
+                    tmpdir="${HOME}/.screencast/tmp.$(randomstr '20')"
+                fi
+            else
+                exit_program "failed to create directory '${HOME}/.screencast'"
+            fi
         fi
-    done
+    fi
 }
 
 # randomstr function: generate a random string

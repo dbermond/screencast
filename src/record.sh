@@ -43,6 +43,8 @@ live_streaming() {
     # do the live stream and save the recorded content to an output file
     if [ "$saving_output" = 'true' ] 
     then
+        check_dir "$savedir"
+        
         ff_flag_global_header='-flags +global_header'
         ff_map='-map 1:v -map 0:a'
         ff_output="-f tee ${tee_faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
@@ -70,6 +72,7 @@ record_offline_one_step() {
     set_watermark
     set_vaapi_qsv
     set_volume
+    check_dir "$savedir"
     
     ff_audio_codec="$audio_encode_codec"
     ff_video_codec="$video_encode_codec"
@@ -96,6 +99,9 @@ record_offline_one_step() {
 # note: it will make the program exit with error if a recording or encoding error occurs
 record_offline_two_steps() {
     [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && ff_vfilter_option='-vf'
+    
+    set_tmpdir
+    check_dir "$tmpdir"
     
     rndstr_video="$(randomstr '20')" # random string for tmp video filename
     
