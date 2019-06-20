@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 NAME    := screencast
-RELEASE := v1.5.0
+RELEASE := v1.5.0.next
 
 # source directory
 SOURCE_DIR := src
