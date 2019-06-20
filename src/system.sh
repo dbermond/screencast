@@ -3,7 +3,7 @@
 
 # system.sh - system related functions for screencast
 #
-# Copyright (c) 2015-2019 Daniel Bermond < yahoo.com: danielbermond >
+# Copyright (c) 2015-2019 Daniel Bermond < gmail.com: danielbermond >
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
