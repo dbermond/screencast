@@ -50,7 +50,7 @@ then
     color_blue="$(tput setaf 12)"
 fi
 
-for file in * .* */*
+find . -name '.git' -prune -o -type f ! -name "$(printf '*\n*')" -print | while read -r file
 do
     ! [ -f "$file" ] && continue
     
