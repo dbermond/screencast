@@ -123,6 +123,12 @@ set_live() {
 set_watermark() {
     if [ "$watermark" = 'true' ] 
     then
+        if [ -z "$tmpdir" ] 
+        then
+            set_tmpdir
+            check_dir "$tmpdir"
+        fi
+        
         if create_watermark
         then
             ff_watermark_options="-framerate ${video_rate} -thread_queue_size ${queue_size} -i ${wmark_image}"

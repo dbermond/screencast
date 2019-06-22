@@ -48,23 +48,23 @@ cleanup() {
         else
             rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
         fi
-        
-        # delete temporary directory if it was created
-        if [ "$tmpdir_setted" = 'false' ] 
+    fi
+    
+    # delete temporary directory if it was created
+    if [ "$tmpdir_setted" = 'false' ] 
+    then
+        if [ "$keep_video" = 'true' ] 
         then
-            if [ "$keep_video" = 'true' ] 
+            # move the temporary video to the parent dir (without random string)
+            if [ "$auto_filename" = 'true' ] 
             then
-                # move the temporary video to the parent dir (without random string)
-                if [ "$auto_filename" = 'true' ] 
-                then
-                    mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
-                else
-                    mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
-                fi
+                mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
+            else
+                mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
             fi
-            
-            rm -rf "$tmpdir"
         fi
+            
+        rm -rf "$tmpdir"
     fi
     
     # delete zero-sized output file in case some unexpected error occurred
