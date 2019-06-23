@@ -421,7 +421,7 @@ do
     
     if ! check_component "$component" "$type"
     then
-        if [ "$component" = 'mp3lame' ] || [ "$component" = 'x264' ] 
+        if [ "$component" = 'flv' ] || [ "$component" = 'mp3lame' ] || [ "$component" = 'x264' ] 
         then
             tests_per_group='6'
             live_streaming='false'
