@@ -158,7 +158,7 @@ distclean: clean
 	    rm -rf ./test/output ; \
 	fi
 
-check: all
+test check: all
 	@./test/checksc
 
 shellcheck: all
