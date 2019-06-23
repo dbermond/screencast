@@ -342,9 +342,10 @@ if command -v tput >/dev/null 2>&1
 then
     color_off="$(tput sgr0)"
     color_bold="$(tput bold)"
-    color_red="${color_bold}$(tput setaf 1)"
     color_green="$(tput setaf 2)"
+    color_dark_yellow="$(tput setaf 3)"
     color_yellow="${color_bold}$(tput setaf 3)"
+    color_red="${color_bold}$(tput setaf 1)"
 fi
 
 # enable some options if the executing shell is zsh
@@ -455,14 +456,14 @@ then
     if [ -c "$WEBCAM" ] 
     then
         use_webcam='true'
-        webcam_info="${color_green}yes (${WEBCAM})${color_off}"
+        webcam_info="${color_green}enabled (${WEBCAM})${color_off}"
     else
         printf '%s\n' "${color_red}error:${color_off} '${WEBCAM}' is not a valid webcam input device on this system, aborting tests" >&2
         exit 1
     fi
 else
     use_webcam='false'
-    webcam_info="${color_red}no${color_off}"
+    webcam_info="${color_dark_yellow}disabled${color_off}"
 fi
 
 # check if vaapi tests are enabled
@@ -471,14 +472,14 @@ then
     if [ -c "$VAAPI" ] 
     then
         use_vaapi='true'
-        vaapi_info="${color_green}yes (${VAAPI})${color_off}"
+        vaapi_info="${color_green}enabled (${VAAPI})${color_off}"
     else
         printf '%s\n' "${color_red}error:${color_off} '${VAAPI}' is not a valid DRM render node (VAAPI device) on this system, aborting tests" >&2
         exit 1
     fi
 else
     use_vaapi='false'
-    vaapi_info="${color_red}no${color_off}"
+    vaapi_info="${color_dark_yellow}disabled${color_off}"
 fi
 
 printf '%s\n' "${color_green}webcam tests:${color_off} ${webcam_info}"
