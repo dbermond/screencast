@@ -26,6 +26,8 @@ _screencast() {
     
     opts='-s --size
           -p --position
+          -d --display
+          -b --border
           -S --select-region
           -r --fps
           -f --format
