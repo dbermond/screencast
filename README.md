@@ -213,7 +213,7 @@ default: `320x240`
 Set the webcam overlay position inside the video. This option can be used only with the [`-W`](#-w---webcam) option.
 
 - It accepts two types of values:
-    - `NxN`: X and Y offsets from the video top left corner (not from the screen)
+    - `N,N`: X and Y offsets from the video top left corner (not from the screen)
     - `PRE`: a predefined special value
 
 supported predefined special values: `topleft`/`tl`, `topright`/`tr`, `bottomleft`/`bl`, `bottomright`/`br`
