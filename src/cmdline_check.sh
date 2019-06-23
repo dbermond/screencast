@@ -28,6 +28,14 @@
 # return value: none
 # return code (status): not relevant
 check_cmd_line() {
+    if [ "$display_setted" = 'true' ] 
+    then
+        if ! printf '%s' "$display" | grep -Eq '^:[0-9]+(\.[0-9]+)?$'
+        then
+            exit_program "'${display}' is not a valid display value"
+        fi
+    fi
+    
     if [ "$select_region" = 'true' ] 
     then
         # do not allow to use -S/--select-region with -s/--size or -p/--position

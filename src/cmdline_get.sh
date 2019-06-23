@@ -90,6 +90,29 @@ get_cmd_line() {
                 command_error '--position (-p)'
                 ;;
             
+            -d|--display)
+                if [ -n "$2" ] 
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--display (-d)'
+                    else
+                        display="$2"
+                        display_setted='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--display (-d)'
+                fi
+                ;;
+            --display=?*)
+                display="${1#*=}"
+                display_setted='true'
+                ;;
+            --display=)
+                command_error '--display (-d)'
+                ;;
+            
             -b|--border)
                 if [ -n "$2" ] 
                 then

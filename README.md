@@ -6,6 +6,7 @@ screencast
 - [OPTIONS](#options)
     - [`-s, --size=NxN`](#-s---sizenxn)
     - [`-p, --position=N,N`](#-p---positionnn)
+    - [`-d, --display`](#-b---display)
     - [`-b, --border`](#-b---border)
     - [`-S, --select-region`](#-s---select-region)
     - [`-r, --fps=N`](#-r---fpsn)
@@ -84,6 +85,12 @@ default: `640x480`
 The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with [`-s`](#-s---sizenxn) option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: `0,0` (screen top left corner)
+
+#### `-d, --display=:N[.N]`
+
+The X server display where to record from. It can be also specified a screen where to record from by adding a dot followed by the screen number (`.N`). For example, a value of `:0.0` means display 0 and screen 0. If a screen number is not specified, it will defaul to `0` in FFmpeg. Make sure to specify display and screen numbers that are available on the system.
+
+default: `:0.0`
 
 #### `-b, --border=N`
 
@@ -399,9 +406,7 @@ The provided Makefile supports the common `DESTDIR`, `PREFIX`, `BINDIR`, `DOCDIR
 - The default settings for container format and audio/video encoders will produce a video that is ready to be uploaded to [YouTube](https://www.youtube.com/).
 
 ## LIMITATIONS
-**screencast** currently records only display `0` and screen `0` (`DISPLAY` value of `:0.0` - or `:0`), which is sufficient for single monitor environments. It may not produce the expected results when using a multi-monitor environment depending on your settings.
-
-It has been reported that **screencast** does not work under Wayland.
+It has been reported that **screencast** does not work under Wayland. This is a FFmpeg limitation, since FFmpeg currently does not support recording Wayland sessions.
 
 ## LINKS
 - FFmpeg:

@@ -69,6 +69,17 @@ be out of screen bounds).
 default: 0,0 (screen top left corner)
 .RE
 .TP
+\fB\-d\fR, \fB\-\-display\fR=\fI:N\fR[\fI.N\fR]
+.RS
+The X server display where to record from. It can be also specified a screen
+where to record from by adding a dot followed by the screen number (\fI.N\fR).
+For example, a value of \fI:0.0\fR means display 0 and screen 0. If a screen
+number is not specified, it will defaul to \fI0\fR in FFmpeg. Make sure to
+specify display and screen numbers that are available on the system.
+.PP
+default: :0.0
+.RE
+.TP
 \fB\-b\fR, \fB\-\-border\fR=\fIN\fR
 .RS
 Tickness of the screen region border delimiter. Valid values are \fI0\fR to
@@ -644,12 +655,9 @@ streaming websites like \fIYouTube\fR.
 The default settings for container format and audio/video encoders will produce
 a video that is ready to be uploaded to \fIYouTube\fR.
 .SH LIMITATIONS
-\fBscreencast\fR currently records only display \fI0\fR and screen \fI0\fR
-(\fIDISPLAY\fR value of \fI:0.0\fR \- or \fI:0\fR), which is sufficient for
-single monitor environments. It may not produce the expected results when using
-a multi\-monitor environment depending on your settings.
-.PP
-It has been reported that \fBscreencast\fR does not work under Wayland.
+It has been reported that \fBscreencast\fR does not work under Wayland. This is
+a FFmpeg limitation, since FFmpeg currently does not support recording Wayland
+sessions.
 .SH BUGS
 None are known at the moment.
 .SH AUTHOR
