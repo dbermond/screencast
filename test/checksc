@@ -50,7 +50,7 @@ common_cmd_vaapi_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${
 live="--live-streaming="
 keep="--keep"
 one_step='--one-step'
-wmark='--watermark=www.mysitehere.com'
+wmark='--watermark=www.mysitehere.com --wmark-font=DejaVuSans'
 wcam="--webcam --webcam-input=${WEBCAM}"
 
 #########################################
