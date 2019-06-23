@@ -42,8 +42,8 @@ with the same values used in the `install` target.
 
 ### Tests
 
-**screencast** tests can be performed with the make `check` target. This
-target supports the following environment variables:
+**screencast** tests can be performed with the make `check` or `test` targets.
+These targets supports the following environment variables:
 
 - `AUDIOIN`: select the audio input device for tests
 - `WEBCAM`: include webcam tests, using the specified webcam input device
@@ -60,5 +60,5 @@ $ make \
     VAAPI='/dev/dri/renderD129' \
     USEDISPLAY=':71.0' \
     USESHELL='all' \
-    check
+    test
 ```
