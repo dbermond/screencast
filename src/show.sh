@@ -64,6 +64,7 @@ show_help() {
     printf 'Options:\n'
     printf '%s\n' "  -s, --size=NxN            video size (resolution) [${video_size}]"
     printf '%s\n' "  -p, --position=N,N        recording position (screen XY topleft offsets) [${video_position}]"
+    printf '%s\n' "  -b, --border              tickness of the screen region border (0 disable) [${border}]"
     printf '%s\n' '  -S, --select-region       select with mouse the screen region to record'
     printf '%s\n' "  -r, --fps=N               video framerate (fps) [${video_rate}]"
     printf '%s\n' "  -f, --format=TYPE         container format (to use with -u) [${format}]"

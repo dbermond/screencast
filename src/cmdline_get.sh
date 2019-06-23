@@ -90,6 +90,29 @@ get_cmd_line() {
                 command_error '--position (-p)'
                 ;;
             
+            -b|--border)
+                if [ -n "$2" ] 
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--border (-b)'
+                    else
+                        border="$2"
+                        border_setted='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--border (-b)'
+                fi
+                ;;
+            --border=?*)
+                border="${1#*=}"
+                border_setted='true'
+                ;;
+            --border=)
+                command_error '--border (-b)'
+                ;;
+            
             -S|--select-region) # option without argument
                 select_region='true'
                 ;;

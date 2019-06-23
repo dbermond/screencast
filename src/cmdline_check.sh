@@ -59,6 +59,27 @@ check_cmd_line() {
         check_screen
     fi
     
+    if [ "$border_setted" = 'true' ] 
+    then
+        if printf '%s' "$border" | grep -Eq '^[0-9]+$'
+        then
+            # set video border if chosen by user (a value different than '0')
+            if [ "$border" -gt '0' ] 
+            then
+                if [ "$border" -le '128' ] 
+                then
+                    border_options="-show_region 1 -region_border ${border}"
+                else
+                    exit_program "video border '${border}' is out of range (allowed values: 0 - 128)"
+                fi
+            else
+                border_options='-show_region 0'
+            fi
+        else
+            exit_program "'${border}' is not a valid number for video border delimiter (allowed values: 0 - 128)"
+        fi
+    fi
+    
     if [ "$video_rate_setted" = 'true' ] 
     then
         # check if the entered framerate (fps) is a valid integer number (-r/--fps)

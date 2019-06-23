@@ -81,7 +81,7 @@ show_warnings
 set_webcam
 fix_pass_duration
 ff_audio_options="${audio_input_options} ${audio_input}"
-ff_video_options="${video_input_options} -framerate ${video_rate} -video_size ${video_size} -i :0.0+${video_position}"
+ff_video_options="${video_input_options} ${border_options} -framerate ${video_rate} -video_size ${video_size} -i :0.0+${video_position}"
 
 # do a live streaming if chosen by user (-L/--live-streaming)
 if [ "$streaming" = 'true' ] 

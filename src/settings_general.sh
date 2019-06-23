@@ -50,6 +50,7 @@ fixed_length='0'             # fixed length video in seconds (0 disable)
 notifications='true'         # desktop notifications (true, false)
 audio_input_setted='false'   # if audio input    was setted by cmd line with -i
 audio_encoder_setted='false' # if audio encoder  was setted by cmd line with -a
+border_setted='false'        # if border         was setted by cmd line with -b
 video_encoder_setted='false' # if video encoder  was setted by cmd line with -v
 vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
 video_size_setted='false'    # if video size     was setted by cmd line with -s
@@ -86,7 +87,9 @@ video_size='640x480'               # video size (resolution)
 video_rate='25'                    # video framerate (fps)
 corner_padding='10'                # video corner padding (for watermark and webcam effects)
 vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
-video_input_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M -show_region 1 -region_border 2"
+border='2'                         # tickness of the screen region border delimiter (0 to disable border)
+border_options="-show_region 1 -region_border ${border}"
+video_input_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M"
 
 # metadata settings
 metadata="comment=$(printf '%s\n%s' "Created with screencast ${screencast_version}" "${screencast_website}")"

@@ -6,6 +6,7 @@ screencast
 - [OPTIONS](#options)
     - [`-s, --size=NxN`](#-s---sizenxn)
     - [`-p, --position=N,N`](#-p---positionnn)
+    - [`-b, --border`](#-b---border)
     - [`-S, --select-region`](#-s---select-region)
     - [`-r, --fps=N`](#-r---fpsn)
     - [`-f, --format=TYPE`](#-f---formattype)
@@ -83,6 +84,12 @@ default: `640x480`
 The screen position defining from where the recording will take place. These are X and Y offsets from the screen top left corner. Combined with [`-s`](#-s---sizenxn) option it will define a rectangular desktop area that will be recorded. This rectangular area must be inside of the current screen size/resolution (cannot be out of screen bounds).
 
 default: `0,0` (screen top left corner)
+
+#### `-b, --border=N`
+
+Tickness of the screen region border delimiter. Valid values are `0` to `128`. A value of `0` disables showing the border delimiter.
+
+default: `2`
 
 #### `-S, --select-region`
 
