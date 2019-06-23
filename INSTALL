@@ -48,6 +48,7 @@ target supports the following environment variables:
 - `AUDIOIN`: select the audio input device for tests
 - `WEBCAM`: include webcam tests, using the specified webcam input device
 - `VAAPI`: include VAAPI tests, using the specified DRM render node
+- `USEDISPLAY`: select the X server display and screen to run the tests on
 - `USESHELL`: use the specified shell to perform the tests (the special value
 `all` will perfom tests with the shells bash, dash, yash, ksh, and zsh)
 
@@ -57,6 +58,7 @@ $ make \
     AUDIOIN='pulse' \
     WEBCAM='/dev/video0' \
     VAAPI='/dev/dri/renderD129' \
+    USEDISPLAY=':71.0' \
     USESHELL='all' \
     check
 ```

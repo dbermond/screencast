@@ -11,6 +11,7 @@ https://github.com/dbermond/screencast/
 - new option: select the X server display and screen
 - tests: use less restrictive encoders
 - tests: allow to run tests without audio input (AUDIOIN='none')
+- tests: allow to run tests in a user defined X server display through the USEDISPLAY environment variable
 
 ### version 1.5.0 - 2018-01-05
 - new feature: webcam overlay effect
