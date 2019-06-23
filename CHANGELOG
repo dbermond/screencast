@@ -12,6 +12,7 @@ https://github.com/dbermond/screencast/
 - tests: use less restrictive encoders
 - tests: allow to run tests without audio input (AUDIOIN='none')
 - tests: allow to run tests in a user defined X server display through the USEDISPLAY environment variable
+- tests: allow to set the font for text watermark through the WMARK_FONT environment variable
 
 ### version 1.5.0 - 2018-01-05
 - new feature: webcam overlay effect
