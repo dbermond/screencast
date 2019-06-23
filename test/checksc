@@ -591,5 +591,5 @@ else
         printf '%s\n' "  ${color_red}- ${cmd}${color_off}"
     done
     
-    IFS=' '
+    unset IFS
 fi
