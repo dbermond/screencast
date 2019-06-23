@@ -8,6 +8,7 @@ https://github.com/dbermond/screencast/
 ### version next
 - fix: security issue with temporary directory (https://github.com/dbermond/screencast/issues/3)
 - tests: use less restrictive encoders
+- tests: allow to run tests without audio input (AUDIOIN='none')
 
 ### version 1.5.0 - 2018-01-05
 - new feature: webcam overlay effect
