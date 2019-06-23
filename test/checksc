@@ -40,7 +40,7 @@ fi
 video_encoder_soft='--video-encoder=theora'
 video_encoder_live='--video-encoder=x264'
 video_encoder_vaapi='--video-encoder=h264_vaapi'
-common_cmd_all="${scfile} --no-notifications --fixed=3.0"
+common_cmd_all="${scfile} --no-notifications --fixed=3.0 --border=0"
 common_cmd_soft="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_soft}"
 common_cmd_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_live}"
 common_cmd_vaapi="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_vaapi} --vaapi-device=${VAAPI}"
@@ -60,9 +60,6 @@ wcam="--webcam --webcam-input=${WEBCAM}"
 cleanup() {
     # restore original shell (shebang) in screencast script file
     [ -n "$USESHELL" ] && ./tools/chshell "$original_shell" >/dev/null 2>&1
-    
-    # restore original border value in screencast script file
-    sed -i 's/-show_region[[:space:]]0/-show_region 1/' "$scfile"
     
     # delete duplicated live streaming videos
     for shell in $test_shells
@@ -477,8 +474,6 @@ then
 else
     test_shells="$(sed -n '1p' "$scfile" | sed 's@^#!.*/@@')"
 fi
-
-sed -i 's/-show_region[[:space:]]1/-show_region 0/' "$scfile" # do not show border on tests
 
 # check if webcam tests are enabled
 if [ -n "$WEBCAM" ] 
