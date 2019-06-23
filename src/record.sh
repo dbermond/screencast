@@ -101,6 +101,7 @@ record_offline_two_steps() {
     [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && ff_vfilter_option='-vf'
     
     set_tmpdir
+    check_dir "$savedir"
     check_dir "$tmpdir"
     
     rndstr_video="$(randomstr '20')" # random string for tmp video filename
