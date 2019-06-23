@@ -592,4 +592,6 @@ else
     done
     
     unset IFS
+    
+    exit 1
 fi
