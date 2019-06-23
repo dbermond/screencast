@@ -377,14 +377,21 @@ ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 . src/ffmpeg.sh
 
 # check for some required ffmpeg components
-for component in mp4 flv aac x264
+for component in mp4 flv aac x264 h264_vaapi video4linux2,v4l2
 do
+    [ "$component" = 'h264_vaapi' ] && [ -z "$VAAPI" ] && continue
+    
+    [ "$component" = 'video4linux2,v4l2' ] && [ -z "$WEBCAM" ] && continue
+    
     case "$component" in
         mp4|flv)
             type='muxer'
             ;;
-        aac|264)
+        aac|x264|h264_vaapi)
             type='encoder'
+            ;;
+        video4linux2,v4l2)
+            type='demuxer'
             ;;
     esac
     
