@@ -21,6 +21,7 @@
 tests_per_group='10'   # number of tests for each group
 scfile='./screencast'  # screencast file to modify and execute
 outdir='test/output'   # output directory for resulting test videos
+live_streaming='true'  # controls if local live streaming tests will be made
 
 supported_shells='bash dash yash ksh zsh'
 
@@ -35,10 +36,16 @@ then
         audio_input="--audio-input=${AUDIOIN}"
     fi
 fi
-audio_encoder='--audio-encoder=aac'
-video_encoder_soft='--video-encoder=x264'
+audio_encoder='--audio-encoder=vorbis'
+audio_encoder_live='--audio-encoder=mp3lame'
+video_encoder_soft='--video-encoder=theora'
+video_encoder_live='--video-encoder=x264'
 video_encoder_vaapi='--video-encoder=h264_vaapi'
-common_cmd="${scfile} --no-notifications --fixed=3.0 ${audio_input} ${audio_encoder} ${video_encoder_soft}"
+common_cmd_all="${scfile} --no-notifications --fixed=3.0"
+common_cmd_soft="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_soft}"
+common_cmd_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_live}"
+common_cmd_vaapi="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_vaapi} --vaapi-device=${VAAPI}"
+common_cmd_vaapi_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_vaapi} --vaapi-device=${VAAPI}"
 live="--live-streaming="
 keep="--keep"
 one_step='--one-step'
@@ -106,86 +113,98 @@ set_tests() {
     ####################
     
     # software-based video encoder, two steps process, no live streaming, no webcam (always executed)
-    out_offline_2st_soft_noeffects="${outdir}/${shell}-offline-twosteps-software-noeffects.mp4"
-    out_offline_2st_soft_fade_vol="${outdir}/${shell}-offline-twosteps-software-fade-vol.mp4"
-    out_offline_2st_soft_wmark="${outdir}/${shell}-offline-twosteps-software-watermark.mp4"
-    out_offline_2st_soft_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-watermark-fade-vol.mp4"
+    out_offline_2st_soft_noeffects="${outdir}/${shell}-offline-twosteps-software-noeffects.mkv"
+    out_offline_2st_soft_fade_vol="${outdir}/${shell}-offline-twosteps-software-fade-vol.mkv"
+    out_offline_2st_soft_wmark="${outdir}/${shell}-offline-twosteps-software-watermark.mkv"
+    out_offline_2st_soft_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-watermark-fade-vol.mkv"
     
     # software-based video encoder, one step process, no live streaming, no webcam (always executed)
-    out_offline_1st_soft_noeffects="${outdir}/${shell}-offline-onestep-software-noeffects.mp4"
-    out_offline_1st_soft_wmark="${outdir}/${shell}-offline-onestep-software-watermark.mp4"
+    out_offline_1st_soft_noeffects="${outdir}/${shell}-offline-onestep-software-noeffects.mkv"
+    out_offline_1st_soft_wmark="${outdir}/${shell}-offline-onestep-software-watermark.mkv"
     
-    # software-based video encoder, live streaming without saving, no webcam (always executed)
-    out_live_nosave_soft_noeffects="${outdir}/${shell}-live-nosave-software-noeffects.flv"
-    out_live_nosave_soft_wmark="${outdir}/${shell}-live-nosave-software-watermark.flv"
-    
-    # software-based video encoder, live streaming with saving, no webcam (always executed)
-    out_live_save_soft_noeffects="${outdir}/${shell}-live-save-software-noeffects.flv"
-    out_live_save_soft_wmark="${outdir}/${shell}-live-save-software-watermark.flv"
+    if [ "$live_streaming" = 'true' ] 
+    then
+        # software-based video encoder, live streaming without saving, no webcam
+        out_live_nosave_soft_noeffects="${outdir}/${shell}-live-nosave-software-noeffects.flv"
+        out_live_nosave_soft_wmark="${outdir}/${shell}-live-nosave-software-watermark.flv"
+        
+        # software-based video encoder, live streaming with saving, no webcam
+        out_live_save_soft_noeffects="${outdir}/${shell}-live-save-software-noeffects.flv"
+        out_live_save_soft_wmark="${outdir}/${shell}-live-save-software-watermark.flv"
+    fi
     
     # software-based video encoder, with webcam (executed only if webcam is enabled)
     if [ "$use_webcam" = 'true' ] 
     then
-        # two steps process, no live streaming
-        out_offline_2st_soft_wcam="${outdir}/${shell}-offline-twosteps-software-webcam.mp4"
-        out_offline_2st_soft_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-fade-vol.mp4"
-        out_offline_2st_soft_wcam_wmark="${outdir}/${shell}-offline-twosteps-software-webcam-watermark.mp4"
-        out_offline_2st_soft_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-watermark-fade-vol.mp4"
+        # two steps process, no live streaming (always executed with webcam)
+        out_offline_2st_soft_wcam="${outdir}/${shell}-offline-twosteps-software-webcam.mkv"
+        out_offline_2st_soft_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-fade-vol.mkv"
+        out_offline_2st_soft_wcam_wmark="${outdir}/${shell}-offline-twosteps-software-webcam-watermark.mkv"
+        out_offline_2st_soft_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-software-webcam-watermark-fade-vol.mkv"
         
-        # one step process, no live streaming
-        out_offline_1st_soft_wcam="${outdir}/${shell}-offline-onestep-software-webcam.mp4"
-        out_offline_1st_soft_wcam_wmark="${outdir}/${shell}-offline-onestep-software-webcam-watermark.mp4"
+        # one step process, no live streaming (always executed with webcam)
+        out_offline_1st_soft_wcam="${outdir}/${shell}-offline-onestep-software-webcam.mkv"
+        out_offline_1st_soft_wcam_wmark="${outdir}/${shell}-offline-onestep-software-webcam-watermark.mkv"
         
-        # live streaming without saving
-        out_live_nosave_soft_wcam="${outdir}/${shell}-live-nosave-software-webcam.flv"
-        out_live_nosave_soft_wcam_wmark="${outdir}/${shell}-live-nosave-software-webcam-watermark.flv"
-        
-        # live streaming with saving
-        out_live_save_soft_wcam="${outdir}/${shell}-live-save-software-webcam-noeffects.flv"
-        out_live_save_soft_wcam_wmark="${outdir}/${shell}-live-save-software-webcam-watermark.flv"
+        if [ "$live_streaming" = 'true' ] 
+        then
+            # live streaming without saving
+            out_live_nosave_soft_wcam="${outdir}/${shell}-live-nosave-software-webcam.flv"
+            out_live_nosave_soft_wcam_wmark="${outdir}/${shell}-live-nosave-software-webcam-watermark.flv"
+            
+            # live streaming with saving
+            out_live_save_soft_wcam="${outdir}/${shell}-live-save-software-webcam-noeffects.flv"
+            out_live_save_soft_wcam_wmark="${outdir}/${shell}-live-save-software-webcam-watermark.flv"
+        fi
     fi
     
-    # VAAPI video encoder (executed only if vaapi is enabled)
+    # VAAPI video encoder (executed only if VAAPI is enabled)
     if [ "$use_vaapi" = 'true' ] 
     then
-        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed)
-        out_offline_2st_vaapi_noeffects="${outdir}/${shell}-offline-twosteps-vaapi-noeffects.mp4"
-        out_offline_2st_vaapi_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-fade-vol.mp4"
-        out_offline_2st_vaapi_wmark="${outdir}/${shell}-offline-twosteps-vaapi-watermark.mp4"
-        out_offline_2st_vaapi_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-watermark-fade-vol.mp4"
+        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed in VAAPI)
+        out_offline_2st_vaapi_noeffects="${outdir}/${shell}-offline-twosteps-vaapi-noeffects.mkv"
+        out_offline_2st_vaapi_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-fade-vol.mkv"
+        out_offline_2st_vaapi_wmark="${outdir}/${shell}-offline-twosteps-vaapi-watermark.mkv"
+        out_offline_2st_vaapi_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-watermark-fade-vol.mkv"
         
-        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed)
-        out_offline_1st_vaapi_noeffects="${outdir}/${shell}-offline-onestep-vaapi-noeffects.mp4"
-        out_offline_1st_vaapi_wmark="${outdir}/${shell}-offline-onestep-vaapi-watermark.mp4"
+        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed in VAAPI)
+        out_offline_1st_vaapi_noeffects="${outdir}/${shell}-offline-onestep-vaapi-noeffects.mkv"
+        out_offline_1st_vaapi_wmark="${outdir}/${shell}-offline-onestep-vaapi-watermark.mkv"
         
-        # VAAPI video encoder, live streaming without saving, no webcam (always executed)
-        out_live_nosave_vaapi_noeffects="${outdir}/${shell}-live-nosave-vaapi-noeffects.flv"
-        out_live_nosave_vaapi_wmark="${outdir}/${shell}-live-nosave-vaapi-watermark.flv"
-        
-        # VAAPI video encoder, live streaming with saving, no webcam (always executed)
-        out_live_save_vaapi_noeffects="${outdir}/${shell}-live-save-vaapi-noeffects.flv"
-        out_live_save_vaapi_wmark="${outdir}/${shell}-live-save-vaapi-watermark.flv"
+        if [ "$live_streaming" = 'true' ] 
+        then
+            # VAAPI video encoder, live streaming without saving, no webcam
+            out_live_nosave_vaapi_noeffects="${outdir}/${shell}-live-nosave-vaapi-noeffects.flv"
+            out_live_nosave_vaapi_wmark="${outdir}/${shell}-live-nosave-vaapi-watermark.flv"
+            
+            # VAAPI video encoder, live streaming with saving, no webcam
+            out_live_save_vaapi_noeffects="${outdir}/${shell}-live-save-vaapi-noeffects.flv"
+            out_live_save_vaapi_wmark="${outdir}/${shell}-live-save-vaapi-watermark.flv"
+        fi
         
         # VAAPI video encoder, with webcam (executed only if webcam is enabled)
         if [ "$use_webcam" = 'true' ] 
         then
             # two steps process, no live streaming
-            out_offline_2st_vaapi_wcam="${outdir}/${shell}-offline-twosteps-vaapi-webcam.mp4"
-            out_offline_2st_vaapi_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-fade-vol.mp4"
-            out_offline_2st_vaapi_wcam_wmark="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark.mp4"
-            out_offline_2st_vaapi_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark-fade-vol.mp4"
+            out_offline_2st_vaapi_wcam="${outdir}/${shell}-offline-twosteps-vaapi-webcam.mkv"
+            out_offline_2st_vaapi_wcam_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-fade-vol.mkv"
+            out_offline_2st_vaapi_wcam_wmark="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark.mkv"
+            out_offline_2st_vaapi_wcam_wmark_fade_vol="${outdir}/${shell}-offline-twosteps-vaapi-webcam-watermark-fade-vol.mkv"
             
             # one step process, no live streaming
-            out_offline_1st_vaapi_wcam="${outdir}/${shell}-offline-onestep-vaapi-webcam.mp4"
-            out_offline_1st_vaapi_wcam_wmark="${outdir}/${shell}-offline-onestep-vaapi-webcam-watermark.mp4"
+            out_offline_1st_vaapi_wcam="${outdir}/${shell}-offline-onestep-vaapi-webcam.mkv"
+            out_offline_1st_vaapi_wcam_wmark="${outdir}/${shell}-offline-onestep-vaapi-webcam-watermark.mkv"
             
-            # live streaming without saving
-            out_live_nosave_vaapi_wcam="${outdir}/${shell}-live-nosave-vaapi-webcam.flv"
-            out_live_nosave_vaapi_wcam_wmark="${outdir}/${shell}-live-nosave-vaapi-webcam-watermark.flv"
-            
-            # live streaming with saving
-            out_live_save_vaapi_wcam="${outdir}/${shell}-live-save-vaapi-webcam-noeffects.flv"
-            out_live_save_vaapi_wcam_wmark="${outdir}/${shell}-live-save-vaapi-webcam-watermark.flv"
+            if [ "$live_streaming" = 'true' ] 
+            then
+                # live streaming without saving
+                out_live_nosave_vaapi_wcam="${outdir}/${shell}-live-nosave-vaapi-webcam.flv"
+                out_live_nosave_vaapi_wcam_wmark="${outdir}/${shell}-live-nosave-vaapi-webcam-watermark.flv"
+                
+                # live streaming with saving
+                out_live_save_vaapi_wcam="${outdir}/${shell}-live-save-vaapi-webcam-noeffects.flv"
+                out_live_save_vaapi_wcam_wmark="${outdir}/${shell}-live-save-vaapi-webcam-watermark.flv"
+            fi
         fi
     fi
     
@@ -194,93 +213,99 @@ set_tests() {
     ################################
     
     # software-based video encoder, two steps process, no live streaming, no webcam (always executed)
-    test01="${common_cmd} ${out_offline_2st_soft_noeffects}"
-    test02="${common_cmd} ${fade_vol} ${out_offline_2st_soft_fade_vol}"
-    test03="${common_cmd} ${wmark} ${out_offline_2st_soft_wmark}"
-    test04="${common_cmd} ${wmark} ${fade_vol} ${out_offline_2st_soft_wmark_fade_vol}"
+    test01="${common_cmd_soft} ${out_offline_2st_soft_noeffects}"
+    test02="${common_cmd_soft} ${fade_vol} ${out_offline_2st_soft_fade_vol}"
+    test03="${common_cmd_soft} ${wmark} ${out_offline_2st_soft_wmark}"
+    test04="${common_cmd_soft} ${wmark} ${fade_vol} ${out_offline_2st_soft_wmark_fade_vol}"
     
     # software-based video encoder, one step process, no live streaming, no webcam (always executed)
-    test05="${common_cmd} ${one_step} ${out_offline_1st_soft_noeffects}"
-    test06="${common_cmd} ${one_step} ${wmark} ${out_offline_1st_soft_wmark}"
+    test05="${common_cmd_soft} ${one_step} ${out_offline_1st_soft_noeffects}"
+    test06="${common_cmd_soft} ${one_step} ${wmark} ${out_offline_1st_soft_wmark}"
     
-    # software-based video encoder, live streaming without saving, no webcam (always executed)
-    test07="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_soft_noeffects" | sed "s|/${shell}|/${shell}-url|")"
-    test08="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
-    
-    # software-based video encoder, live streaming with saving, no webcam (always executed)
-    test09="${common_cmd} ${live}$(printf '%s' "$out_live_save_soft_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_noeffects}"
-    test10="${common_cmd} ${live}$(printf '%s' "$out_live_save_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wmark}"
+    if [ "$live_streaming" = 'true' ] 
+    then
+        # software-based video encoder, live streaming without saving, no webcam
+        test07="${common_cmd_live} ${live}$(printf '%s' "$out_live_nosave_soft_noeffects" | sed "s|/${shell}|/${shell}-url|")"
+        test08="${common_cmd_live} ${live}$(printf '%s' "$out_live_nosave_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+        
+        # software-based video encoder, live streaming with saving, no webcam
+        test09="${common_cmd_live} ${live}$(printf '%s' "$out_live_save_soft_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_noeffects}"
+        test10="${common_cmd_live} ${live}$(printf '%s' "$out_live_save_soft_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wmark}"
+    fi
     
     # software-based video encoder, with webcam (executed only if webcam is enabled)
     if [ "$use_webcam" = 'true' ] 
     then
-        # two steps process, no live streaming
-        test11="${common_cmd} ${wcam} ${out_offline_2st_soft_wcam}"
-        test12="${common_cmd} ${wcam} ${fade_vol} ${out_offline_2st_soft_wcam_fade_vol}"
-        test13="${common_cmd} ${wcam} ${wmark} ${out_offline_2st_soft_wcam_wmark}"
-        test14="${common_cmd} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_soft_wcam_wmark_fade_vol}"
+        # two steps process, no live streaming (always executed with webcam)
+        test11="${common_cmd_soft} ${wcam} ${out_offline_2st_soft_wcam}"
+        test12="${common_cmd_soft} ${wcam} ${fade_vol} ${out_offline_2st_soft_wcam_fade_vol}"
+        test13="${common_cmd_soft} ${wcam} ${wmark} ${out_offline_2st_soft_wcam_wmark}"
+        test14="${common_cmd_soft} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_soft_wcam_wmark_fade_vol}"
         
-        # one step process, no live streaming
-        test15="${common_cmd} ${wcam} ${one_step} ${out_offline_1st_soft_wcam}"
-        test16="${common_cmd} ${wcam} ${one_step} ${wmark} ${out_offline_1st_soft_wcam_wmark}"
+        # one step process, no live streaming (always executed with webcam)
+        test15="${common_cmd_soft} ${wcam} ${one_step} ${out_offline_1st_soft_wcam}"
+        test16="${common_cmd_soft} ${wcam} ${one_step} ${wmark} ${out_offline_1st_soft_wcam_wmark}"
         
-        # live streaming without saving
-        test17="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam"       | sed "s|/${shell}|/${shell}-url|")"
-        test18="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
-        
-        # live streaming with saving
-        test19="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_wcam}"
-        test20="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wcam_wmark}"
+        if [ "$live_streaming" = 'true' ] 
+        then
+            # live streaming without saving
+            test17="${common_cmd_live} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam"       | sed "s|/${shell}|/${shell}-url|")"
+            test18="${common_cmd_live} ${wcam} ${live}$(printf '%s' "$out_live_nosave_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+            
+            # live streaming with saving
+            test19="${common_cmd_live} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_soft_wcam}"
+            test20="${common_cmd_live} ${wcam} ${live}$(printf '%s' "$out_live_save_soft_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_soft_wcam_wmark}"
+        fi
     fi
     
     # VAAPI video encoder (executed only if vaapi is enabled)
     if [ "$use_vaapi" = 'true' ] 
     then
-        # change video encoder to VAAPI
-        common_cmd="$(printf '%s' "$common_cmd" | sed "s|${video_encoder_soft}|${video_encoder_vaapi} -A ${VAAPI}|")"
+        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed in VAAPI)
+        test21="${common_cmd_vaapi} ${out_offline_2st_vaapi_noeffects}"
+        test22="${common_cmd_vaapi} ${fade_vol} ${out_offline_2st_vaapi_fade_vol}"
+        test23="${common_cmd_vaapi} ${wmark} ${out_offline_2st_vaapi_wmark}"
+        test24="${common_cmd_vaapi} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wmark_fade_vol}"
         
-        # VAAPI video encoder, two steps process, no live streaming, no webcam (always executed)
-        test21="${common_cmd} ${out_offline_2st_vaapi_noeffects}"
-        test22="${common_cmd} ${fade_vol} ${out_offline_2st_vaapi_fade_vol}"
-        test23="${common_cmd} ${wmark} ${out_offline_2st_vaapi_wmark}"
-        test24="${common_cmd} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wmark_fade_vol}"
+        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed in VAAPI)
+        test25="${common_cmd_vaapi} ${one_step} ${out_offline_1st_vaapi_noeffects}"
+        test26="${common_cmd_vaapi} ${one_step} ${wmark} ${out_offline_1st_vaapi_wmark}"
         
-        # VAAPI video encoder, one step process, no live streaming, no webcam (always executed)
-        test25="${common_cmd} ${one_step} ${out_offline_1st_vaapi_noeffects}"
-        test26="${common_cmd} ${one_step} ${wmark} ${out_offline_1st_vaapi_wmark}"
-        
-        # VAAPI video encoder, live streaming without saving, no webcam (always executed)
-        test27="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|")"
-        test28="${common_cmd} ${live}$(printf '%s' "$out_live_nosave_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
-        
-        # VAAPI video encoder, live streaming with saving, no webcam (always executed)
-        test29="${common_cmd} ${live}$(printf '%s' "$out_live_save_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_noeffects}"
-        test30="${common_cmd} ${live}$(printf '%s' "$out_live_save_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wmark}"
+        if [ "$live_streaming" = 'true' ] 
+        then
+            # VAAPI video encoder, live streaming without saving, no webcam
+            test27="${common_cmd_vaapi_live} ${live}$(printf '%s' "$out_live_nosave_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|")"
+            test28="${common_cmd_vaapi_live} ${live}$(printf '%s' "$out_live_nosave_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+            
+            # VAAPI video encoder, live streaming with saving, no webcam
+            test29="${common_cmd_vaapi_live} ${live}$(printf '%s' "$out_live_save_vaapi_noeffects" | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_noeffects}"
+            test30="${common_cmd_vaapi_live} ${live}$(printf '%s' "$out_live_save_vaapi_wmark"     | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wmark}"
+        fi
         
         # VAAPI video encoder, with webcam (executed only if webcam is enabled)
         if [ "$use_webcam" = 'true' ] 
         then
             # two steps process, no live streaming
-            test31="${common_cmd} ${wcam} ${out_offline_2st_vaapi_wcam}"
-            test32="${common_cmd} ${wcam} ${fade_vol} ${out_offline_2st_vaapi_wcam_fade_vol}"
-            test33="${common_cmd} ${wcam} ${wmark} ${out_offline_2st_vaapi_wcam_wmark}"
-            test34="${common_cmd} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wcam_wmark_fade_vol}"
+            test31="${common_cmd_vaapi} ${wcam} ${out_offline_2st_vaapi_wcam}"
+            test32="${common_cmd_vaapi} ${wcam} ${fade_vol} ${out_offline_2st_vaapi_wcam_fade_vol}"
+            test33="${common_cmd_vaapi} ${wcam} ${wmark} ${out_offline_2st_vaapi_wcam_wmark}"
+            test34="${common_cmd_vaapi} ${wcam} ${wmark} ${fade_vol} ${out_offline_2st_vaapi_wcam_wmark_fade_vol}"
             
             # one step process, no live streaming
-            test35="${common_cmd} ${wcam} ${one_step} ${out_offline_1st_vaapi_wcam}"
-            test36="${common_cmd} ${wcam} ${one_step} ${wmark} ${out_offline_1st_vaapi_wcam_wmark}"
+            test35="${common_cmd_vaapi} ${wcam} ${one_step} ${out_offline_1st_vaapi_wcam}"
+            test36="${common_cmd_vaapi} ${wcam} ${one_step} ${wmark} ${out_offline_1st_vaapi_wcam_wmark}"
             
-            # live streaming without saving
-            test37="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam "      | sed "s|/${shell}|/${shell}-url|")"
-            test38="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
-            
-            # live streaming with saving
-            test39="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_wcam}"
-            test40="${common_cmd} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wcam_wmark}"
+            if [ "$live_streaming" = 'true' ] 
+            then
+                # live streaming without saving
+                test37="${common_cmd_vaapi_live} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam "      | sed "s|/${shell}|/${shell}-url|")"
+                test38="${common_cmd_vaapi_live} ${wcam} ${live}$(printf '%s' "$out_live_nosave_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark}"
+                
+                # live streaming with saving
+                test39="${common_cmd_vaapi_live} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam"       | sed "s|/${shell}|/${shell}-url|") ${keep} ${out_live_save_vaapi_wcam}"
+                test40="${common_cmd_vaapi_live} ${wcam} ${live}$(printf '%s' "$out_live_save_vaapi_wcam_wmark" | sed "s|/${shell}|/${shell}-url|") ${wmark} ${keep} ${out_live_save_vaapi_wcam_wmark}"
+            fi
         fi
-        
-        # change video encoder back to software-base (for the next shell tests)
-        common_cmd="$(printf '%s' "$common_cmd" | sed "s|${video_encoder_vaapi}[[:space:]]-A[[:space:]]${VAAPI}|${video_encoder_soft}|")"
     fi
 }
 
@@ -378,17 +403,17 @@ ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 . src/ffmpeg.sh
 
 # check for some required ffmpeg components
-for component in mp4 flv aac x264 h264_vaapi video4linux2,v4l2
+for component in matroska flv vorbis mp3lame theora x264 h264_vaapi video4linux2,v4l2
 do
     [ "$component" = 'h264_vaapi' ] && [ -z "$VAAPI" ] && continue
     
     [ "$component" = 'video4linux2,v4l2' ] && [ -z "$WEBCAM" ] && continue
     
     case "$component" in
-        mp4|flv)
+        matroska|flv)
             type='muxer'
             ;;
-        aac|x264|h264_vaapi)
+        vorbis|theora|h264_vaapi)
             type='encoder'
             ;;
         video4linux2,v4l2)
@@ -398,8 +423,15 @@ do
     
     if ! check_component "$component" "$type"
     then
-        printf '%s\n' "${color_red}error:${color_off} the detected ffmpeg build has no support for '${component}' ${type}, aborting tests..." >&2
-        exit 1
+        if [ "$component" = 'mp3lame' ] || [ "$component" = 'x264' ] 
+        then
+            tests_per_group='6'
+            live_streaming='false'
+            printf '%s\n' "${color_yellow}warning:${color_off} the detected ffmpeg build has no support for '${component}' ${type}, disabling local live streaming tests"
+        else
+            printf '%s\n' "${color_red}error:${color_off} the detected ffmpeg build has no support for '${component}' ${type}, aborting tests..." >&2
+            exit 1
+        fi
     fi
 done
 
@@ -521,7 +553,7 @@ fi
 # shellcheck disable=SC2010
 if ls -1qA "${outdir}/" | grep -q '.'
 then
-    rm -f "${outdir}/"*.mp4
+    rm -f "${outdir}/"*.mkv
     rm -f "${outdir}/"*.flv
 fi
 
