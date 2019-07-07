@@ -86,7 +86,7 @@ format_settings_mov() {
     format_settings_mp4 "$@"
     
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
-    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^vp9$/d;/^vp9_vaapi$/d')"
+    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^vp9$/d;/^vp9_vaapi$/d;/^aom_av1$/d')"
     
     possible_unplayable_audiocodecs="$(printf 'vorbis\nwma')"
     possible_unplayable_videocodecs="$(printf 'theora\nvp8\nvp8_vaapi\nwmv')"
@@ -106,7 +106,7 @@ format_settings_mkv() {
 
 format_settings_webm() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
-    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\nvp9\nvp9_vaapi')"
+    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\nvp9\nvp9_vaapi\naom_av1')"
     
     # check if the detected ffmpeg build has support for the webm muxer
     check_component "$format" muxer || component_error "$format" muxer true

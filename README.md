@@ -146,7 +146,7 @@ Video encoder that will be used to encode the recorded video. If using a hardwar
 default: `x264`
 
 - supported types:
-    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `vp9_vaapi`, `theora`, `wmv`
+    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`
 
 #### `-A, --vaapi-device=NODE`
 

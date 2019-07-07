@@ -527,6 +527,11 @@ check_cmd_line() {
     # execute video encoder checks and settings
     "videocodec_settings_${video_encoder}"
     
+    # do not allow to use 'aom_av1' video encoder in a one step process (-1/--one-step)
+    # (aom_av1_ is still experimental and very slow in ffmpeg)
+    [ "$video_encoder" = 'aom_av1' ] && [ "$one_step" = 'true' ] &&
+        exit_program "'${video_encoder}' cannot be used for a one step process (still experimental and very slow in FFmpeg)"
+    
     # do not allow to use -A/--vaapi-device without setting a vaapi video encoder
     case "$video_encoder" in
         *_vaapi)

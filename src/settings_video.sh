@@ -27,9 +27,9 @@ supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
                                      x265\nhevc_nvenc\nhevc_vaapi\nhevc_qsv\nkvazaar
                                      vp8\nvp8_vaapi
                                      vp9\nvp9_vaapi
-                                     theora\nwmv' | sed 's/^[[:space:]]*//g')"
+                                     theora\nwmv\naom_av1' | sed 's/^[[:space:]]*//g')"
 
-supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheora\nwmv')"
+supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheora\nwmv\naom-av1')"
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
@@ -204,4 +204,9 @@ videocodec_settings_theora() {
 videocodec_settings_wmv() {
     check_component wmv2 encoder || component_error wmv2 'video encoder' true
     video_encode_codec='wmv2 -qscale:v 3'
+}
+
+videocodec_settings_aom_av1() {
+    check_component libaom-av1 encoder || component_error libaom-av1 'video encoder' true
+    video_encode_codec='libaom-av1 -crf 27 -b:v 0 -strict experimental'
 }
