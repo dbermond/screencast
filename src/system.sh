@@ -30,7 +30,7 @@ cleanup() {
     # delete temporary PNG (waterwark) image
     [ "$watermark" = 'true' ] && rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
     
-    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
+    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] && [ -n "$ff_output" ] 
     then
         # rename temporary (lossless) video to a better name if user selected to keep it (--keep/-K)
         if [ "$keep_video" = 'true' ] 
@@ -48,23 +48,23 @@ cleanup() {
         else
             rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
         fi
-    fi
-    
-    # delete temporary directory if it was created
-    if [ "$tmpdir_setted" = 'false' ] 
-    then
-        if [ "$keep_video" = 'true' ] 
+        
+        # delete temporary directory if it was created
+        if [ "$tmpdir_setted" = 'false' ] 
         then
-            # move the temporary video to the parent dir (without random string)
-            if [ "$auto_filename" = 'true' ] 
+            if [ "$keep_video" = 'true' ] 
             then
-                mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
-            else
-                mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
+                # move the temporary video to the parent dir (without random string)
+                if [ "$auto_filename" = 'true' ] 
+                then
+                    mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
+                else
+                    mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
+                fi
             fi
-        fi
             
-        rm -rf "$tmpdir"
+            rm -rf "$tmpdir"
+        fi
     fi
     
     # delete zero-sized output file in case some unexpected error occurred
