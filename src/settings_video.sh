@@ -24,12 +24,12 @@
 
 # supported video encoders (one per line for accurate grepping and easy deletion)
 supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
-                                     x265\nhevc_nvenc\nhevc_vaapi\nhevc_qsv\nkvazaar
+                                     x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv
                                      vp8\nvp8_vaapi
                                      vp9\nvp9_vaapi
                                      theora\nwmv\naom_av1' | sed 's/^[[:space:]]*//g')"
 
-supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nvp8\nvp9\n\ntheora\nwmv\naom-av1')"
+supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv\naom-av1')"
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
@@ -42,6 +42,7 @@ get_list_videocodecs() {
     
     # shellcheck disable=SC1004
     list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
+                        &/;s/[[:space:]]hevc_nvenc.*/\
                         &/;s/[[:space:]]vp8.*/\
                         &/')"
 }
@@ -156,6 +157,11 @@ videocodec_settings_kvazaar() {
     else
         video_encode_codec='libkvazaar -kvazaar-params preset=veryslow'
     fi
+}
+
+videocodec_settings_svt_hevc() {
+    check_component libsvt_hevc encoder || component_error libsvt_hevc 'video encoder' true
+    video_encode_codec='libsvt_hevc -rc vbr -tune subjective'
 }
 
 videocodec_settings_hevc_nvenc() {

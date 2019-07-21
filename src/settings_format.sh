@@ -160,7 +160,7 @@ format_settings_wmv() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
     
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                 sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+                                 sed '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
     
     # check if the detected ffmpeg build has support for the asf muxer
     # note: asf muxer is used for wmv (and wma) container format
@@ -171,7 +171,7 @@ format_settings_asf() {
     supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
     
     supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                 sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+                                 sed '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
     
     # check if the detected ffmpeg build has support for the asf muxer
     check_component "$format" muxer || component_error "$format" muxer true
