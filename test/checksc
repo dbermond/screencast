@@ -23,7 +23,7 @@ display=':0.0'          # the X server display and screen to record from
 scfile='./screencast'   # screencast file to modify and execute
 outdir='test/output'    # output directory for resulting test videos
 live_streaming='true'   # controls if local live streaming tests will be made
-wmark_font='DejaVuSans' # font for text watermark
+font='DejaVuSans'       # font for text watermark
 
 supported_shells='bash dash yash ksh zsh'
 
@@ -40,7 +40,7 @@ else
 fi
 [ -n "$AUDIOIN"    ] && audio_input="--audio-input=${AUDIOIN}"
 [ -n "$USEDISPLAY" ] && display="$USEDISPLAY"
-[ -n "$WMARK_FONT" ] && wmark_font="$WMARK_FONT"
+[ -n "$WMARK_FONT" ] && font="$WMARK_FONT"
 video_encoder_soft='--video-encoder=theora'
 video_encoder_live='--video-encoder=x264'
 video_encoder_vaapi='--video-encoder=h264_vaapi'
@@ -52,7 +52,7 @@ common_cmd_vaapi_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${
 live="--live-streaming="
 keep="--keep"
 one_step='--one-step'
-wmark="--watermark=www.mysitehere.com --wmark-font=${wmark_font}"
+wmark="--watermark=www.mysitehere.com --wmark-font=${font}"
 wcam="--webcam --webcam-input=${WEBCAM}"
 
 #########################################
