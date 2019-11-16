@@ -198,9 +198,9 @@ default: `bottomright`
 
 #### `-c, --wmark-font=NAME`
 
-Set text watermark font to *NAME*. This option can be used only with the [`-w`](#-w---watermarktext) option.
+Set text watermark font to *NAME*. To get a list of the available font names for text watermarking on your system you can use the `magick` (ImageMagick) utility and execute this command: `$ magick -list font`. You can also specify a full filepath of a font file. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
-default: `Arial`
+default: `DejaVu-Sans`
 
 **note**: if the default or setted font is not installed it will be auto chosen
 

@@ -23,8 +23,8 @@
 #########################################
 
 # watermark settings
-watermark_font='Arial'
-watermark_size='255x35'
+watermark_font='DejaVu-Sans'
+watermark_size='256x36'
 watermark_position='bottomright'
     # good absolute position values for hd720p (1280x720) with default watermark size:
     # 970,10  - top right corner
