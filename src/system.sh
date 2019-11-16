@@ -372,7 +372,7 @@ set_tmpdir() {
 randomstr() {
     if [ -c '/dev/urandom' ] 
     then
-        LC_CTYPE='C' tr -dc '[:alnum:]' < /dev/urandom | head -c"$1"
+        LC_CTYPE='C' tr -dc '[:alnum:]' < /dev/urandom 2>/dev/null | head -c"$1"
         
     elif command -v shuf >/dev/null 2>&1
     then
