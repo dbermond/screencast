@@ -78,7 +78,8 @@ _screencast() {
         -v|--video-encoder)
             local video_encoders='x264 h264_nvenc h264_vaapi h264_qsv
                                   x265 hevc_nvenc hevc_vaapi hevc_qsv kvazaar
-                                  vp8 vp8_vaapi vp9 vp9_vaapi theora wmv'
+                                  svt_hevc vp8 vp8_vaapi vp9 vp9_vaapi theora
+                                  wmv aom_av1'
             COMPREPLY=( $(compgen -W "$video_encoders" -- $cur) )
             return 0
             ;;
