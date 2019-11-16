@@ -27,9 +27,9 @@ supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
                                      x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv
                                      vp8\nvp8_vaapi
                                      vp9\nvp9_vaapi
-                                     theora\nwmv\naom_av1' | sed 's/^[[:space:]]*//g')"
+                                     theora\nwmv\naom_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
 
-supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv\naom-av1')"
+supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv\naom_av1\nrav1e')"
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
@@ -41,9 +41,8 @@ get_list_videocodecs() {
     done
     
     # shellcheck disable=SC1004
-    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]x265.*/\
-                        &/;s/[[:space:]]hevc_nvenc.*/\
-                        &/;s/[[:space:]]vp8.*/\
+    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]svt_hevc.*/\
+                        &/;s/[[:space:]]vp8_vaapi.*/\
                         &/')"
 }
 
@@ -215,4 +214,9 @@ videocodec_settings_wmv() {
 videocodec_settings_aom_av1() {
     check_component libaom-av1 encoder || component_error libaom-av1 'video encoder' true
     video_encode_codec='libaom-av1 -crf 27 -b:v 0 -strict experimental'
+}
+
+videocodec_settings_rav1e() {
+    check_component librav1e encoder || component_error librav1e 'video encoder' true
+    video_encode_codec='librav1e -qp 90 -speed 5 -rav1e-params low_latency=true'
 }
