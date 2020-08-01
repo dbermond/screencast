@@ -113,7 +113,7 @@ adjust_dimension() {
 # return code (status): not relevant
 # note: needs $video_width, $video_position_x, $video_height and $video_position_y
 check_screen() {
-    screen_size="$(xdpyinfo -display "$display" | grep 'dimensions' | head -n1 | awk '{ print $2 }')"
+    screen_size="$(xdpyinfo -display "$display" | awk 'FNR == 1 { next } /dimensions/ { print $2 }')"
     screen_width="$( printf '%s' "$screen_size" | awk -F'x' '{ print $1 }')"
     screen_height="$(printf '%s' "$screen_size" | awk -F'x' '{ print $2 }')"
     

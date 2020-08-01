@@ -373,7 +373,7 @@ check_cmd_line() {
                } &&
                [ "$format" = 'mp4' ]
             then
-                ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | awk '{ print $3 }')"
+                ffmpeg_version="$(ffmpeg -version | awk '/Copyright/ { print $3 }')"
                 
                 if {
                        printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
