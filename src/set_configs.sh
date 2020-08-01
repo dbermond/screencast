@@ -3,7 +3,7 @@
 
 # set_configs.sh - set various configurations for screencast
 #
-# Copyright (c) 2015-2019 Daniel Bermond < gmail.com: danielbermond >
+# Copyright (c) 2015-2020 Daniel Bermond < gmail.com: danielbermond >
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
