@@ -74,7 +74,7 @@ format_settings_mp4() {
     check_component "$format" muxer || component_error "$format" muxer true
     
     # move the moov atom to the beginning of the file
-    if [ "$streaming"  = 'true' ] 
+    if [ "$streaming"  = 'true' ]
     then
         [ "$saving_output" = 'true' ] && tee_faststart='[movflags=+faststart]'
     else
@@ -98,7 +98,7 @@ format_settings_mkv() {
     supported_videocodecs="$supported_videocodecs_all"
     
     # check if the detected ffmpeg build has support for the matroska (mkv) muxer
-    if [ "$rec_extension" != "$format" ] 
+    if [ "$rec_extension" != "$format" ]
     then
         check_component matroska muxer || component_error matroska muxer true
     fi
@@ -138,7 +138,7 @@ format_settings_flv() {
     
     # check if the detected ffmpeg build has support for the flv muxer only if recording offline
     # (flv muxer support in ffmpeg is already checked during the live streaming checks)
-    if [ "$streaming" = 'false' ] 
+    if [ "$streaming" = 'false' ]
     then
         check_component "$format" muxer || component_error "$format" muxer true
     fi
@@ -150,7 +150,7 @@ format_settings_nut() {
     supported_videocodecs="$supported_videocodecs_all"
     
     # check if the detected ffmpeg build has support for the nut muxer
-    if [ "$rec_extension" != "$format" ] 
+    if [ "$rec_extension" != "$format" ]
     then
         check_component "$format" muxer || component_error "$format" muxer true
     fi

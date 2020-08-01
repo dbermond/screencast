@@ -30,12 +30,12 @@ cleanup() {
     # delete temporary PNG (waterwark) image
     [ "$watermark" = 'true' ] && rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
     
-    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] && [ -n "$ff_output" ] 
+    if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] && [ -n "$ff_output" ]
     then
         # rename temporary (lossless) video to a better name if user selected to keep it (--keep/-K)
-        if [ "$keep_video" = 'true' ] 
+        if [ "$keep_video" = 'true' ]
         then
-            if [ "$auto_filename" = 'true' ] 
+            if [ "$auto_filename" = 'true' ]
             then
                 mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
                       "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}"
@@ -50,12 +50,12 @@ cleanup() {
         fi
         
         # delete temporary directory if it was created
-        if [ "$tmpdir_setted" = 'false' ] 
+        if [ "$tmpdir_setted" = 'false' ]
         then
-            if [ "$keep_video" = 'true' ] 
+            if [ "$keep_video" = 'true' ]
             then
                 # move the temporary video to the parent dir (without random string)
-                if [ "$auto_filename" = 'true' ] 
+                if [ "$auto_filename" = 'true' ]
                 then
                     mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
                 else
@@ -68,7 +68,7 @@ cleanup() {
     fi
     
     # delete zero-sized output file in case some unexpected error occurred
-    if [ -f "${savedir}/${output_file}" ] 
+    if [ -f "${savedir}/${output_file}" ]
     then
         output_filesize="$(du -k "${savedir}/${output_file}" | awk '{ printf $1 }')"
         
@@ -162,7 +162,7 @@ check_requirements() {
         
         if ! command -v "$requirement" >/dev/null 2>&1
         then
-            if [ "$requirement"  = 'magick' ] 
+            if [ "$requirement"  = 'magick' ]
             then
                 # in this case IM6 was found because 'convert' goes first
                 magick() {
@@ -285,7 +285,7 @@ check_alsa_short_name() {
 # return code (status): not relevant
 check_dir() {
     # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    if ! [ -e "$1" ] 
+    if ! [ -e "$1" ]
     then
         [ "$1" = "$tmpdir" ] && mode='-m 700'
         
@@ -305,10 +305,10 @@ check_dir() {
     fi
     
     # check if the entered $savedir/$tmpdir is a directory
-    if [ -d "$1" ] 
+    if [ -d "$1" ]
     then
         # check if the entered $savedir/$tmpdir has write permission
-        if ! [ -w "$1" ] 
+        if ! [ -w "$1" ]
         then
             case "$1" in
                 "$savedir")
@@ -332,9 +332,9 @@ check_dir() {
 # return value: not relevant
 # return code (status): not relevant
 set_tmpdir() {
-    if [ "$tmpdir_setted" = 'false' ] 
+    if [ "$tmpdir_setted" = 'false' ]
     then
-        if [ -n "$XDG_CACHE_HOME" ] 
+        if [ -n "$XDG_CACHE_HOME" ]
         then
             # shellcheck disable=SC2174
             if mkdir -p -m 700 "${XDG_CACHE_HOME}/screencast"
@@ -370,7 +370,7 @@ set_tmpdir() {
 # return value: a random string
 # return code (status): not relevant
 randomstr() {
-    if [ -c '/dev/urandom' ] 
+    if [ -c '/dev/urandom' ]
     then
         LC_CTYPE='C' tr -dc '[:alnum:]' < /dev/urandom 2>/dev/null | head -c"$1"
         
@@ -394,7 +394,7 @@ randomstr() {
         print_good 'generating random string with legacy method' >&2
         rnd="$(awk 'BEGIN { srand(); printf "%d\n", (rand() * 10^8) }')"
         
-        while [ "$(printf '%s' "$rnd" | wc -m)" -lt "$1" ] 
+        while [ "$(printf '%s' "$rnd" | wc -m)" -lt "$1" ]
         do
             sleep 1
             rnd="${rnd}$(awk 'BEGIN { srand(); printf "%d\n", (rand() * 10^8) }')"

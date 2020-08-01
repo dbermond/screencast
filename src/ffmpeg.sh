@@ -56,15 +56,15 @@ check_lossless_component() {
     do
         if "lossless_${1}_settings_${component}"
         then
-            if [ "$component" = "$first_component" ] 
+            if [ "$component" = "$first_component" ]
             then
                 break
             else
-                if [ "$component" = "$second_component" ] 
+                if [ "$component" = "$second_component" ]
                 then
                     previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]$//")"
                     
-                elif [ "$component" = "$last_component" ] 
+                elif [ "$component" = "$last_component" ]
                 then
                     previous_components="$(printf '%s' "$previous_components" | sed 's/,[[:space:]]$//')"
                     last_word="$(          printf '%s' "$previous_components" | awk '{ print $NF }')"
@@ -83,7 +83,7 @@ check_lossless_component() {
                 break
             fi
         else
-            if [ "$component" = "$last_component" ] 
+            if [ "$component" = "$last_component" ]
             then
                 previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]$/ or ${component}/")"
                 component_error "$previous_components" "$component_generic_name" false

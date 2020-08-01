@@ -41,7 +41,7 @@ live_streaming() {
     notify 'normal' '1700' 'media-record' 'live streaming...'
     
     # do the live stream and save the recorded content to an output file
-    if [ "$saving_output" = 'true' ] 
+    if [ "$saving_output" = 'true' ]
     then
         check_dir "$savedir"
         
@@ -123,7 +123,7 @@ record_offline_two_steps() {
         set_watermark
         
         # enable fade effect if chosen by user (-e/--fade)
-        if [ "$fade" != 'none' ] 
+        if [ "$fade" != 'none' ]
         then
             videofade
             [ "$watermark" = 'false' ] && ff_vfilter_option='-vf'

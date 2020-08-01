@@ -28,7 +28,7 @@
 # return value: none
 # return code (status): not relevant
 check_cmd_line() {
-    if [ "$display_setted" = 'true' ] 
+    if [ "$display_setted" = 'true' ]
     then
         if ! printf '%s' "$display" | grep -Eq '^:[0-9]+(\.[0-9]+)?$'
         then
@@ -36,7 +36,7 @@ check_cmd_line() {
         fi
     fi
     
-    if [ "$select_region" = 'true' ] 
+    if [ "$select_region" = 'true' ]
     then
         # do not allow to use -S/--select-region with -s/--size or -p/--position
         [ "$video_size_setted" = 'true' ] && exit_program '--select-region (-S) option cannot be used with --size (-s) option'
@@ -48,7 +48,7 @@ check_cmd_line() {
         video_width="$(     printf '%s' "$video_size"     | awk -F'x' '{ printf $1 }')"
         video_height="$(    printf '%s' "$video_size"     | awk -F'x' '{ printf $2 }')"
         
-        if [ "$video_size_setted" = 'true' ] 
+        if [ "$video_size_setted" = 'true' ]
         then
             # check for a valid video size format (NxN) (-s/--size)
             printf '%s' "$video_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${video_size}' is not a valid video size format"
@@ -58,7 +58,7 @@ check_cmd_line() {
             check_dimension "$video_height" || exit_program "$(dimension_msg 'height')"
         fi
         
-        if [ "$video_posi_setted" = 'true' ] 
+        if [ "$video_posi_setted" = 'true' ]
         then
             # check for a valid screen position format to record (N,N) (-p/--position)
             printf '%s' "$video_position" | grep -Eq '^[0-9]+,[0-9]+$' || exit_program "'${video_position}' is not a valid screen position format"
@@ -67,14 +67,14 @@ check_cmd_line() {
         check_screen
     fi
     
-    if [ "$border_setted" = 'true' ] 
+    if [ "$border_setted" = 'true' ]
     then
         if printf '%s' "$border" | grep -Eq '^[0-9]+$'
         then
             # set video border if chosen by user (a value different than '0')
-            if [ "$border" -gt '0' ] 
+            if [ "$border" -gt '0' ]
             then
-                if [ "$border" -le '128' ] 
+                if [ "$border" -le '128' ]
                 then
                     border_options="-show_region 1 -region_border ${border}"
                 else
@@ -88,14 +88,14 @@ check_cmd_line() {
         fi
     fi
     
-    if [ "$video_rate_setted" = 'true' ] 
+    if [ "$video_rate_setted" = 'true' ]
     then
         # check if the entered framerate (fps) is a valid integer number (-r/--fps)
         # (when live streaming, the video framerate (fps) cannot be a floating point number
         #  because it will be multiplied by two to obtain the gop value. This multiplication
         #  will be done using the shell simple aritmetic operator, which does not support floats.
         #  This will make bc to be required only when using fade effect.)
-        if [ "$streaming" = 'true' ] 
+        if [ "$streaming" = 'true' ]
         then
             if ! printf '%s' "$video_rate" | grep -Eq '^[0-9]+$'
             then
@@ -115,7 +115,7 @@ check_cmd_line() {
     fi
     
     # check if user entered a valid audio encoder
-    if [ "$audio_encoder_setted" = 'true' ] 
+    if [ "$audio_encoder_setted" = 'true' ]
     then
         if ! printf '%s' "$supported_audiocodecs_all" | grep -q "^${audio_encoder}$"
         then
@@ -124,7 +124,7 @@ check_cmd_line() {
     fi
     
     # check if user entered a valid video encoder
-    if [ "$video_encoder_setted" = 'true' ] 
+    if [ "$video_encoder_setted" = 'true' ]
     then
         if ! printf '%s' "$supported_videocodecs_all" | grep -q "^${video_encoder}$"
         then
@@ -133,7 +133,7 @@ check_cmd_line() {
     fi
     
     # check if user is recording audio (if not, modify the corresponding control variable)
-    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ] 
+    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ]
     then
         recording_audio='false'
     fi
@@ -146,7 +146,7 @@ check_cmd_line() {
         exit_program "'-K' is set but there is no temporary video to keep when using --one-step"
     
     # check if user entered a valid fade effect (-e/--fade)
-    if [ "$fade_setted" = 'true' ] 
+    if [ "$fade_setted" = 'true' ]
     then
         get_supported_fade
         
@@ -160,7 +160,7 @@ check_cmd_line() {
     fi
     
     # checks and settings based on usage of the '-u' option
-    if [ "$auto_filename" = 'true' ] 
+    if [ "$auto_filename" = 'true' ]
     then
         # do not allow to use '-u' when not saving the live streaming
         [ "$saving_output" = 'false' ] && exit_program "'-u' is set but not saving the live streaming ('-K' not set)"
@@ -169,7 +169,7 @@ check_cmd_line() {
         [ "$#" -gt '0' ] && exit_program '--auto-filename (-u) does not allow to set an output filename'
         
         # show full path when using dot folder hardlinks in -o/--output-dir
-        if [ "$outputdir_setted" = 'true' ] 
+        if [ "$outputdir_setted" = 'true' ]
         then
             # output dir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
             if printf '%s' "$savedir" | grep -Eq '^\.\.[/]?.*'
@@ -188,7 +188,7 @@ check_cmd_line() {
         current_time="$(date +%Y-%m-%d_%H.%M.%S)" # get current time for placing on filename
         
         # set the output filename
-        if [ "$streaming" = 'true' ] 
+        if [ "$streaming" = 'true' ]
         then
             output_file="screencast-livestreaming-${current_time}.${format}"
         else
@@ -249,7 +249,7 @@ check_cmd_line() {
         fi
         
         # set the output filename and get the container format (only if saving the output video)
-        if [ "$saving_output" = 'true' ] 
+        if [ "$saving_output" = 'true' ]
         then
             output_file="$(basename "$1")" # set the output filename
             format="${output_file##*.}"    # set container format (output filename extension)
@@ -258,7 +258,7 @@ check_cmd_line() {
     fi # end: else clause of: if [ "$auto_filename" = 'true' ]
     
     # show full path when using dot folder hardlinks in -t/--tmp-dir
-    if [ "$tmpdir_setted" = 'true' ] 
+    if [ "$tmpdir_setted" = 'true' ]
     then
         # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
         if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
@@ -288,7 +288,7 @@ check_cmd_line() {
     fi
     
     # check for valid live streaming settings
-    if [ "$streaming" = 'true' ] 
+    if [ "$streaming" = 'true' ]
     then
         get_supported_streaming_settings
         
@@ -303,7 +303,7 @@ check_cmd_line() {
         
         # check for an invalid container format if saving the live stream
         # (supported audio/video encoders in the flv muxer that have restrictions in specific container formats)
-        if [ "$saving_output" = 'true' ] 
+        if [ "$saving_output" = 'true' ]
         then
             if ! printf '%s' "$supported_streaming_formats" | grep -q "^${format}$"
             then
@@ -325,19 +325,19 @@ check_cmd_line() {
     fi
     
     # checks and settings for formats and audio/video encoders when saving the output video
-    if [ "$saving_output" = 'true' ] 
+    if [ "$saving_output" = 'true' ]
     then
         # execute container formats checks and settings
         "format_settings_${format}"
         
         # check if user entered and invalid combination of audio encoder and container format
-        if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ] 
+        if [ "$format_setted" = 'true' ] || [ "$audio_encoder_setted" = 'true' ]
         then
             if ! printf '%s' "$supported_audiocodecs" | grep -q "^${audio_encoder}$"
             then
                 msg="container format '${format}' does not support '${audio_encoder}' audio encoder"
                 
-                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ]
                 then
                     msg="${msg}
                       (did you forget to select the container format?)"
@@ -349,13 +349,13 @@ check_cmd_line() {
         fi
         
         # check if user entered and invalid combination of video encoder and container format
-        if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ] 
+        if [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
         then
             if ! printf '%s' "$supported_videocodecs" | grep -q "^${video_encoder}$"
             then
                 msg="container format '${format}' does not support '${video_encoder}' video encoder"
                 
-                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ]
                 then
                     msg="${msg}
                       (did you forget to select the container format?)"
@@ -371,7 +371,7 @@ check_cmd_line() {
                     [ "$video_encoder" = 'vp9'       ] ||
                     [ "$video_encoder" = 'vp9_vaapi' ] ;
                } &&
-               [ "$format" = 'mp4' ] 
+               [ "$format" = 'mp4' ]
             then
                 ffmpeg_version="$(ffmpeg -version | grep 'Copyright' | awk '{ printf $3 }')"
                 
@@ -390,7 +390,7 @@ check_cmd_line() {
                     msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
                       it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
                     
-                    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ] 
+                    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ]
                     then
                         msg="${msg}
                       (did you forget to select the container format?)"
@@ -408,7 +408,7 @@ check_cmd_line() {
     fi # end: [ "$saving_output" = 'true' ]
     
     # audio input checks and adjustments
-    if [ "$recording_audio" = 'true' ] 
+    if [ "$recording_audio" = 'true' ]
     then
         # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
         check_lossless_component audiocodec
@@ -417,7 +417,7 @@ check_cmd_line() {
         if check_component alsa demuxer
         then
             # check if user entered a valid ALSA input device name
-            if [ "$audio_input_setted" = 'true' ] 
+            if [ "$audio_input_setted" = 'true' ]
             then
                 case "$audio_input" in
                     pulse|default)
@@ -455,7 +455,7 @@ check_cmd_line() {
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             fi
             
-            if [ "$audio_input_setted" = 'true' ] 
+            if [ "$audio_input_setted" = 'true' ]
             then
                 # check if user entered a valid PulseAudio input source
                 case "$audio_input" in
@@ -497,21 +497,21 @@ check_cmd_line() {
     
     # do not allow to use '-i none' with an '-a' argument different than 'none'
     if [ "$audio_input"    = 'none' ] && [ "$audio_input_setted"   = 'true' ] &&
-       [ "$audio_encoder" != 'none' ] && [ "$audio_encoder_setted" = 'true' ] 
+       [ "$audio_encoder" != 'none' ] && [ "$audio_encoder_setted" = 'true' ]
     then
         exit_program "'-i none' cannot be used with an '-a' argument different than 'none'"
     fi
     
     # do not allow to use '-a none' with an '-i' argument different than 'none'
     if [ "$audio_encoder"  = 'none' ] && [ "$audio_encoder_setted" = 'true' ] &&
-       [ "$audio_input"   != 'none' ] && [ "$audio_input_setted"   = 'true' ] 
+       [ "$audio_input"   != 'none' ] && [ "$audio_input_setted"   = 'true' ]
        
     then
         exit_program "'-a none' cannot be used with an '-i' argument different than 'none'"
     fi
     
     # execute audio encoder checks and settings (only if recording audio)
-    if [ "$recording_audio" = 'true' ] 
+    if [ "$recording_audio" = 'true' ]
     then
         "audiocodec_settings_${audio_encoder}"
     
@@ -549,13 +549,13 @@ check_cmd_line() {
     esac
     
     # do not allow to use -m option when -i or -a are setted to 'none'
-    if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ] 
+    if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ]
     then
         exit_program "--volume-factor (-m) option cannot be used when '-i' or '-a' are setted to 'none'"
     fi
     
     # check if the entered volume factor is a valid integer/float number (-m)
-    if [ "$volume_factor_setted" = 'true' ] 
+    if [ "$volume_factor_setted" = 'true' ]
     then
         if printf '%s' "$volume_factor" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
         then
@@ -574,7 +574,7 @@ check_cmd_line() {
     fi
     
     # watermark checks and settings
-    if [ "$watermark" = 'true' ] 
+    if [ "$watermark" = 'true' ]
     then
         # check for a valid watermark size format (NxN) (-z/--wmark-size)
         printf '%s' "$watermark_size" | grep -Eq '^[0-9]+x[0-9]+$' || exit_program "'${watermark_size}' is not a valid watermark size format"
@@ -624,7 +624,7 @@ check_cmd_line() {
     fi
     
     # webcam overlay checks and settings
-    if [ "$webcam_overlay" = 'true' ] 
+    if [ "$webcam_overlay" = 'true' ]
     then
         # check for a valid webcam input device
         [ -c "$webcam_input" ] || exit_program "'${webcam_input}' is not a valid webcam input device on this system"
@@ -681,7 +681,7 @@ check_cmd_line() {
         exit_program "watermark and webcam overlay cannot be placed in the same '$webcam_corner' video corner"
     
     # check if the entered fixed video length is a valid integer/float number (-x)
-    if [ "$fixed_length_setted" = 'true' ] 
+    if [ "$fixed_length_setted" = 'true' ]
     then
         if printf '%s' "$fixed_length" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
         then

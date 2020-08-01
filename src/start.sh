@@ -38,7 +38,7 @@ fi
 msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
 
 # enable some options if the executing shell is zsh
-if [ -n "$ZSH_VERSION" ] 
+if [ -n "$ZSH_VERSION" ]
 then
     command -v setopt >/dev/null 2>&1 || exit_program 'script appears to be running in zsh but setopt was not found'
     setopt SH_WORD_SPLIT # enable variable word splitting
@@ -64,7 +64,7 @@ ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 check_component x11grab demuxer || component_error x11grab demuxer false
 
 # check for the needed lossless ffmpeg components when using a two step process
-if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] 
+if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ]
 then
     check_lossless_component format
     check_lossless_component videocodec
@@ -84,13 +84,13 @@ ff_audio_options="${audio_input_options} ${audio_input}"
 ff_video_options="${video_input_options} ${border_options} -framerate ${video_rate} -video_size ${video_size} -i ${display}+${video_position}"
 
 # do a live streaming if chosen by user (-L/--live-streaming)
-if [ "$streaming" = 'true' ] 
+if [ "$streaming" = 'true' ]
 then
     live_streaming
 
 # record offline if live streaming is not chosen by user
 else
-    if [ "$one_step" = 'true' ] 
+    if [ "$one_step" = 'true' ]
     then
         record_offline_one_step
     else

@@ -39,7 +39,7 @@ get_cmd_line() {
             # short option and long option without '='
             -s|--size)
                 # search for an argument
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     # errors out if no argument was entered after the option
                     # (will check for a leading '-' in the next parameter,
@@ -68,7 +68,7 @@ get_cmd_line() {
                 ;;
             
             -p|--position)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -91,7 +91,7 @@ get_cmd_line() {
                 ;;
             
             -d|--display)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -114,7 +114,7 @@ get_cmd_line() {
                 ;;
             
             -b|--border)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -141,7 +141,7 @@ get_cmd_line() {
                 ;;
             
             -r|--fps)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -164,7 +164,7 @@ get_cmd_line() {
                 ;;
             
             -f|--format)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -187,7 +187,7 @@ get_cmd_line() {
                 ;;
             
             -i|--audio-input)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -210,7 +210,7 @@ get_cmd_line() {
                 ;;
             
             -a|--audio-encoder)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -233,7 +233,7 @@ get_cmd_line() {
                 ;;
             
             -v|--video-encoder)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -256,7 +256,7 @@ get_cmd_line() {
                 ;;
             
             -A|--vaapi-device)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -279,7 +279,7 @@ get_cmd_line() {
                 ;;
             
             -e|--fade)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -302,7 +302,7 @@ get_cmd_line() {
                 ;;
             
             -m|--volume-factor)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -325,7 +325,7 @@ get_cmd_line() {
                 ;;
             
             -w|--watermark)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -348,7 +348,7 @@ get_cmd_line() {
                 ;;
             
             -z|--wmark-size)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -371,7 +371,7 @@ get_cmd_line() {
                 ;;
             
             -k|--wmark-position)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -394,7 +394,7 @@ get_cmd_line() {
                 ;;
             
             -c|--wmark-font)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -421,7 +421,7 @@ get_cmd_line() {
                 ;;
             
             -I|--webcam-input)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -444,7 +444,7 @@ get_cmd_line() {
                 ;;
             
             -Z|--webcam-size)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -467,7 +467,7 @@ get_cmd_line() {
                 ;;
             
             -P|--webcam-position)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -490,7 +490,7 @@ get_cmd_line() {
                 ;;
             
             -R|--webcam-fps)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -513,7 +513,7 @@ get_cmd_line() {
                 ;;
             
             -L|--live-streaming)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -536,7 +536,7 @@ get_cmd_line() {
                 ;;
             
             -x|--fixed)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -567,7 +567,7 @@ get_cmd_line() {
                 ;;
             
             -g|--png-optimizer)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -590,7 +590,7 @@ get_cmd_line() {
                 ;;
             
             -o|--output-dir)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
@@ -614,7 +614,7 @@ get_cmd_line() {
                 ;;
             
             -t|--tmp-dir)
-                if [ -n "$2" ] 
+                if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then

@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if [ "$#" -eq '0' ] ||
-   [ "$#" -gt '1' ] 
+   [ "$#" -gt '1' ]
 then
     printf '%s\n' 'error: invalid usage'
     printf '%s\n' '       use --help for help'
@@ -26,7 +26,7 @@ then
 fi
 
 if [ "$1" = '-h'     ] ||
-   [ "$1" = '--help' ] 
+   [ "$1" = '--help' ]
 then
     printf '%s\n' 'chver - change screencast release version'
     printf '%s\n' 'Usage: chver <version>'
@@ -56,7 +56,7 @@ then
     
     sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $7 }')/${version}\"/" doc/screencast.1
     
-elif [ "$1" = 'next' ] || [ "$1" = 'dev' ] || [ "$1" = 'devel' ] 
+elif [ "$1" = 'next' ] || [ "$1" = 'dev' ] || [ "$1" = 'devel' ]
 then
     version='next'
     

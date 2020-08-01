@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if [ "$#" -eq '0' ] ||
-   [ "$#" -gt '1' ] 
+   [ "$#" -gt '1' ]
 then
     printf '%s\n' 'error: invalid usage'
     printf '%s\n' '       use --help for help'
@@ -26,14 +26,14 @@ then
 fi
 
 if [ "$1" = '-h'     ] ||
-   [ "$1" = '--help' ] 
+   [ "$1" = '--help' ]
 then
     printf '%s\n' 'chshell - change shell in screencast shebang'
     printf '%s\n' 'Usage: chshell <shell>'
     exit 0
 fi
 
-if [ -f './screencast' ] 
+if [ -f './screencast' ]
 then
     sed -i "1s|^#!/bin/.*$|#!/bin/${1}|" ./screencast
     

@@ -117,13 +117,13 @@ check_screen() {
     screen_width="$( printf '%s' "$screen_size" | awk -F'x' '{ printf $1 }')"
     screen_height="$(printf '%s' "$screen_size" | awk -F'x' '{ printf $2 }')"
     
-    if [ "$((video_width + video_position_x))" -gt "$screen_width"  ] 
+    if [ "$((video_width + video_position_x))" -gt "$screen_width"  ]
     then
         exit_program 'recording area is out of screen bounds
                       (video width + position X is greater than the current screen width)'
     fi
     
-    if [ "$((video_height + video_position_y))" -gt "$screen_height" ] 
+    if [ "$((video_height + video_position_y))" -gt "$screen_height" ]
     then
         exit_program 'recording area is out of screen bounds
                       (video height + position Y is greater than the current screen height)'

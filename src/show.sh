@@ -28,9 +28,9 @@
 # return code (status): not relevant
 show_header() {
     # give error if --version/-V is not the unique command line option
-    if [ "$version_setted" = 'true' ] 
+    if [ "$version_setted" = 'true' ]
     then
-        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ]
         then
             exit_program '--version (-V) option can be used only alone'
         fi
@@ -47,9 +47,9 @@ show_header() {
 # return code (status): not relevant
 show_help() {
     # give error if --help/-h/-? is not the unique command line option
-    if [ "$help_setted" = 'true' ] 
+    if [ "$help_setted" = 'true' ]
     then
-        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ]
         then
             exit_program '--help (-h) option can be used only alone'
         fi
@@ -108,9 +108,9 @@ show_help() {
 # return code (status): not relevant
 show_list() {
     # give error if --list/-l is not the unique command line option
-    if [ "$list_setted" = 'true' ] 
+    if [ "$list_setted" = 'true' ]
     then
-        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ] 
+        if [ "$shift_count" -ne '0' ] || [ "$#" -ne '1' ]
         then
             exit_program '--list (-l) option can be used only alone'
         fi
@@ -192,19 +192,19 @@ show_settings() {
     
     [ "$fade" != 'none' ] && effects="fade-${fade}"
     
-    if [ "$watermark" = 'true' ] 
+    if [ "$watermark" = 'true' ]
     then
         effects="${effects:+"${effects}, watermark"}"
         effects="${effects:-watermark}"
     fi
     
-    if [ "$webcam_overlay" = 'true' ] 
+    if [ "$webcam_overlay" = 'true' ]
     then
         effects="${effects:+"${effects}, webcam overlay"}"
         effects="${effects:-webcam overlay}"
     fi
     
-    if [ "$volume_increase" = 'true' ] 
+    if [ "$volume_increase" = 'true' ]
     then
         effects="${effects:+"${effects}, volume (${volume_factor})"}"
         effects="${effects:-"volume (${volume_factor})"}"
@@ -243,7 +243,7 @@ show_warnings() {
         unset msg
     fi
     
-    if [ "$auto_filename" = 'false' ] 
+    if [ "$auto_filename" = 'false' ]
     then
         # warn: output file already exists
         [ -f "${savedir}/${output_file}" ] &&
@@ -259,7 +259,7 @@ show_warnings() {
         unset lossless_video
     fi
     
-    if [ "$streaming" = 'true' ] 
+    if [ "$streaming" = 'true' ]
     then
         # warn: a possible output file already exists (if user specifies a local file in -L/--live-streaming option)
         [ -f "$streaming_url" ] && print_warn "output file '${streaming_url}' already exists, overwriting without prompt"
@@ -271,7 +271,7 @@ show_warnings() {
         fi
     else
         # warn: using a software-based video encoders in a one step process
-        if [ "$one_step" = 'true' ] 
+        if [ "$one_step" = 'true' ]
         then
             if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
             then

@@ -63,7 +63,7 @@ lossless_audiocodec_settings_flac() {
 audiocodec_settings_aac() {
     if check_component libfdk_aac encoder
     then
-        if [ "$streaming" = 'true' ] 
+        if [ "$streaming" = 'true' ]
         then
             audio_encode_codec='-codec:a libfdk_aac -b:a  96k -ar 44100 -ac 2'
         else
@@ -72,7 +72,7 @@ audiocodec_settings_aac() {
     else
         check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder' true
         
-        if [ "$streaming" = 'true' ] 
+        if [ "$streaming" = 'true' ]
         then
             audio_encode_codec='-codec:a aac -b:a  96k -ar 44100 -ac 2'
         else
@@ -94,7 +94,7 @@ audiocodec_settings_opus() {
 audiocodec_settings_mp3lame() {
     check_component libmp3lame encoder || component_error libmp3lame 'audio encoder' true
     
-    if [ "$streaming" = 'true' ] 
+    if [ "$streaming" = 'true' ]
     then
         audio_encode_codec='-codec:a libmp3lame -b:a  96k -ar 44100 -ac 2'
     else
@@ -105,7 +105,7 @@ audiocodec_settings_mp3lame() {
 audiocodec_settings_shine() {
     check_component libshine encoder || component_error libshine 'audio encoder' true
     
-    if [ "$streaming" = 'true' ] 
+    if [ "$streaming" = 'true' ]
     then
         audio_encode_codec='-codec:a libshine -b:a  96k -ar 44100 -ac 2'
     else

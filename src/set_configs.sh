@@ -28,18 +28,18 @@
 # return code (status): not relevant
 set_live() {
     # set ffmpeg '-maxrate' and '-bufsize' options
-    if   [ "$video_height" -gt '2160' ] 
+    if   [ "$video_height" -gt '2160' ]
     then
-         if [ "$video_rate" -ge '60' ] 
+         if [ "$video_rate" -ge '60' ]
          then
              video_encode_codec="${video_encode_codec} -maxrate 40M -bufsize 80M"
          else
              video_encode_codec="${video_encode_codec} -maxrate 30M -bufsize 60M"
          fi
          
-    elif [ "$video_height" -eq '2160' ] 
+    elif [ "$video_height" -eq '2160' ]
     then
-         if [ "$video_rate" -ge '60' ] 
+         if [ "$video_rate" -ge '60' ]
          then
              video_encode_codec="${video_encode_codec} -maxrate 22M -bufsize 44M"
          else
@@ -52,7 +52,7 @@ set_live() {
              [ "$video_height" -gt '1440' ] ;
          }
     then
-         if [ "$video_rate" -ge '60' ] 
+         if [ "$video_rate" -ge '60' ]
          then
              video_encode_codec="${video_encode_codec} -maxrate 10M -bufsize 20M"
          else
@@ -65,7 +65,7 @@ set_live() {
              [ "$video_height" -gt '1080' ] ;
          }
     then
-         if [ "$video_rate" -ge '60' ] 
+         if [ "$video_rate" -ge '60' ]
          then
              video_encode_codec="${video_encode_codec} -maxrate 5M -bufsize 10M"
          else
@@ -78,7 +78,7 @@ set_live() {
              [ "$video_height" -gt '720'  ] ;
          }
     then
-         if [ "$video_rate" -ge '60' ] 
+         if [ "$video_rate" -ge '60' ]
          then
              video_encode_codec="${video_encode_codec} -maxrate 3M -bufsize 6M"
          else
@@ -121,9 +121,9 @@ set_live() {
 # return value: none
 # return code (status): not relevant
 set_watermark() {
-    if [ "$watermark" = 'true' ] 
+    if [ "$watermark" = 'true' ]
     then
-        if [ -z "$tmpdir" ] 
+        if [ -z "$tmpdir" ]
         then
             set_tmpdir
             check_dir "$tmpdir"
@@ -147,7 +147,7 @@ set_watermark() {
 # return value: none
 # return code (status): not relevant
 set_webcam() {
-    if [ "$webcam_overlay" = 'true' ] 
+    if [ "$webcam_overlay" = 'true' ]
     then
         check_component video4linux2,v4l2 demuxer || component_error video4linux2,v4l2 demuxer false
         
@@ -188,7 +188,7 @@ fix_pass_duration() {
 set_vaapi_qsv() {
     case "$video_encoder" in
         *_vaapi)
-            if [ "$one_step" = 'true' ] 
+            if [ "$one_step" = 'true' ]
             then
                 [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
             else

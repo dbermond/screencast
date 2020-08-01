@@ -57,7 +57,7 @@ check_special_position() {
 # note2: this png optimizer check should be on check_cmd_line(), but it is implemented
 #        as a separate function to allow it to be executed before check_requirements()
 check_pngoptimizer() {
-    if [ "$pngoptimizer_setted" = 'true' ] 
+    if [ "$pngoptimizer_setted" = 'true' ]
     then
         get_supported_pngoptmz
         
