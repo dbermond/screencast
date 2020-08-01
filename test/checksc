@@ -318,7 +318,7 @@ run_tests() {
     then
         # get symlink target in POSIX
         # shellcheck disable=SC2012
-        pointed_shell="$(ls -dl /bin/sh | awk '{ printf $NF }')"
+        pointed_shell="$(ls -dl /bin/sh | awk '{ print $NF }')"
         shell="$pointed_shell"
         
         printf '%s\n' "${color_green} (points to '${shell}')${color_off}"
