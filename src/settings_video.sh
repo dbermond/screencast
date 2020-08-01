@@ -160,7 +160,7 @@ videocodec_settings_kvazaar() {
 
 videocodec_settings_svt_hevc() {
     check_component libsvt_hevc encoder || component_error libsvt_hevc 'video encoder' true
-    video_encode_codec='libsvt_hevc -rc vbr -tune subjective'
+    video_encode_codec='libsvt_hevc -rc vbr -tune sq'
 }
 
 videocodec_settings_hevc_nvenc() {
