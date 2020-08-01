@@ -55,9 +55,10 @@ get_list_videocodecs() {
 #                         $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
 get_videocodecs_for_nonmulti8_msg() {
     msg_speedloss_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                     sed '/^x265$/d;/^kvazaar$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+                                     sed -e '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d' \
+                                         -e '/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
     
-    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nhevc_nvenc\nhevc_vaapi\nhevc_qsv')"
+    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv')"
 }
 
 # lossless video encoder settings functions: make checks and settings for lossless video encoder
