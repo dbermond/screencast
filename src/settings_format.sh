@@ -48,7 +48,7 @@ lossless_format_settings_matroska() {
 }
 
 lossless_format_settings_nut() {
-    if check_component nut muxer && 
+    if check_component nut muxer &&
        check_component nut demuxer
     then
         rec_extension='nut'

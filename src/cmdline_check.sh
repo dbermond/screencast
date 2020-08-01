@@ -243,7 +243,7 @@ check_cmd_line() {
         then
             savedir="$(printf '%s' "$(dirname "$1")" | sed "s|^\\.|$(pwd)|")"
             
-        # any other output dir format, no need of special handling 
+        # any other output dir format, no need of special handling
         else
             savedir="$(dirname "$1")"
         fi
