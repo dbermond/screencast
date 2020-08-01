@@ -6,6 +6,7 @@
 # .gitignore
 
 # program files
+pkg/
 screencast
 FAQ
 TODO
@@ -15,6 +16,10 @@ TODO
 *.patch
 *.diff
 *.bak
+*.bin
+*.new
+*.old
+*.py
 
 # video files
 *.mp4
@@ -94,6 +99,7 @@ TODO
 *.cdda
 
 # image files
+*.img
 *.png
 *.mng
 *.pnm
@@ -132,6 +138,8 @@ TODO
 *.tbz2
 *.tlz
 *.zip
+*.zst
+*.zstd
 *.zz
 *.ace
 *.arj
@@ -165,3 +173,4 @@ TODO
 .Trashes
 ehthumbs.db
 Thumbs.db
+*-swp
