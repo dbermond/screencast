@@ -267,7 +267,8 @@ show_warnings() {
         # warn: using a software-based video encoder in live streaming
         if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
         then
-            print_warn 'using a software-based video encoder in live streaming is not recommend (can cause audio problems)'
+            print_warn 'using a software-based video encoder in live streaming is not recommended
+                        (can cause buffer problems that may lead to packet loss)'
         fi
     else
         # warn: using a software-based video encoders in a one step process
@@ -275,7 +276,8 @@ show_warnings() {
         then
             if printf '%s' "$supported_videocodecs_software" | grep -q "^${video_encoder}$"
             then
-                print_warn 'using a software-based video encoder in a one step process is not recommend (can cause audio problems)'
+                print_warn 'using a software-based video encoder in a one step process is not recommended
+                        (can cause buffer problems that may lead to packet loss)'
             fi
         fi
     fi
