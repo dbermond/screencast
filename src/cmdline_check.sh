@@ -380,6 +380,20 @@ check_cmd_line() {
                         fi
                     fi
                     ;;
+                
+                # av1 + webm: requires ffmpeg 4.1 or greater (or git master N-91995-gcbe5c7ef38 or greater)
+                *av1*)
+                    if [ "$format" = 'webm' ]
+                    then
+                        if ! check_minimum_ffmpeg_version '4.1' '91995'
+                        then
+                            msg="your ffmpeg build does not support 'av1' video encoder in 'webm' container format
+                      it's needed ffmpeg 4.1 or greater (or git master N-91995-gcbe5c7ef38 or greater)"
+                            
+                            ffmpeg_version_error "$msg"
+                        fi
+                    fi
+                    ;;
             esac
             
         fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
