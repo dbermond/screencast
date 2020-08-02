@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 
 # error.sh - error messages for screencast
 #
@@ -72,6 +73,24 @@ component_error() {
     fi
     
     exit 1
+}
+
+# ffmpeg_version_error function:
+#   exit the program with the proper message/notifications if the detected ffmpeg version is unsupported
+# arguments: $1 - error message to print/notificate
+# return value: not relevant
+# return code (status): not relevant
+ffmpeg_version_error() {
+    msg="$1"
+    
+    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ]
+    then
+        msg="${msg}
+                      (did you forget to select the container format?)"
+    fi
+    
+    show_settings
+    exit_program "$msg"
 }
 
 # recording_error function: exit the program with the proper message/notifications if a recording error has occurred

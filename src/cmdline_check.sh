@@ -365,43 +365,22 @@ check_cmd_line() {
                 exit_program "$msg"
             fi
             
-            # special condition check: mp4 + vp9
-            # support is enabled only in ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-            if {
-                    [ "$video_encoder" = 'vp9'       ] ||
-                    [ "$video_encoder" = 'vp9_vaapi' ] ;
-               } &&
-               [ "$format" = 'mp4' ]
-            then
-                ffmpeg_version="$(ffmpeg -version | awk '/Copyright/ { print $3 }')"
-                
-                if {
-                       printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*' &&
-                       ! {
-                             [ "$(printf '%s' "$ffmpeg_version" | awk -F'.' '{ print $1 }')" -ge '3' ] &&
-                             [ "$(printf '%s' "$ffmpeg_version" | awk -F'.' '{ print $2 }')" -ge '4' ] ;
-                         } ;
-                   } ||
-                   {
-                       printf '%s' "$ffmpeg_version" | grep -q '^N-.*' &&
-                       ! [ "$(printf '%s' "$ffmpeg_version" | awk -F'-' '{ print $2 }')" -ge '86119' ] ;
-                   }
-                then
-                    msg="support for 'vp9' encoder in 'mp4' container format in your ffmpeg build is experimental
-                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
-                    
-                    if [ "$auto_filename" = 'true' ] && [ "$format_setted" = 'false' ]
+            # special condition checks
+            case "$video_encoder" in
+                # vp9 + mp4: requires ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+                *vp9*)
+                    if [ "$format" = 'mp4' ]
                     then
-                        msg="${msg}
-                      (did you forget to select the container format?)"
+                        if ! check_minimum_ffmpeg_version '3.4' '86119'
+                        then
+                            msg="support for 'vp9' video encoder in 'mp4' container format in your ffmpeg build is experimental
+                      it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
+                            
+                            ffmpeg_version_error "$msg"
+                        fi
                     fi
-                    
-                    show_settings
-                    exit_program "$msg"
-                    
-                fi # end: if { <complex multi-line ffmpeg version check>
-                
-            fi # end: [ "$format" = 'mp4' ] &&
+                    ;;
+            esac
             
         fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
         

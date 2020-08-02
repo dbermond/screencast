@@ -139,6 +139,40 @@ check_component() {
     esac
 }
 
+# check_minimum_ffmpeg_version function:
+#   check if the version of the detected ffmpeg build is at least at a minium required
+#   version (checks if ffmpeg version is greater of equal than a specified one; checks
+#   for both release and git versions)
+# arguments: $1 - ffmpeg release version (example: 4.4)
+# arguments: $2 - ffmpeg internal git revision (example: 98615)
+# return value: not relevant
+# reutrn code (status): 0 - ffmpeg version is greater or equal than the specified one
+#                       1 - ffmpeg version is not greater or equal than the specified one
+check_minimum_ffmpeg_version() {
+    if [ -z "$1" ] || [ -z "$2" ]
+    then
+        exit_program 'check_minimum_ffmpeg_version(): invalid usage'
+    fi
+    
+    ffmpeg_version="$(ffmpeg -version | awk '/Copyright/ { print $3 }')"
+    
+    if printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*'
+    then
+        if [ "$(printf '%s\n' "$1" "$ffmpeg_version" | sort | head -n1)" != "$1" ]
+        then
+            return 1
+        fi
+    elif printf '%s' "$ffmpeg_version" | grep -Eq '^N-[0-9]+-[[:alnum:]]+$'
+    then
+        if [ "$(printf '%s' "$ffmpeg_version" | awk -F'-' '{ print $2 }')" -lt "$2" ]
+        then
+            return 1
+        fi
+    else
+        exit_program "check_minimum_ffmpeg_version(): unrecognized ffmpeg version format '${ffmpeg_version}'"
+    fi
+}
+
 # run_ffmpeg function: execute ffmpeg command according to predefined variables
 # arguments: none
 # return value: not relevant
