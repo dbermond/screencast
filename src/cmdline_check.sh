@@ -414,10 +414,8 @@ check_cmd_line() {
                                 exit_program "'${audio_input}' is not a valid ALSA input device name on this system"
                             fi
                         else
-                            print_error "'arecord' was not found"
-                            printf '%s%s\n' '                       ' \
-                                            "please install 'arecord' (alsa-utils)" >&2
-                            exit 1
+                            exit_program "'arecord' was not found
+                      please install 'arecord' (alsa-utils)"
                         fi
                         ;;
                 esac
@@ -453,10 +451,8 @@ check_cmd_line() {
                                 exit_program "'${audio_input}' is not a valid PulseAudio input source on this system"
                             fi
                         else
-                            print_error "'pactl' was not found after falling back to PulseAudio backend"
-                            printf '%s%s\n' '                       ' \
-                                            "please install 'pactl'" >&2
-                            exit 1
+                            exit_program "'pactl' was not found after falling back to PulseAudio backend
+                      please install 'pactl'"
                         fi
                         ;;
                 esac

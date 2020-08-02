@@ -28,10 +28,7 @@
 # return value: not relevant
 # return code (status): not relevant
 command_error() {
-    msg='option requires an argument'
-    print_error "${1} ${msg}"
-    notify 'critical' "$expire_time_long" "$error_icon" "error: ${1} ${msg}"
-    exit 1
+    exit_program "${1} option requires an argument"
 }
 
 # exit_program: print an error message to stderr, a desktop notification
@@ -40,7 +37,7 @@ command_error() {
 # return value: not relevant
 # return code (status): not relevant
 exit_program() {
-    print_error "${1}"
+    print_error "$1"
     notify 'critical' "$expire_time_long" "$error_icon" "error: ${1}"
     exit 1
 }
@@ -91,24 +88,4 @@ ffmpeg_version_error() {
     
     show_settings
     exit_program "$msg"
-}
-
-# recording_error function: exit the program with the proper message/notifications if a recording error has occurred
-# arguments: none
-# return value: not relevant
-# return code (status): not relevant
-recording_error() {
-    print_error 'recording error!'
-    notify 'critical' "$expire_time_long" "$error_icon" 'recording error!'
-    exit 1
-}
-
-# encoding_error function: exit the program with the proper message/notifications if an encoding error has occurred
-# arguments: none
-# return value: not relevant
-# return code (status): not relevant
-encoding_error() {
-    print_error 'encoding error!'
-    notify 'critical' "$expire_time_long" "$error_icon" 'encoding error!'
-    exit 1
 }

@@ -58,7 +58,7 @@ live_streaming() {
     then
         finish
     else
-        recording_error
+        exit_program 'recording error!'
     fi
 }
 
@@ -87,7 +87,7 @@ record_offline_one_step() {
     then
         finish
     else
-        recording_error
+        exit_program 'recording error!'
     fi
 }
 
@@ -150,9 +150,9 @@ record_offline_two_steps() {
         then
             finish
         else
-            encoding_error
+            exit_program 'encoding error!'
         fi
     else
-        recording_error
+        exit_program 'recording error!'
     fi
 }
