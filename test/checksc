@@ -541,15 +541,15 @@ done
 [ "$use_vaapi"  = 'true' ] && total="$((total * 2))"
 
 # output directory creation and checks
-! [ -e "$outdir" ] && mkdir -p "$outdir"
+[ ! -e "$outdir" ] && mkdir -p "$outdir"
 
-if ! [ -d "$outdir" ]
+if [ ! -d "$outdir" ]
 then
     printf '%s\n' "${color_red}error:${color_off} '${outdir}' is not a directory, aborting tests" >&2
     exit 1
 fi
 
-if ! [ -w "$outdir" ]
+if [ ! -w "$outdir" ]
 then
     printf '%s\n' "${color_red}error:${color_off} no write permission for directory '${outdir}', aborting tests" >&2
     exit 1

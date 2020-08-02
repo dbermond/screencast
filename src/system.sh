@@ -285,7 +285,7 @@ check_alsa_short_name() {
 # return code (status): not relevant
 check_dir() {
     # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    if ! [ -e "$1" ]
+    if [ ! -e "$1" ]
     then
         [ "$1" = "$tmpdir" ] && mode='-m 700'
         
@@ -308,7 +308,7 @@ check_dir() {
     if [ -d "$1" ]
     then
         # check if the entered $savedir/$tmpdir has write permission
-        if ! [ -w "$1" ]
+        if [ ! -w "$1" ]
         then
             case "$1" in
                 "$savedir")

@@ -63,7 +63,7 @@ notify() {
 finish() {
     print_good 'finish'
     
-    ! [ -f "$finish_icon" ] && finish_icon='video-x-generic'
+    [ ! -f "$finish_icon" ] && finish_icon='video-x-generic'
     
     notify 'normal' '3000' "$finish_icon" 'finish'
     

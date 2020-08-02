@@ -52,7 +52,7 @@ fi
 
 find . -name '.git' -prune -o -type f ! -name "$(printf '*\n*')" -print | while read -r file
 do
-    ! [ -f "$file" ] && continue
+    [ ! -f "$file" ] && continue
     
     printf '%s' "Parsing file '${file}'...  "
     
