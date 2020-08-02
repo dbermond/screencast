@@ -175,7 +175,7 @@ check_requirements() {
                 printf '%s%s\n' '                      ' \
                           "please install ${installname}" >&2
                 [ "$requirement" != 'notify-send' ] &&
-                    notify 'critical' '5000' 'dialog-error' "$msg"
+                    notify 'critical' "$expire_time_long" "$error_icon" "$msg"
                 exit 1
             fi
         fi

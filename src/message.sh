@@ -63,9 +63,14 @@ notify() {
 finish() {
     print_good 'finish'
     
-    [ ! -f "$finish_icon" ] && finish_icon='video-x-generic'
+    if [ -f "$finish_icon_oxygen" ]
+    then
+        finish_icon="$finish_icon_oxygen"
+    else
+        finish_icon="$finish_icon_generic"
+    fi
     
-    notify 'normal' '3000' "$finish_icon" 'finish'
+    notify 'normal' "$expire_time_normal" "$finish_icon" 'finish'
     
     # play a sound after finish if requirements are present
     if [ "$notifications" = 'true' ] && [ -f "$finish_sound" ] && command -v ffplay >/dev/null 2>&1

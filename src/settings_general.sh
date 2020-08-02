@@ -30,8 +30,15 @@ screencast_website='https://github.com/dbermond/screencast/'
 savedir="$(pwd)"             # path to save output files
 queue_size='3096'            # ffmpeg thread queue size
 ffplay_volume='35'           # ffplay playback volume (0-100)
+expire_time_short='1700'     # expire time for short notifications
+expire_time_normal='3000'    # expire time for normal notifications
+expire_time_long='5000'      # expire time for long notifications
+error_icon='dialog-error'
+record_icon='media-record'
+encode_icon='media-playback-stop'
+finish_icon_generic='video-x-generic'
+finish_icon_oxygen='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 finish_sound='/usr/share/sounds/freedesktop/stereo/complete.oga'
-finish_icon='/usr/share/icons/oxygen/base/128x128/actions/dialog-ok-apply.png'
 
 # control settings (controls various aspects)
 saving_output='true'         # if user is saving an output video (true, false)

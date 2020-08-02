@@ -38,7 +38,7 @@ live_streaming() {
     ff_pixfmt_options="-pix_fmt ${pixel_format}"
     
     print_good 'live streaming'
-    notify 'normal' '1700' 'media-record' 'live streaming...'
+    notify 'normal' "$expire_time_short" "$record_icon" 'live streaming...'
     
     # do the live stream and save the recorded content to an output file
     if [ "$saving_output" = 'true' ]
@@ -80,7 +80,7 @@ record_offline_one_step() {
     ff_output="${savedir}/${output_file}"
     
     print_good 'recording (one step process)'
-    notify 'normal' '1700' 'media-record' 'recording (one step)...'
+    notify 'normal' "$expire_time_short" "$record_icon" 'recording (one step)...'
     
     # record screen and encode in one step
     if run_ffmpeg
@@ -111,7 +111,7 @@ record_offline_two_steps() {
     ff_output="${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
     
     print_good 'recording'
-    notify 'normal' '1700' 'media-record' 'recording...'
+    notify 'normal' "$expire_time_short" "$record_icon" 'recording...'
     
     # record screen to a lossless video
     if run_ffmpeg
@@ -143,7 +143,7 @@ record_offline_two_steps() {
         ff_output="${savedir}/${output_file}"
         
         print_good 'encoding'
-        notify 'normal' '3000' 'media-playback-stop' 'encoding...'
+        notify 'normal' "$expire_time_normal" "$encode_icon" 'encoding...'
         
         # encode the recorded lossless video file
         if run_ffmpeg

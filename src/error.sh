@@ -30,7 +30,7 @@
 command_error() {
     msg='option requires an argument'
     print_error "${1} ${msg}"
-    notify 'critical' '5000' 'dialog-error' "error: ${1} ${msg}"
+    notify 'critical' "$expire_time_long" "$error_icon" "error: ${1} ${msg}"
     exit 1
 }
 
@@ -41,7 +41,7 @@ command_error() {
 # return code (status): not relevant
 exit_program() {
     print_error "${1}"
-    notify 'critical' '5000' 'dialog-error' "error: ${1}"
+    notify 'critical' "$expire_time_long" "$error_icon" "error: ${1}"
     exit 1
 }
 
@@ -58,7 +58,7 @@ component_error() {
     printf '%s%s\n'   '                      ' \
                       "please install a ffmpeg build with support for '${1}' ${2}" >&2
                       
-    notify 'critical' '5000' 'dialog-error' \
+    notify 'critical' "$expire_time_long" "$error_icon" \
            "error: the detected ffmpeg build has no support for '${1}' ${2}"
     
     if [ "$3" =  'true' ] && printf '%s' "$2" | grep -q '.*encoder$'
@@ -99,7 +99,7 @@ ffmpeg_version_error() {
 # return code (status): not relevant
 recording_error() {
     print_error 'recording error!'
-    notify 'critical' '5000' 'dialog-error' 'recording error!'
+    notify 'critical' "$expire_time_long" "$error_icon" 'recording error!'
     exit 1
 }
 
@@ -109,6 +109,6 @@ recording_error() {
 # return code (status): not relevant
 encoding_error() {
     print_error 'encoding error!'
-    notify 'critical' '5000' 'dialog-error' 'encoding error!'
+    notify 'critical' "$expire_time_long" "$error_icon" 'encoding error!'
     exit 1
 }
