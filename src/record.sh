@@ -116,9 +116,9 @@ record_offline_two_steps() {
     # record screen to a lossless video
     if run_ffmpeg
     then
-        unset ff_vfilter_option
-        unset ff_vfilter_settings
-        unset ff_webcam_options
+        unset -v ff_vfilter_option
+        unset -v ff_vfilter_settings
+        unset -v ff_webcam_options
         
         set_watermark
         

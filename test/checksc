@@ -599,7 +599,7 @@ else
         printf '%s\n' "  ${color_red}- ${cmd}${color_off}"
     done
     
-    unset IFS
+    unset -v IFS
     
     exit 1
 fi

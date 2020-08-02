@@ -94,7 +94,7 @@ check_lossless_component() {
         fi
     done
     
-    unset previous_components
+    unset -v previous_components
 }
 
 # check_component function: check if the detected ffmpeg build has support for a given component

@@ -240,7 +240,7 @@ show_warnings() {
             print_warn "'${video_encoder}' video encoder ${msg}"
         fi
         
-        unset msg
+        unset -v msg
     fi
     
     if [ "$auto_filename" = 'false' ]
@@ -256,7 +256,7 @@ show_warnings() {
         [ "$keep_video" = 'true'  ] && [ -f "${tmpdir}/${lossless_video}" ] &&
             print_warn "lossless output file '${lossless_video}' already exists, overwriting without prompt"
             
-        unset lossless_video
+        unset -v lossless_video
     fi
     
     if [ "$streaming" = 'true' ]

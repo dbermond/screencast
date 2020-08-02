@@ -517,9 +517,9 @@ check_cmd_line() {
     
     # adjust settings if user is not recording audio (video without audio stream)
     else
-        unset audio_input
-        unset audio_channel_layout
-        unset audio_input_options
+        unset -v audio_input
+        unset -v audio_channel_layout
+        unset -v audio_input_options
         audio_record_codec='-an'
         audio_encode_codec='-an'
     fi
@@ -544,7 +544,7 @@ check_cmd_line() {
             ;;
         *)
             [ "$vaapi_device_setted" = 'true' ] && exit_program '--vaapi-device (-A) option can be used only when a VAAPI video encoder is selected'
-            unset vaapi_device
+            unset -v vaapi_device
             ;;
     esac
     
@@ -591,7 +591,7 @@ check_cmd_line() {
                 # translate watermark position to what is really used in ffmpeg command
                 watermark_corner="$watermark_position" # save for comparing watermark and webcam overlay corners
                 watermark_position="$special_position"
-                unset special_position
+                unset -v special_position
                 
                 # translate a possible alias to the full corner position name (for comparing with webcam overlay corner)
                 case "$watermark_corner" in
@@ -620,7 +620,7 @@ check_cmd_line() {
         [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
         [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-c) ${msg}"
         [ "$pngoptimizer_setted" = 'true' ] && exit_program "--png-optimizer (-g) ${msg}"
-        unset msg
+        unset -v msg
     fi
     
     # webcam overlay checks and settings
@@ -644,7 +644,7 @@ check_cmd_line() {
                 # translate webcam position to what is really used in ffmpeg command
                 webcam_corner="$webcam_position" # save for comparing watermark and webcam overlay corners
                 webcam_position="$special_position"
-                unset special_position
+                unset -v special_position
                 
                 # translate a possible alias to the full corner position name (for comparing with watermark corner)
                 case "$webcam_corner" in
@@ -673,7 +673,7 @@ check_cmd_line() {
         [ "$webcam_input_setted" = 'true' ] && exit_program "--webcam-input (-I) ${msg}"
         [ "$webcam_posi_setted"  = 'true' ] && exit_program "--webcam-position (-P) ${msg}"
         [ "$webcam_rate_setted"  = 'true' ] && exit_program "--webcam-fps (-R) ${msg}"
-        unset msg
+        unset -v msg
     fi
     
     # do not allow watermark and webcam overlay to be placed in the same video corner (only works with predefined special values)

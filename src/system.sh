@@ -123,11 +123,11 @@ check_requirements() {
         
         case "$requirement" in
             notify-send)
-                unset request_string
+                unset -v request_string
                 installname="${requirement} (libnotify) (or use '-n')"
                 ;;
             ffmpeg)
-                unset request_string
+                unset -v request_string
                 installname='ffmpeg (version git master preferred)'
                 ;;
             ffprobe)
@@ -155,7 +155,7 @@ check_requirements() {
                 installname="${requirement} (advancecomp)"
                 ;;
             *)
-                unset request_string
+                unset -v request_string
                 installname="$requirement"
                 ;;
         esac
@@ -380,7 +380,7 @@ randomstr() {
                   A B C D E F G H Y J K L M N O P Q R S T U V W X Y Z \
                   0 1 2 3 4 5 6 7 8 9"
         shuf -ez -n"$1" $alphanum
-        unset alphanum
+        unset -v alphanum
         
     elif command -v openssl >/dev/null 2>&1
     then
@@ -401,6 +401,6 @@ randomstr() {
         done
         
         printf '%s' "$rnd" | cut -c-"$1"
-        unset rnd
+        unset -v rnd
     fi
 }

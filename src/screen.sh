@@ -52,7 +52,7 @@ dimension_msg() {
             ;;
     esac
     
-    unset msg
+    unset -v msg
 }
 
 # check_dimension function: check if a given dimension is a multiple of 8
