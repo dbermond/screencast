@@ -27,9 +27,11 @@ supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
                                      x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv
                                      vp8\nvp8_vaapi
                                      vp9\nvp9_vaapi
-                                     theora\nwmv\naom_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
+                                     theora\nwmv\naom_av1\nsvt_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
 
-supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv\naom_av1\nrav1e')"
+supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv
+                                          aom_av1\nsvt_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
+
 supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
 largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
 
@@ -43,6 +45,7 @@ get_list_videocodecs() {
     # shellcheck disable=SC1004
     list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]svt_hevc.*/\
                         &/;s/[[:space:]]vp8_vaapi.*/\
+                        &/;s/[[:space:]]svt_av1.*/\
                         &/')"
 }
 
@@ -55,10 +58,10 @@ get_list_videocodecs() {
 #                         $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
 get_videocodecs_for_nonmulti8_msg() {
     msg_speedloss_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                     sed -e '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d' \
-                                         -e '/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+                                     sed -e '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d' \
+                                         -e '/^hevc_vaapi$/d;/^hevc_qsv$/d;/^svt_av1$/d')"
     
-    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv')"
+    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv\nsvt_av1')"
 }
 
 # lossless video encoder settings functions: make checks and settings for lossless video encoder
@@ -215,6 +218,11 @@ videocodec_settings_wmv() {
 videocodec_settings_aom_av1() {
     check_component libaom-av1 encoder || component_error libaom-av1 'video encoder' true
     video_encode_codec='libaom-av1 -crf 27 -b:v 0 -strict experimental'
+}
+
+videocodec_settings_svt_av1() {
+    check_component libsvtav1 encoder || component_error libsvtav1 'video encoder' true
+    video_encode_codec='libsvtav1 -qp 36'
 }
 
 videocodec_settings_rav1e() {

@@ -8,6 +8,7 @@ https://github.com/dbermond/screencast/
 ### version next
 - added support for AOM AV1 video encoder
 - added support for rav1e AV1 video encoder
+- added support for SVT AV1 video encoder
 - added support for SVT HEVC video encoder
 - changed default font for text watermark to DejaVu-Sans
 - new option: select tickness of the screen region border delimiter
