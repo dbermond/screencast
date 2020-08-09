@@ -389,9 +389,9 @@ encoders that were mentioned (and not needing the fade effect). You do not
 need to specify this option when doing a live streaming (\fB\-L\fR option)
 because it already works in a one step process. Note that the default
 \fBscreencast\fR behavior is to record in a two step process (1st step:
-lossless recording. 2nd step: encoding).\fBThis option can cause audio
-problems. It is not recommended to use it with software-based video
-encoders.\fR
+lossless recording. 2nd step: encoding).\fBThis option can cause buffer
+problems that may lead to packet loss (most notably audio packet loss). It is
+not recommended to use it with software-based video encoders.\fR
 .PP
 default: disabled
 .RE
@@ -623,7 +623,7 @@ live streaming or when using the \fB\-1\fR/\fB\-\-one\-step\fR option,
 \fBscreencast\fR uses a one step process, with recording and encoding at the
 same time. Note that the \fB\-1\fR/\fB\-\-one\-step\fR option is not
 recommended to be used with software-based video encoders, since it can cause
-audio problems.
+buffer problems that may lead to packet loss (most notably audio packet loss).
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for
