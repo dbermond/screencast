@@ -173,8 +173,8 @@ videofade() {
                         -of csv='p=0')"
     
     # set start time of fade-out in seconds
-    total_fadeout="$(printf '%s\n' "${fade_length}  + ${fade_solid_length}" | bc)"
-    fadeout_start="$(printf '%s\n' "${video_length} - ${total_fadeout}"     | bc)"
+    total_fadeout="$(awk "BEGIN { OFMT=\"%.2f\"; print ${fade_length}  + ${fade_solid_length} }")"
+    fadeout_start="$(awk "BEGIN { OFMT=\"%.2f\"; print ${video_length} - ${total_fadeout} }")"
     
     # build ffmpeg fade in/out options
     fadein="fade=type=in:start_time=${fade_solid_length}:duration=${fade_length}:color=${fade_color}"

@@ -382,7 +382,7 @@ The provided Makefile supports the common `DESTDIR`, `PREFIX`, `BINDIR`, `DOCDIR
 
     - *slop* is needed for selecting the screen region with mouse ([`-S`](#-s---select-region) option).
 
-    - *FFprobe* and *bc* are needed for video fade effect ([`-e`](#-e---fadetype) option).
+    - *FFprobe* is needed for video fade effect ([`-e`](#-e---fadetype) option).
 
     - *ImageMagick* is needed for text watermark effect ([`-w`](#-w---watermarktext) option). Both IM6 and IM7 are supported, but IM7 is preferred.
 

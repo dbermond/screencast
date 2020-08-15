@@ -81,10 +81,8 @@ cleanup() {
 # return value: not relevant
 # return code (status): not relevant
 check_requirements() {
-    # note: although bc is defined by POSIX, some GNU/Linux distributions
-    #       does not include it by default (e.g.: Arch Linux)
-    for requirement in notify-send  ffmpeg   xdpyinfo  slop             ffprobe \
-                       bc           convert  magick    "$pngoptimizer"  advdef
+    for requirement in notify-send ffmpeg xdpyinfo slop ffprobe \
+                       convert magick "$pngoptimizer" advdef
     do
         # skip disabled components (unnecessary checks)
         if {
@@ -92,10 +90,7 @@ check_requirements() {
                [ "$select_region" = 'false' ] ;
            } ||
            {
-               {
-                   [ "$requirement" = 'ffprobe' ] ||
-                   [ "$requirement" = 'bc'      ] ;
-               } &&
+               [ "$requirement" = 'ffprobe' ] &&
                [ "$fade" = 'none'  ] ;
            } ||
            {
@@ -133,10 +128,6 @@ check_requirements() {
             ffprobe)
                 request_string='video fade effect was requested but '
                 installname='ffprobe (ffmpeg) (version git master preferred)'
-                ;;
-            bc)
-                request_string='video fade effect was requested but '
-                installname="$requirement"
                 ;;
             convert|magick)
                 request_string='text watermark was requested but '
