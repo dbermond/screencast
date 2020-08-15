@@ -130,7 +130,6 @@ __EOF__
     supported_videocodecs="$(cat <<- __EOF__
 		$videocodecs_h264
 		$videocodecs_hevc
-		$videocodecs_vp8
 		$videocodecs_theora
 		$videocodecs_wmv
 __EOF__
@@ -141,7 +140,6 @@ __EOF__
 __EOF__
 )"
     possible_unplayable_videocodecs="$(cat <<- __EOF__
-		$videocodecs_vp8
 		$videocodecs_theora
 		$videocodecs_wmv
 __EOF__
