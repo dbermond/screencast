@@ -179,7 +179,7 @@ show_list() {
 	Supported arguments:
 	  -f, --format           $(get_list_format "$supported_formats_all")
 	
-	  -a, --audio-encoder    $(get_list_format "$supported_videocodecs_all")
+	  -a, --audio-encoder    $(get_list_format "$supported_audiocodecs_all")
 	
 	  -v, --video-encoder    $(get_list_format "$supported_videocodecs_all")
 	
