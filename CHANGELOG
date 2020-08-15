@@ -10,6 +10,7 @@ https://github.com/dbermond/screencast/
 - added support for rav1e AV1 video encoder
 - added support for SVT AV1 video encoder
 - added support for SVT HEVC video encoder
+- added support for SVT VP9 video encoder
 - changed default font for text watermark to DejaVu-Sans
 - new option: select tickness of the screen region border delimiter
 - new option: select the X server display and screen

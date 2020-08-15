@@ -37,6 +37,7 @@ supported_videocodecs_all="$(cat <<- __EOF__
 		vp8
 		vp8_vaapi
 		vp9
+		svt_vp9
 		vp9_vaapi
 		theora
 		wmv
@@ -52,6 +53,7 @@ supported_videocodecs_software="$(cat <<- __EOF__
 		svt_hevc
 		vp8
 		vp9
+		svt_vp9
 		theora
 		wmv
 		aom_av1
@@ -94,6 +96,7 @@ __EOF__
 )"
 videocodecs_vp9="$(cat <<- __EOF__
 		vp9
+		svt_vp9
 		vp9_vaapi
 __EOF__
 )"
@@ -117,8 +120,9 @@ videocodecs_av1_slow="$(cat <<- __EOF__
 __EOF__
 )"
 videocodecs_svt="$(cat <<- __EOF__
-		svt_hevc
 		svt_av1
+		svt_hevc
+		svt_vp9
 __EOF__
 )"
 supported_videocodecs_lossless="$(cat <<- __EOF__
@@ -286,6 +290,11 @@ videocodec_settings_vp8_vaapi() {
 videocodec_settings_vp9() {
     check_component libvpx-vp9 encoder || component_error libvpx-vp9 'video encoder' true
     video_encode_codec='libvpx-vp9 -crf 30 -b:v 0'
+}
+
+videocodec_settings_svt_vp9() {
+    check_component libsvt_vp9 encoder || component_error libsvt_vp9 'video encoder' true
+    video_encode_codec='libsvt_vp9 -qp 29'
 }
 
 videocodec_settings_vp9_vaapi() {
