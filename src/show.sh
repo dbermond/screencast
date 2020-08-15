@@ -81,9 +81,11 @@ show_header() {
         fi
     fi
     
-    printf '%s\n' "screencast ${screencast_version} - Copyright (c) 2015-$(date +%Y) Daniel Bermond"
-    printf '%s\n' 'Command line interface to record a X11 desktop'
-    printf '%s\n' "$screencast_website"
+    cat <<- __EOF__
+	screencast ${screencast_version} - Copyright (c) 2015-$(date +%Y) Daniel Bermond
+	Command line interface to record a X11 desktop
+	${screencast_website}
+__EOF__
 }
 
 # help function
@@ -102,49 +104,51 @@ show_help() {
     
     show_header "$@"
     
-    printf '\n'
-    printf '%s\n' 'Usage: screencast [options] <output>'
-    printf '%s\n' '                  [options] -u'
-    printf '%s\n' '                  [options] -L <URL>'
-    printf 'Options:\n'
-    printf '%s\n' "  -s, --size=NxN            video size (resolution) [${video_size}]"
-    printf '%s\n' "  -p, --position=N,N        recording position (screen XY topleft offsets) [${video_position}]"
-    printf '%s\n' "  -d, --display=:N[.N]      X server display (and screen) number(s) [${display}]"
-    printf '%s\n' "  -b, --border              tickness of the screen region border (0 disable) [${border}]"
-    printf '%s\n' '  -S, --select-region       select with mouse the screen region to record'
-    printf '%s\n' "  -r, --fps=N               video framerate (fps) [${video_rate}]"
-    printf '%s\n' "  -f, --format=TYPE         container format (to use with -u) [${format}]"
-    printf '%s\n' "  -i, --audio-input=NAME    audio input device [${audio_input}]"
-    printf '%s\n' "  -a, --audio-encoder=NAME  audio encoder [${audio_encoder}]"
-    printf '%s\n' "  -v, --video-encoder=NAME  video encoder [${video_encoder}]"
-    printf '%s\n' "  -A, --vaapi-device=NODE   DRM render node [${vaapi_device}]"
-    printf '%s\n' "  -e, --fade=TYPE           video fade effect [${fade}]"
-    printf '%s\n' "  -m, --volume-factor=N     volume increase effect factor (1.0 disable) [${volume_factor}]"
-    printf '%s\n' '  -w, --watermark=TEXT      enable and set text watermark effect [disabled]'
-    printf '%s\n' "  -z, --wmark-size=NxN      watermark image size (resolution) [${watermark_size}]"
-    printf '%s\n' '  -k, --wmark-position=N,N  watermark position (video XY topleft offsets,'
-    printf '%s\n' "      --wmark-position=PRE    or a predefined special value) [${watermark_position}]"
-    printf '%s\n' "  -c, --wmark-font=NAME     watermark font [${watermark_font}]"
-    printf '%s\n' '  -W, --webcam              enable webcam overlay effect [disabled]'
-    printf '%s\n' "  -I, --webcam-input=DEV    webcam input device [${webcam_input}]"
-    printf '%s\n' "  -Z, --webcam-size=NxN     webcam video size (resolution) [${webcam_size}]"
-    printf '%s\n' '  -P, --webcam-position=N,N webcam position (video XY topleft offsets,'
-    printf '%s\n' "      --webcam-position=PRE   or a predefined special value) [${webcam_position}]"
-    printf '%s\n' '  -R, --webcam-fps=N        webcam framerate (fps) [device default]'
-    printf '%s\n' '  -L, --live-streaming=URL  enable live streaming, setting url to URL [disabled]'
-    printf '%s\n' '  -1, --one-step            one step (record and encode at same time) [disabled]'
-    printf '%s\n' "  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]"
-    printf '%s\n' '  -n, --no-notifications    disable desktop and sound notifications'
-    printf '%s\n' "  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]"
-    printf '%s\n' '  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]'
-    printf '%s\n' "  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]"
-    printf '%s\n' '  -K, --keep                keep the temporary video or the live streaming'
-    printf '%s\n' '  -u, --auto-filename       auto choose output filename based on date/time'
-    printf '%s\n' '  -l, --list                list arguments supported by these options'
-    printf '%s\n' '  -h, --help                this help screen'
-    printf '%s\n' '  -V, --version             version information'
-    printf '\n'
-    printf '%s\n' "For further help run 'man screencast'"
+    cat <<- __EOF__
+	
+	Usage: screencast [options] <output>
+	                  [options] -u
+	                  [options] -L <URL>
+	Options:
+	  -s, --size=NxN            video size (resolution) [${video_size}]
+	  -p, --position=N,N        recording position (screen XY topleft offsets) [${video_position}]
+	  -d, --display=:N[.N]      X server display (and screen) number(s) [${display}]
+	  -b, --border              tickness of the screen region border (0 disable) [${border}]
+	  -S, --select-region       select with mouse the screen region to record
+	  -r, --fps=N               video framerate (fps) [${video_rate}]
+	  -f, --format=TYPE         container format (to use with -u) [${format}]
+	  -i, --audio-input=NAME    audio input device [${audio_input}]
+	  -a, --audio-encoder=NAME  audio encoder [${audio_encoder}]
+	  -v, --video-encoder=NAME  video encoder [${video_encoder}]
+	  -A, --vaapi-device=NODE   DRM render node [${vaapi_device}]
+	  -e, --fade=TYPE           video fade effect [${fade}]
+	  -m, --volume-factor=N     volume increase effect factor (1.0 disable) [${volume_factor}]
+	  -w, --watermark=TEXT      enable and set text watermark effect [disabled]
+	  -z, --wmark-size=NxN      watermark image size (resolution) [${watermark_size}]
+	  -k, --wmark-position=N,N  watermark position (video XY topleft offsets,
+	      --wmark-position=PRE    or a predefined special value) [${watermark_position}]
+	  -c, --wmark-font=NAME     watermark font [${watermark_font}]
+	  -W, --webcam              enable webcam overlay effect [disabled]
+	  -I, --webcam-input=DEV    webcam input device [${webcam_input}]
+	  -Z, --webcam-size=NxN     webcam video size (resolution) [${webcam_size}]
+	  -P, --webcam-position=N,N webcam position (video XY topleft offsets,
+	      --webcam-position=PRE   or a predefined special value) [${webcam_position}]
+	  -R, --webcam-fps=N        webcam framerate (fps) [device default]
+	  -L, --live-streaming=URL  enable live streaming, setting url to URL [disabled]
+	  -1, --one-step            one step (record and encode at same time) [disabled]
+	  -x, --fixed=N             fixed video length for N seconds (0 disable) [${fixed_length}]
+	  -n, --no-notifications    disable desktop and sound notifications
+	  -g, --png-optimizer=NAME  use png (watermark) optimizer and advdef [${pngoptimizer}]
+	  -o, --output-dir=DIR      save videos to DIR (to use with -u) [local dir]
+	  -t, --tmp-dir=DIR         use DIR for temporary files [${tmpdir}]
+	  -K, --keep                keep the temporary video or the live streaming
+	  -u, --auto-filename       auto choose output filename based on date/time
+	  -l, --list                list arguments supported by these options
+	  -h, --help                this help screen
+	  -V, --version             version information
+	
+	For further help run 'man screencast'
+__EOF__
 }
 
 # show_list function: print a list of arguments supported by this program
@@ -170,27 +174,29 @@ show_list() {
                          
     list_webcam_position="$list_wmark_position"
     
-    printf '\n'
-    printf '%s\n' 'Supported arguments:'
-    printf '%s\n' "  -f, --format           $(get_list_format "$supported_formats_all")"
-    printf '\n'
-    printf '%s\n' "  -a, --audio-encoder    $(get_list_format "$supported_videocodecs_all")"
-    printf '\n'
-    printf '%s\n' "  -v, --video-encoder    $(get_list_format "$supported_videocodecs_all")"
-    printf '\n'
-    printf '%s\n' "  -e, --fade             $(get_list_format "$supported_fade")"
-    printf '\n'
-    printf '%s\n' "  -k, --wmark-position   $(printf '%s' "$list_wmark_position")"
-    printf '\n'
-    printf '%s\n' "  -P, --webcam-position  $(printf '%s' "$list_webcam_position")"
-    printf '\n'
-    printf '%s\n' "  -g, --png-optimizer    $(get_list_format "$supported_pngoptmz")"
-    printf '\n'
-    printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
-    printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
-    printf '\n'
-    printf '%s\n' '  note: the container formats mkv and nut support a combination of all audio'
-    printf '%s\n' '        and video encoders. Restrictions apply to other container formats.'
+    cat <<- __EOF__
+	
+	Supported arguments:
+	  -f, --format           $(get_list_format "$supported_formats_all")
+	
+	  -a, --audio-encoder    $(get_list_format "$supported_videocodecs_all")
+	
+	  -v, --video-encoder    $(get_list_format "$supported_videocodecs_all")
+	
+	  -e, --fade             $(get_list_format "$supported_fade")
+	
+	  -k, --wmark-position   $(printf '%s' "$list_wmark_position")
+	
+	  -P, --webcam-position  $(printf '%s' "$list_webcam_position")
+	
+	  -g, --png-optimizer    $(get_list_format "$supported_pngoptmz")
+	
+	  note: selecting vorbis or opus audio encoders actually uses the higher
+	        quality libvorbis and libopus encoders respectively.
+	
+	  note: the container formats mkv and nut support a combination of all audio
+	        and video encoders. Restrictions apply to other container formats.
+__EOF__
 }
 
 # show_settings function: show information about some program settings
