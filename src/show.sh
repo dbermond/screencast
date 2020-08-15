@@ -22,6 +22,51 @@
 #               show info               #
 #########################################
 
+# get_list_format function:
+#   format the supported componenets for use with show_list() in -l/--list option
+# arguments:
+#   $1 - variable with all supported components
+# return value: the supported componenets formated for use with show_list() in -l/--list option
+# return code (status): not relevant
+get_list_format() {
+    count='1'
+    chars='25'
+    (IFS='
+'
+    for item in $1
+    do
+        if [ "$count" -eq "$(printf '%s' "$1" | wc -w)" ]
+        then
+            ending_chars='0'
+            unset -v separator
+        else
+            ending_chars='2'
+            separator=', '
+        fi
+        
+        chars="$((chars + "$(printf '%s' "$item" | wc -m)" + ending_chars))"
+        
+        if [ "$chars" -gt '80' ]
+        then
+            chars="$((25 + "$(printf '%s' "$item" | wc -m)" + ending_chars))"
+            formated_components="$(printf '%s\n%s%s' "$formated_components" \
+                '                         ' "${item}${separator}")"
+        else
+            formated_components="${formated_components}${item}${separator}"
+        fi
+        
+        count="$((count + 1))"
+    done
+    
+    printf '%s' "$formated_components")
+    
+    unset -v count
+    unset -v chars
+    unset -v item
+    unset -v ending_chars
+    unset -v formated_components
+}
+
 # show_header function: show program header
 # arguments: $1 - the positional parameters passed with double quotes ("$@")
 # return value: the program header
@@ -117,34 +162,8 @@ show_list() {
     fi
     
     show_header "$@"
-    get_list_videocodecs
     get_supported_fade
     get_supported_pngoptmz
-    
-    for item in $supported_formats_all
-    do
-        list_formats="${list_formats:-}${item}, "
-    done
-    
-    for item in $supported_audiocodecs_all
-    do
-        list_audiocodecs="${list_audiocodecs:-}${item}, "
-    done
-    
-    for item in $supported_fade
-    do
-        list_fade="${list_fade:-}${item}, "
-    done
-    
-    for item in $supported_pngoptmz
-    do
-        list_pngoptmz="${list_pngoptmz:-}${item}, "
-    done
-    
-    list_audiocodecs="$(printf '%s' "$list_audiocodecs" | sed 's/,[[:space:]]$//')"
-    list_formats="$(    printf '%s' "$list_formats"     | sed 's/,[[:space:]]$//')"
-    list_fade="$(       printf '%s' "$list_fade"        | sed 's/,[[:space:]]$//')"
-    list_pngoptmz="$(   printf '%s' "$list_pngoptmz"    | sed 's/,[[:space:]]$//')"
     
     list_wmark_position='topleft, topright, bottomleft, bottomright
                          (or the respective aliases tl, tr, bl, br)'
@@ -153,19 +172,19 @@ show_list() {
     
     printf '\n'
     printf '%s\n' 'Supported arguments:'
-    printf '%s\n' "  -f, --format           $(printf '%s' "$list_formats")"
+    printf '%s\n' "  -f, --format           $(get_list_format "$supported_formats_all")"
     printf '\n'
-    printf '%s\n' "  -a, --audio-encoder    $(printf '%s' "$list_audiocodecs")"
+    printf '%s\n' "  -a, --audio-encoder    $(get_list_format "$supported_videocodecs_all")"
     printf '\n'
-    printf '%s\n' "  -v, --video-encoder    $(printf '%s' "$list_videocodecs")"
+    printf '%s\n' "  -v, --video-encoder    $(get_list_format "$supported_videocodecs_all")"
     printf '\n'
-    printf '%s\n' "  -e, --fade             $(printf '%s' "$list_fade")"
+    printf '%s\n' "  -e, --fade             $(get_list_format "$supported_fade")"
     printf '\n'
     printf '%s\n' "  -k, --wmark-position   $(printf '%s' "$list_wmark_position")"
     printf '\n'
     printf '%s\n' "  -P, --webcam-position  $(printf '%s' "$list_webcam_position")"
     printf '\n'
-    printf '%s\n' "  -g, --png-optimizer    $(printf '%s' "$list_pngoptmz")"
+    printf '%s\n' "  -g, --png-optimizer    $(get_list_format "$supported_pngoptmz")"
     printf '\n'
     printf '%s\n' '  note: selecting vorbis or opus audio encoders actually uses the higher'
     printf '%s\n' '        quality libvorbis and libopus encoders respectively.'
@@ -184,11 +203,10 @@ show_settings() {
     [ "$format"        = "$format_default"        ] && [ "$format_setted"        = 'false' ] &&
         [ "$auto_filename" = 'true'  ] && format_outstr='(default)'
     
-    case "$video_encoder" in
-        *_vaapi)
-            video_outstr="(${vaapi_device})"
-            ;;
-    esac
+    if printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+    then
+        video_outstr="(${vaapi_device})"
+    fi
     
     [ "$fade" != 'none' ] && effects="fade-${fade}"
     

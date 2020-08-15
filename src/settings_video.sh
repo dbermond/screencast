@@ -23,31 +23,115 @@
 #########################################
 
 # supported video encoders (one per line for accurate grepping and easy deletion)
-supported_videocodecs_all="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv
-                                     x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv
-                                     vp8\nvp8_vaapi
-                                     vp9\nvp9_vaapi
-                                     theora\nwmv\naom_av1\nsvt_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
-
-supported_videocodecs_software="$(printf 'x264\nx265\nkvazaar\nsvt_hevc\nvp8\nvp9\n\ntheora\nwmv
-                                          aom_av1\nsvt_av1\nrav1e' | sed 's/^[[:space:]]*//g')"
-
-supported_videocodecs_lossless="$(printf 'ffv1\nffvhuff\nhuffyuv')"
-largefile_videocodecs_lossless="$(printf 'ffvhuff\nhuffyuv')"
-
-# supported video encoders (for use with show_list() in -l/--list option)
-get_list_videocodecs() {
-    for item in $supported_videocodecs_all
-    do
-        list_videocodecs="${list_videocodecs:-}${item}, "
-    done
-    
-    # shellcheck disable=SC1004
-    list_videocodecs="$(printf '%s' "$list_videocodecs" | sed 's/,[[:space:]]$//;s/[[:space:]]svt_hevc.*/\
-                        &/;s/[[:space:]]vp8_vaapi.*/\
-                        &/;s/[[:space:]]svt_av1.*/\
-                        &/')"
-}
+supported_videocodecs_all="$(cat <<- __EOF__
+		x264
+		h264_nvenc
+		h264_vaapi
+		h264_qsv
+		x265
+		kvazaar
+		svt_hevc
+		hevc_nvenc
+		hevc_vaapi
+		hevc_qsv
+		vp8
+		vp8_vaapi
+		vp9
+		vp9_vaapi
+		theora
+		wmv
+		aom_av1
+		svt_av1
+		rav1e
+__EOF__
+)"
+supported_videocodecs_software="$(cat <<- __EOF__
+		x264
+		x265
+		kvazaar
+		svt_hevc
+		vp8
+		vp9
+		theora
+		wmv
+		aom_av1
+		svt_av1
+		rav1e
+__EOF__
+)"
+videocodecs_vaapi="$(cat <<- __EOF__
+		h264_vaapi
+		hevc_vaapi
+		vp8_vaapi
+		vp9_vaapi
+__EOF__
+)"
+videocodecs_qsv="$(cat <<- __EOF__
+		h264_qsv
+		hevc_vaapi
+__EOF__
+)"
+videocodecs_h264="$(cat <<- __EOF__
+		x264
+		h264_nvenc
+		h264_vaapi
+		h264_qsv
+__EOF__
+)"
+videocodecs_hevc="$(cat <<- __EOF__
+		x265
+		kvazaar
+		svt_hevc
+		hevc_nvenc
+		hevc_vaapi
+		hevc_qsv
+__EOF__
+)"
+videocodecs_vp8="$(cat <<- __EOF__
+		vp8
+		vp8_vaapi
+__EOF__
+)"
+videocodecs_vp9="$(cat <<- __EOF__
+		vp9
+		vp9_vaapi
+__EOF__
+)"
+videocodecs_theora="$(cat <<- __EOF__
+		theora
+__EOF__
+)"
+videocodecs_wmv="$(cat <<- __EOF__
+		wmv
+__EOF__
+)"
+videocodecs_av1="$(cat <<- __EOF__
+		aom_av1
+		svt_av1
+		rav1e
+__EOF__
+)"
+videocodecs_av1_slow="$(cat <<- __EOF__
+		aom_av1
+		rav1e
+__EOF__
+)"
+videocodecs_svt="$(cat <<- __EOF__
+		svt_hevc
+		svt_av1
+__EOF__
+)"
+supported_videocodecs_lossless="$(cat <<- __EOF__
+		ffv1
+		ffvhuff
+		huffyuv
+__EOF__
+)"
+largefile_videocodecs_lossless="$(cat <<- __EOF__
+		ffvhuff
+		huffyuv
+__EOF__
+)"
 
 # get_videocodecs_for_nonmulti8_msg function: defines video encoders to be used with dimension_msg()
 # arguments: none
@@ -57,11 +141,16 @@ get_list_videocodecs() {
 #                                                        8 dimensions (one per line)
 #                         $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
 get_videocodecs_for_nonmulti8_msg() {
-    msg_speedloss_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                     sed -e '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d' \
-                                         -e '/^hevc_vaapi$/d;/^hevc_qsv$/d;/^svt_av1$/d')"
-    
-    msg_requirement_videocodecs="$(printf 'x265\nkvazaar\nsvt_hevc\nhevc_nvenc\nhevc_vaapi\nhevc_qsv\nsvt_av1')"
+    msg_speedloss_videocodecs="$(del_multiline "$supported_videocodecs_all" "$(cat <<- __EOF__
+		$videocodecs_hevc
+		$videocodecs_svt
+__EOF__
+)")"
+    msg_requirement_videocodecs="$(cat <<- __EOF__
+		$videocodecs_hevc
+		$videocodecs_svt
+__EOF__
+)"
 }
 
 # lossless video encoder settings functions: make checks and settings for lossless video encoder

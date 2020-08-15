@@ -23,8 +23,42 @@
 #########################################
 
 # supported audio encoders (one per line for accurate grepping and easy deletion)
-supported_audiocodecs_all="$(     printf 'aac\nopus\nvorbis\nmp3lame\nshine\nwma\nnone')"
-supported_audiocodecs_lossless="$(printf 'pcm_s16le\nflac')"
+supported_audiocodecs_all="$(cat <<- __EOF__
+		aac
+		opus
+		vorbis
+		mp3lame
+		shine
+		wma
+		none
+__EOF__
+)"
+audiocodecs_aac="$(cat <<- __EOF__
+		aac
+__EOF__
+)"
+audiocodecs_opus="$(cat <<- __EOF__
+		opus
+__EOF__
+)"
+audiocodecs_vorbis="$(cat <<- __EOF__
+		vorbis
+__EOF__
+)"
+audiocodecs_mp3="$(cat <<- __EOF__
+		mp3lame
+		shine
+__EOF__
+)"
+audiocodecs_wma="$(cat <<- __EOF__
+		wma
+__EOF__
+)"
+supported_audiocodecs_lossless="$(cat <<- __EOF__
+		pcm_s16le
+		flac
+__EOF__
+)"
 
 # lossless audio encoder settings functions: make checks and settings for lossless audio encoder
 #                                           (for the 1st step, lossless recording)

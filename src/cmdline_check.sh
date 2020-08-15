@@ -366,35 +366,28 @@ check_cmd_line() {
             fi
             
             # special condition checks
-            case "$video_encoder" in
-                # vp9 + mp4: requires ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
-                *vp9*)
-                    if [ "$format" = 'mp4' ]
-                    then
-                        if ! check_minimum_ffmpeg_version '3.4' '86119'
-                        then
-                            msg="support for 'vp9' video encoder in 'mp4' container format in your ffmpeg build is experimental
+            # vp9 + mp4: requires ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)
+            if printf '%s' "$videocodecs_vp9" | grep -q "^${video_encoder}$" && [ "$format" = 'mp4' ]
+            then
+                if ! check_minimum_ffmpeg_version '3.4' '86119'
+                then
+                    msg="support for 'vp9' video encoder in 'mp4' container format in your ffmpeg build is experimental
                       it's needed ffmpeg 3.4 or greater (or git master N-86119-g5ff31babfc or greater)"
-                            
-                            ffmpeg_version_error "$msg"
-                        fi
-                    fi
-                    ;;
-                
-                # av1 + webm: requires ffmpeg 4.1 or greater (or git master N-91995-gcbe5c7ef38 or greater)
-                *av1*)
-                    if [ "$format" = 'webm' ]
-                    then
-                        if ! check_minimum_ffmpeg_version '4.1' '91995'
-                        then
-                            msg="your ffmpeg build does not support 'av1' video encoder in 'webm' container format
+                    
+                    ffmpeg_version_error "$msg"
+                fi
+            
+            # av1 + webm: requires ffmpeg 4.1 or greater (or git master N-91995-gcbe5c7ef38 or greater)
+            elif printf '%s' "$videocodecs_av1" | grep -q "^${video_encoder}$" && [ "$format" = 'webm' ]
+            then
+                if ! check_minimum_ffmpeg_version '4.1' '91995'
+                then
+                    msg="your ffmpeg build does not support 'av1' video encoder in 'webm' container format
                       it's needed ffmpeg 4.1 or greater (or git master N-91995-gcbe5c7ef38 or greater)"
-                            
-                            ffmpeg_version_error "$msg"
-                        fi
-                    fi
-                    ;;
-            esac
+                    
+                    ffmpeg_version_error "$msg"
+                fi
+            fi
             
         fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
         
@@ -516,26 +509,22 @@ check_cmd_line() {
     # execute video encoder checks and settings
     "videocodec_settings_${video_encoder}"
     
-    # do not allow to use 'aom_av1' video encoder in a one step process (-1/--one-step)
+    # do not allow to use slow video encoders in a one step process (-1/--one-step)
     # (aom_av1 is still experimental and very slow in ffmpeg)
-    [ "$video_encoder" = 'aom_av1' ] && [ "$one_step" = 'true' ] &&
-        exit_program "'${video_encoder}' cannot be used for a one step process (still experimental and very slow in FFmpeg)"
-    
-    # do not allow to use 'librav1e' video encoder in a one step process (-1/--one-step)
-    # (rav1e is very slow in ffmpeg)
-    [ "$video_encoder" = 'aom_av1' ] && [ "$one_step" = 'true' ] &&
+    if printf '%s' "$videocodecs_av1_slow" | grep -q "^${video_encoder}$"
+    then
         exit_program "'${video_encoder}' cannot be used for a one step process (very slow in FFmpeg)"
+    fi
     
     # do not allow to use -A/--vaapi-device without setting a vaapi video encoder
-    case "$video_encoder" in
-        *_vaapi)
-            :
-            ;;
-        *)
-            [ "$vaapi_device_setted" = 'true' ] && exit_program '--vaapi-device (-A) option can be used only when a VAAPI video encoder is selected'
-            unset -v vaapi_device
-            ;;
-    esac
+    if ! printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+    then
+        if [ "$vaapi_device_setted" = 'true' ]
+        then
+            exit_program '--vaapi-device (-A) option can be used only when a VAAPI video encoder is selected'
+        fi
+        unset -v vaapi_device
+    fi
     
     # do not allow to use -m option when -i or -a are setted to 'none'
     if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ]

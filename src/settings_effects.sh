@@ -45,11 +45,25 @@ webcam_position='topright'
 # return code (status): not relevant
 # sets special variables: various, depending on the effect
 get_supported_fade() {
-    supported_fade="$(printf 'none\nin\nout\nboth')"
+    supported_fade="$(cat <<- __EOF__
+		none
+		in
+		out
+		both
+__EOF__
+)"
 }
 
 get_supported_pngoptmz() {
-    supported_pngoptmz="$(printf 'none\noptipng\noxipng\nopt-png\ntruepng\npingo')"
+    supported_pngoptmz="$(cat <<- __EOF__
+		none
+		optipng
+		oxipng
+		opt-png
+		truepng
+		pingo
+__EOF__
+)"
 }
 
 get_fade_settings() {
@@ -59,12 +73,29 @@ get_fade_settings() {
 }
 
 get_supported_streaming_settings() {
-    # supported audio/video encoders in the flv muxer that have restrictions in specific container formats
-    supported_streaming_formats="$(printf '%s' "$supported_formats_all" | sed '/^ogg$/d;/^ogv$/d;/^webm$/d')"
+    # container formats that supports the audio/video encoders of the allowed flv muxers
+    supported_streaming_formats="$(cat <<- __EOF__
+		mp4
+		mov
+		mkv
+		flv
+		nut
+		wmv
+		asf
+		avi
+__EOF__
+)"
     
     # flv muxer restrictions
-    supported_streaming_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
-    supported_streaming_videocodecs="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv\n')"
+    supported_streaming_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_mp3
+__EOF__
+)"
+    supported_streaming_videocodecs="$(cat <<- __EOF__
+		$videocodecs_h264
+__EOF__
+)"
 }
 
 get_pngoptmz_settings_truepng() {

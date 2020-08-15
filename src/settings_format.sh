@@ -23,11 +23,32 @@
 #########################################
 
 # supported container formats (one per line for accurate grepping and easy deletion)
-supported_formats_all="$(     printf 'mp4\nmov\nmkv\nwebm\nogg\nogv\nflv\nnut\nwmv\nasf\navi')"
-supported_formats_lossless="$(printf 'matroska\nnut')"
+supported_formats_all="$(cat <<- __EOF__
+		mp4
+		mov
+		mkv
+		webm
+		ogg
+		ogv
+		flv
+		nut
+		wmv
+		asf
+		avi
+__EOF__
+)"
+supported_formats_lossless="$(cat <<- __EOF__
+		matroska
+		nut
+__EOF__
+)"
 
 # container formats that, depending on the selected audio/video encoder, may be unplayable in some players
-possible_unplayable_formats="$(printf 'mp4\nmov')"
+possible_unplayable_formats="$(cat <<- __EOF__
+		mp4
+		mov
+__EOF__
+)"
 
 # lossless container format settings functions: make checks and settings for container format to store lossless video
 #                                               (for the 1st step, lossless recording)
@@ -65,10 +86,23 @@ lossless_format_settings_nut() {
 #                         $supported_videocodecs - video encoders supported by the selected container format (one per line)
 # note: the program will exit with error if the selected container format is not supported by the detected ffmpeg build
 format_settings_mp4() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^wma$/d')"
-    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed '/^theora$/d;/^vp8$/d;/^vp8_vaapi$/d;/^wmv$/d')"
-    
-    possible_unplayable_videocodecs="$(printf 'vp9\nvp9_vaapi')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_vorbis
+		$audiocodecs_mp3
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_h264
+		$videocodecs_hevc
+		$videocodecs_vp9
+		$videocodecs_av1
+__EOF__
+)"
+    possible_unplayable_videocodecs="$(cat <<- __EOF__
+		$videocodecs_vp9
+__EOF__
+)"
     
     # check if the detected ffmpeg build has support for the mp4/mov muxer
     check_component "$format" muxer || component_error "$format" muxer true
@@ -85,12 +119,32 @@ format_settings_mp4() {
 format_settings_mov() {
     format_settings_mp4 "$@"
     
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
-    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" | sed -e '/^vp9$/d;/^vp9_vaapi$/d' \
-                                                                            -e '/^aom_av1$/d;/^svt_av1$/d;/^rav1e$/d')"
-    
-    possible_unplayable_audiocodecs="$(printf 'vorbis\nwma')"
-    possible_unplayable_videocodecs="$(printf 'theora\nvp8\nvp8_vaapi\nwmv')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_vorbis
+		$audiocodecs_mp3
+		$audiocodecs_wma
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_h264
+		$videocodecs_hevc
+		$videocodecs_vp8
+		$videocodecs_theora
+		$videocodecs_wmv
+__EOF__
+)"
+    possible_unplayable_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_vorbis
+		$audiocodecs_wma
+__EOF__
+)"
+    possible_unplayable_videocodecs="$(cat <<- __EOF__
+		$videocodecs_vp8
+		$videocodecs_theora
+		$videocodecs_wmv
+__EOF__
+)"
 }
 
 format_settings_mkv() {
@@ -106,20 +160,46 @@ format_settings_mkv() {
 }
 
 format_settings_webm() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
-    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\nvp9\nvp9_vaapi\naom_av1\nsvt_av1\nrav1e')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_opus
+		$audiocodecs_vorbis
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_vp8
+		$videocodecs_vp9
+		$videocodecs_av1
+__EOF__
+)"
     
     # check if the detected ffmpeg build has support for the webm muxer
     check_component "$format" muxer || component_error "$format" muxer true
     
     # auto choose audio/video encoder if needed
-    [ "$audio_encoder_setted" = 'false' ] && audio_encoder='opus' && audio_outstr='(auto chosen)'
-    [ "$video_encoder_setted" = 'false' ] && video_encoder='vp9'  && video_outstr='(auto chosen)'
+    if [ "$audio_encoder_setted" = 'false' ]
+    then
+        audio_encoder="$(printf '%s' "$audiocodecs_opus" | head -n1)"
+        audio_outstr='(auto chosen)'
+    fi
+    
+    if [ "$video_encoder_setted" = 'false' ]
+    then
+        video_encoder="$(printf '%s' "$videocodecs_vp9" | head -n1)"
+        video_outstr='(auto chosen)'
+    fi
 }
 
 format_settings_ogg() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^aac$/d;/^mp3lame$/d;/^shine$/d;/^wma$/d')"
-    supported_videocodecs="$(printf 'vp8\nvp8_vaapi\ntheora')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_opus
+		$audiocodecs_vorbis
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_vp8
+		$videocodecs_theora
+__EOF__
+)"
     
     # check if the detected ffmpeg build has support for the ogg/ogv muxer
     check_component "$format" muxer || component_error "$format" muxer true
@@ -134,8 +214,15 @@ format_settings_ogv() {
 }
 
 format_settings_flv() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d;/^vorbis$/d;/^wma$/d')"
-    supported_videocodecs="$(printf 'x264\nh264_nvenc\nh264_vaapi\nh264_qsv')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_mp3
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_h264
+__EOF__
+)"
     
     # check if the detected ffmpeg build has support for the flv muxer only if recording offline
     # (flv muxer support in ffmpeg is already checked during the live streaming checks)
@@ -158,10 +245,22 @@ format_settings_nut() {
 }
 
 format_settings_wmv() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
-    
-    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                 sed '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_vorbis
+		$audiocodecs_mp3
+		$audiocodecs_wma
+__EOF__
+)"
+    supported_videocodecs="$(cat <<- __EOF__
+		$videocodecs_h264
+		$videocodecs_vp8
+		$videocodecs_vp9
+		$videocodecs_theora
+		$videocodecs_wmv
+		$videocodecs_av1
+__EOF__
+)"
     
     # check if the detected ffmpeg build has support for the asf muxer
     # note: asf muxer is used for wmv (and wma) container format
@@ -169,18 +268,18 @@ format_settings_wmv() {
 }
 
 format_settings_asf() {
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
-    
-    supported_videocodecs="$(printf '%s' "$supported_videocodecs_all" |
-                                 sed '/^x265$/d;/^kvazaar$/d;/^svt_hevc$/d;/^hevc_nvenc$/d;/^hevc_vaapi$/d;/^hevc_qsv$/d')"
-    
-    # check if the detected ffmpeg build has support for the asf muxer
-    check_component "$format" muxer || component_error "$format" muxer true
+    format_settings_wmv "$@"
 }
 
 format_settings_avi() {
     # note: avi container formats supports all valid video encoders for this program
-    supported_audiocodecs="$(printf '%s' "$supported_audiocodecs_all" | sed '/^opus$/d')"
+    supported_audiocodecs="$(cat <<- __EOF__
+		$audiocodecs_aac
+		$audiocodecs_vorbis
+		$audiocodecs_mp3
+		$audiocodecs_wma
+__EOF__
+)"
     supported_videocodecs="$supported_videocodecs_all"
     
     # check if the detected ffmpeg build has support for the avi muxer

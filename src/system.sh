@@ -191,6 +191,29 @@ remove_spaces() {
     printf '%s' "$1" | sed 's/[[:space:]]\{1,\}/ /g'
 }
 
+# del_multiline function:
+#   delete multiple lines from a variable
+# arguments:
+#   $1 - variable to delete the multiple lines from
+#   $2 - the multiple lines to be deleted
+# return value: the variable at $1 with the multiple line deleted
+# return code (status): not relevant
+del_multiline() {
+    var="$1"
+    
+    (IFS='
+'   
+    for line in $2
+    do
+        var="$(printf '%s' "$var" | sed "/^${line}$/d")"
+    done
+    
+    printf '%s\n' "$var")
+    
+    unset -v line
+    unset -v var
+}
+
 # check_vaapi_device function: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
 # arguments: none
 # return value: not relevant

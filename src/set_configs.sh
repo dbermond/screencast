@@ -186,23 +186,23 @@ fix_pass_duration() {
 # return value: none
 # return code (status): not relevant
 set_vaapi_qsv() {
-    case "$video_encoder" in
-        *_vaapi)
-            if [ "$one_step" = 'true' ]
-            then
-                [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
-            else
-                [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
-            fi
-            
-            ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=nv12,hwupload"}"
-            ff_vfilter_settings="${ff_vfilter_settings:-format=nv12,hwupload}"
-            
-            ff_vaapi_options="-vaapi_device ${vaapi_device}"
-            pixel_format='vaapi_vld'
-            ;;
-        *_qsv)
-            pixel_format='nv12'
-            ;;
-    esac
+    if printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+    then
+        if [ "$one_step" = 'true' ]
+        then
+            [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
+        else
+            [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
+        fi
+        
+        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=nv12,hwupload"}"
+        ff_vfilter_settings="${ff_vfilter_settings:-format=nv12,hwupload}"
+        
+        ff_vaapi_options="-vaapi_device ${vaapi_device}"
+        pixel_format='vaapi_vld'
+    
+    elif printf '%s' "$videocodecs_qsv" | grep -q "^${video_encoder}$"
+    then
+        pixel_format='nv12'
+    fi
 }
