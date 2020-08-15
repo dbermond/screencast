@@ -346,6 +346,19 @@ check_cmd_line() {
                 show_settings
                 exit_program "$msg"
             fi
+            
+            # special condition check
+            # opus + mp4: requires ffmpeg 4.3 or greater (or git master N-97089-gca7a192d10 or greater)
+            if printf '%s' "$audiocodecs_opus" | grep -q "^${audio_encoder}$" && [ "$format" = 'mp4' ]
+            then
+                if ! check_minimum_ffmpeg_version '4.3' '97089'
+                then
+                    msg="'opus' audio encoder in 'mp4' container format is not allowed with your ffmpeg
+                      it's needed ffmpeg 4.3 or greater (or git master N-97089-gca7a192d10 or greater)"
+                    
+                    ffmpeg_version_error "$msg"
+                fi
+            fi
         fi
         
         # check if user entered and invalid combination of video encoder and container format

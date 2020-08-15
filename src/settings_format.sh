@@ -88,6 +88,7 @@ lossless_format_settings_nut() {
 format_settings_mp4() {
     supported_audiocodecs="$(cat <<- __EOF__
 		$audiocodecs_aac
+		$audiocodecs_opus
 		$audiocodecs_vorbis
 		$audiocodecs_mp3
 __EOF__
