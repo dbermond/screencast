@@ -204,8 +204,17 @@ __EOF__
     check_component "$format" muxer || component_error "$format" muxer true
     
     # auto choose audio/video encoder if needed
-    [ "$audio_encoder_setted" = 'false' ] && audio_encoder='vorbis' && audio_outstr='(auto chosen)'
-    [ "$video_encoder_setted" = 'false' ] && video_encoder='theora' && video_outstr='(auto chosen)'
+    if [ "$audio_encoder_setted" = 'false' ]
+    then
+        audio_encoder="$(printf '%s' "$audiocodecs_vorbis" | head -n1)"
+        audio_outstr='(auto chosen)'
+    fi
+    
+    if [ "$video_encoder_setted" = 'false' ]
+    then
+        video_encoder="$(printf '%s' "$videocodecs_theora" | head -n1)"
+        video_outstr='(auto chosen)'
+    fi
 }
 
 format_settings_ogv() {
