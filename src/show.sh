@@ -237,7 +237,7 @@ show_settings() {
     effects="${effects:-none}"
     
     print_good "${color_bold:-}video encoder   :${color_off:-} ${video_encoder} ${video_outstr:-}"
-    print_good "${color_bold:-}audio encoder   :${color_off:-} ${audio_encoder} ${audio_outstr:-}"
+    print_good "${color_bold:-}audio encoder   :${color_off:-} ${audio_encoder:-"no input audio"} ${audio_outstr:-}"
     
     [ "$saving_output" = 'true' ] && print_good "${color_bold:-}container format:${color_off:-} ${format} ${format_outstr:-}"
     
@@ -302,6 +302,15 @@ show_warnings() {
             then
                 print_warn 'using a software-based video encoder in a one step process is not recommended
                         (can cause buffer problems that may lead to packet loss)'
+                
+            elif [ "$one_step_lossless" = 'true' ]
+            then
+                print_warn 'the recorded lossless video will not be encoded (file size will be large)'
+                
+                if [ "$one_step_setted" = 'false' ]
+                then
+                    print_warn 'one step process will be auto chosen due to no encoding the lossless video'
+                fi
             fi
         fi
     fi

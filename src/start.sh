@@ -63,13 +63,6 @@ ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 # check if the detected ffmpeg build has support for basic screen recording format
 check_component x11grab demuxer || component_error x11grab demuxer false
 
-# check for the needed lossless ffmpeg components when using a two step process
-if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ]
-then
-    check_lossless_component format
-    check_lossless_component videocodec
-fi
-
 check_cmd_line "$@"
 show_settings
 show_warnings

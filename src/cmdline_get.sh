@@ -560,6 +560,7 @@ get_cmd_line() {
             
             -1|--one-step)  # option without argument
                 one_step='true'
+                one_step_setted='true'
                 ;;
             
             -n|--no-notifications)  # option without argument

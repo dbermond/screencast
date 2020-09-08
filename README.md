@@ -133,7 +133,7 @@ default: `default`
 
 #### `-a, --audio-encoder=NAME`
 
-Audio encoder that will be used to encode the recorded audio. When setted to `none` the audio will be disabled (video without audio, only video stream will be present).
+Audio encoder that will be used to encode the recorded audio. For details about the special value `none`, please see the [REMARKS](#remarks) section bellow.
 
 default: `aac`
 
@@ -141,12 +141,12 @@ supported types: `aac`, `opus`, `vorbis`, `mp3lame`, `shine`, `wma`, `none`
 
 #### `-v, --video-encoder=NAME`
 
-Video encoder that will be used to encode the recorded video. If using a hardware accelerated video encoder please make sure that you have a graphics card that supports the specified encoder. Note that hardware accelerated video encoders have additional requirements: NVENC requires NVIDIA drivers to be installed, VAAPI requires libva and libdrm to be installed and QSV requires Intel Media SDK to be installed.
+Video encoder that will be used to encode the recorded video. If using a hardware accelerated video encoder please make sure that you have a graphics card that supports the specified encoder. Note that hardware accelerated video encoders have additional requirements: NVENC requires NVIDIA drivers to be installed, VAAPI requires libva and libdrm to be installed and QSV requires Intel Media SDK to be installed. For details about the special value `none`, please see the [REMARKS](#remarks) section bellow.
 
 default: `x264`
 
 - supported types:
-    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `svt_hevc`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `svt_vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`, `svt_av1`, `rav1e`
+    - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `svt_hevc`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `svt_vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`, `svt_av1`, `rav1e`, `none`
 
 #### `-A, --vaapi-device=NODE`
 
@@ -392,6 +392,8 @@ The provided Makefile supports the common `DESTDIR`, `PREFIX`, `BINDIR`, `DOCDIR
 - **screencast** is written in pure POSIX shell code and has been tested in bash, dash, yash, ksh and zsh.
 
 - When recording offline, the default **screencast** behavior is to use a two step process: firstly the audio and video are recorded to a lossless format, and at a second step it is encoded to produce the final output video. That's why you see a desktop notification saying '*encoding...*'. This mechanism produces a better video, avoids problems and allows to use fade effect. When live streaming or when using the [`-1`](#-1---one-step)/[`--one-step`](#-1---one-step) option, **screencast** uses a one step process, with recording and encoding at the same time. Note that the [`-1`](#-1---one-step)/[`--one-step`](#-1---one-step) option is not recommended to be used with software-based video encoders, since it can cause buffer problems that may lead to packet loss (most notably audio packet loss).
+
+- The [`-a`](#-a---audio-encodername)/[`--audio-encoder`](#-a---audio-encodername) and [`-v`](#-v---video-encodername)/[`--video-encoder`](#-v---video-encodername) options have both a special value of `none`. Setting `-a none` and `-v none` at the same time will make **screecast** to record a lossless video in a one step process. No encoding step will be made and the resulting video will be lossless. The [`-1`](#-1---one-step)/[`--one-step`](#-1---one-step) option will be automatically setted in this situation, as there is no second encoding step to be made. Only the `mkv` and `nut` container formats are supported when recording in this lossless way. Note: `-a none` can be used only with `-v none`, and `-v none` can be used only with `-a none` (they must be specified in conjuntion, or it can be setted `-v none` and `-i none` if wanting to a record a video without audio input).
 
 - When using `aac` audio encoder (which is the default setting), **screencast** will check if the detected FFmpeg build has support for libfdk\_aac and use it if present, otherwise it will use the FFmpeg built-in AAC audio encoder. Make sure to have a recent FFmpeg version as older versions do not support the built-in AAC audio encoder without being experimental, or do not support it at all.
 

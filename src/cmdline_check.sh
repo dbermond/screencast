@@ -133,9 +133,28 @@ check_cmd_line() {
     fi
     
     # check if user is recording audio (if not, modify the corresponding control variable)
-    if [ "$audio_input" = 'none' ] || [ "$audio_encoder" = 'none' ]
+    if [ "$audio_input" = 'none' ]
     then
+        if [ "$audio_encoder_setted" = 'true' ]
+        then
+            exit_program "the audio encoder cannot be setted with '-a' option when using '-i none'"
+        fi
+        
         recording_audio='false'
+    fi
+    
+    # check if user is doing a one step process without encoding the lossless video
+    if [ "$video_encoder" = 'none' ] &&
+       {
+           [ "$audio_encoder"   = 'none'  ] ||
+           [ "$recording_audio" = 'false' ];
+       }
+    then
+        video_outstr='(lossless video)'
+        [ "$recording_audio" = 'true' ] && audio_outstr='(lossless audio)'
+        
+        one_step_lossless='true'
+        [ "$one_step" != 'true' ] && one_step='true' # implies one step process
     fi
     
     # check if user is saving an output video (if not, modify the corresponding control variable)
@@ -192,6 +211,12 @@ check_cmd_line() {
         then
             output_file="screencast-livestreaming-${current_time}.${format}"
         else
+            if [ "$one_step_lossless" = 'true' ] && [ "$format_setted" = 'false' ]
+            then
+                format='mkv'
+                format_outstr='(auto chosen)'
+            fi
+            
             output_file="screencast-${current_time}.${format}"
         fi
     else
@@ -324,6 +349,34 @@ check_cmd_line() {
         fi
     fi
     
+    # do not allow to use '-a none' with an '-v' argument different than 'none'
+    if [ "$audio_encoder" = 'none' ] && [ "$video_encoder" != 'none' ]
+    then
+        msg="'-a none' cannot be used with an '-v' argument different than 'none'"
+        
+        if [ "$video_encoder_setted" = 'false' ]
+        then
+            msg="${msg}
+                      (did you forget to select the video encoder?)"
+        fi
+        
+        exit_program "$msg"
+    fi
+    
+    # do not allow to use '-v none' with an '-a' argument different than 'none'
+    if [ "$video_encoder" = 'none' ] && [ "$audio_encoder" != 'none' ] && [ "$recording_audio" = 'true' ]
+    then
+        msg="'-v none' cannot be used with an '-a' argument different than 'none'"
+        
+        if [ "$audio_encoder_setted" = 'false' ]
+        then
+            msg="${msg}
+                      (did you forget to select the audio encoder?)"
+        fi
+        
+        exit_program "$msg"
+    fi
+
     # checks and settings for formats and audio/video encoders when saving the output video
     if [ "$saving_output" = 'true' ]
     then
@@ -405,6 +458,17 @@ check_cmd_line() {
         fi # end: [ "$format_setted" = 'true' ] || [ "$video_encoder_setted" = 'true' ]
         
     fi # end: [ "$saving_output" = 'true' ]
+    
+    # check for the lossless ffmpeg components when needed
+    if [ "$streaming" = 'false' ] &&
+       {
+           [ "$one_step" = 'false' ] ||
+           [ "$one_step_lossless" = 'true' ];
+       }
+    then
+        check_lossless_component format
+        check_lossless_component videocodec
+    fi
     
     # audio input checks and adjustments
     if [ "$recording_audio" = 'true' ]
@@ -490,37 +554,23 @@ check_cmd_line() {
         
     fi # end: [ "$recording_audio" = 'true' ]
     
-    # do not allow to use '-i none' with an '-a' argument different than 'none'
-    if [ "$audio_input"    = 'none' ] && [ "$audio_input_setted"   = 'true' ] &&
-       [ "$audio_encoder" != 'none' ] && [ "$audio_encoder_setted" = 'true' ]
-    then
-        exit_program "'-i none' cannot be used with an '-a' argument different than 'none'"
-    fi
-    
-    # do not allow to use '-a none' with an '-i' argument different than 'none'
-    if [ "$audio_encoder"  = 'none' ] && [ "$audio_encoder_setted" = 'true' ] &&
-       [ "$audio_input"   != 'none' ] && [ "$audio_input_setted"   = 'true' ]
-       
-    then
-        exit_program "'-a none' cannot be used with an '-i' argument different than 'none'"
-    fi
-    
     # execute audio encoder checks and settings (only if recording audio)
     if [ "$recording_audio" = 'true' ]
     then
-        "audiocodec_settings_${audio_encoder}"
+        [ "$audio_encoder" != 'none' ] && "audiocodec_settings_${audio_encoder}"
     
     # adjust settings if user is not recording audio (video without audio stream)
     else
         unset -v audio_input
         unset -v audio_channel_layout
         unset -v audio_input_options
+        unset -v audio_encoder
         audio_record_codec='-an'
         audio_encode_codec='-an'
     fi
     
     # execute video encoder checks and settings
-    "videocodec_settings_${video_encoder}"
+    [ "$video_encoder" != 'none' ] && "videocodec_settings_${video_encoder}"
     
     # do not allow to use slow video encoders in a one step process (-1/--one-step)
     # (aom_av1 is still experimental and very slow in ffmpeg)

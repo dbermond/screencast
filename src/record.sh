@@ -74,9 +74,16 @@ record_offline_one_step() {
     set_volume
     check_dir "$savedir"
     
-    ff_audio_codec="$audio_encode_codec"
-    ff_video_codec="$video_encode_codec"
-    ff_pixfmt_options="-pix_fmt ${pixel_format}"
+    if [ "$one_step_lossless" = 'true' ]
+    then
+        ff_audio_codec="$audio_record_codec"
+        ff_video_codec="$video_record_codec"
+    else
+        ff_audio_codec="$audio_encode_codec"
+        ff_video_codec="$video_encode_codec"
+        ff_pixfmt_options="-pix_fmt ${pixel_format}"
+    fi
+    
     ff_output="${savedir}/${output_file}"
     
     print_good 'recording (one step process)'

@@ -11,6 +11,8 @@ https://github.com/dbermond/screencast/
 - added support for SVT AV1 video encoder
 - added support for SVT HEVC video encoder
 - added support for SVT VP9 video encoder
+- added support for recording a lossless video without encoding it (through '-a none' and '-v none') (#9)
+- only '-i none' can be used to disable audio recording, as '-a none' has now other functionality as above
 - changed default font for text watermark to DejaVu-Sans
 - remove bc requirement for the fade effect
 - new option: select tickness of the screen region border delimiter

@@ -157,9 +157,9 @@ utility (\'$ \fBpactl list sources\fR\').
 .TP
 \fB\-a\fR, \fB\-\-audio\-encoder\fR=\fINAME\fR
 .RS
-Audio encoder that will be used to encode the recorded audio. When setted to
-\fInone\fR the audio will be disabled (video without audio, only video stream
-will be present).
+Audio encoder that will be used to encode the recorded audio. For details
+about the special value \fInone\fR, please see the \fBREMARKS\fR section
+bellow.
 .PP
 .nf
         default: aac
@@ -174,14 +174,15 @@ hardware accelerated video encoder please make sure that you have a graphics
 card that supports the specified encoder. Note that hardware accelerated video
 encoders have additional requirements: NVENC requires NVIDIA drivers to be
 installed, VAAPI requires libva and libdrm to be installed and QSV requires
-Intel Media SDK to be installed.
+Intel Media SDK to be installed. For details about the special value
+\fInone\fR, please see the \fBREMARKS\fR section bellow.
 .PP
 .nf
         default: x264
 supported types: x264, h264_nvenc, h264_vaapi, h264_qsv,
                  x265, kvazaar, svt_hevc, hevc_nvenc, hevc_vaapi, hevc_qsv,
                  vp8, vp8_vaapi, vp9, svt_vp9, vp9_vaapi, theora, wmv,
-                 aom_av1, svt_av1, rav1e
+                 aom_av1, svt_av1, rav1e, none
 .fi
 .RE
 .TP
@@ -624,6 +625,19 @@ live streaming or when using the \fB\-1\fR/\fB\-\-one\-step\fR option,
 same time. Note that the \fB\-1\fR/\fB\-\-one\-step\fR option is not
 recommended to be used with software-based video encoders, since it can cause
 buffer problems that may lead to packet loss (most notably audio packet loss).
+.PP
+The \fB\-a\fR/\fB\-\-audio\-encoder\fR and \fB\-v\fR/\fB\-\-video\-encoder\fR
+options have both a special value of \fInone\fR. Setting \fB\-a\fR \fInone\fR
+and \fB\-v\fR \fInone\fR at the same time will make \fBscreecast\fR to record
+a lossless video in a one step process. No encoding step will be made and the
+resulting video will be lossless. The \fB\-1\fR/\fB\-\-one\-step\fR option
+will be automatically setted in this situation, as there is no second encoding
+step to be made. Only the \fImkv\fR and \fInut\fR container formats are
+supported when recording in this lossless way. Note: \fB\-a\fR \fInone\fR can
+be used only with \fB\-v\fR \fInone\fR, and \fB\-v\fR \fInone\fR can be used
+only with \fB\-a\fR \fInone\fR (they must be specified in conjuntion, or it
+can be setted \fB\-v\fR \fInone\fR and \fB\-i\fR \fInone\fR if wanting to a
+record a video without audio input).
 .PP
 When using \fIaac\fR audio encoder (which is the default setting),
 \fBscreencast\fR will check if the detected FFmpeg build has support for

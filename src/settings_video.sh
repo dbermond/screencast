@@ -44,6 +44,7 @@ supported_videocodecs_all="$(cat <<- __EOF__
 		aom_av1
 		svt_av1
 		rav1e
+		none
 __EOF__
 )"
 supported_videocodecs_software="$(cat <<- __EOF__
