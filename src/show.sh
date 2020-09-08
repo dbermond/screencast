@@ -31,9 +31,8 @@
 get_list_format() {
     count='1'
     chars='25'
-    (IFS='
-'
-    for item in $1
+    
+    while read -r item
     do
         if [ "$count" -eq "$(printf '%s' "$1" | wc -w)" ]
         then
@@ -56,9 +55,11 @@ get_list_format() {
         fi
         
         count="$((count + 1))"
-    done
+    done <<- __EOF__
+		$(printf '%s\n' "$1")
+__EOF__
     
-    printf '%s' "$formated_components")
+    printf '%s' "$formated_components"
     
     unset -v count
     unset -v chars

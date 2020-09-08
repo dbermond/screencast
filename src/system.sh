@@ -192,14 +192,14 @@ remove_spaces() {
 del_multiline() {
     var="$1"
     
-    (IFS='
-'   
-    for line in $2
+    while read -r line
     do
         var="$(printf '%s' "$var" | sed "/^${line}$/d")"
-    done
+    done <<- __EOF__
+		$(printf '%s' "$2")
+__EOF__
     
-    printf '%s\n' "$var")
+    printf '%s\n' "$var"
     
     unset -v line
     unset -v var
