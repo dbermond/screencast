@@ -31,7 +31,6 @@ supported_shells='bash dash yash ksh zsh'
 if [ "$AUDIOIN" = 'none' ]
 then
     tests_per_group='6'
-    audio_encoder='--audio-encoder=none'
     effects='--fade=both'
 else
     audio_encoder='--audio-encoder=vorbis'
