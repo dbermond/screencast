@@ -88,7 +88,7 @@ check_lossless_component() {
                 previous_components="$(printf '%s' "$previous_components" | sed "s/,[[:space:]]$/ or ${component}/")"
                 component_error "$previous_components" "$component_generic_name" false
             else
-                previous_components="${previous_components:-}${component}, "
+                previous_components="${previous_components}${component}, "
                 continue
             fi
         fi

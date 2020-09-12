@@ -61,7 +61,7 @@ do
     then
         sed -i "s/${initial_year}-[[:digit:]]\\{4\\}/${initial_year}-${actual_year}/g" "$file"
         
-        printf '%s\n' "${color_green:-}changed to '${initial_year}-${actual_year}'${color_off:-}"
+        printf '%s\n' "${color_green}changed to '${initial_year}-${actual_year}'${color_off}"
         
     # manpage files (escaped hyphens)
     elif   grep -q "${initial_year}\\\\-[[:digit:]]\\{4\\}" "$file" &&
@@ -69,9 +69,9 @@ do
     then
         sed -i "s/${initial_year}\\\\-[[:digit:]]\\{4\\}/${initial_year}\\\\-${actual_year}/g" "$file"
         
-        printf '%s\n' "${color_green:-}changed to '${initial_year}\\-${actual_year}'${color_off:-}"
+        printf '%s\n' "${color_green}changed to '${initial_year}\\-${actual_year}'${color_off}"
         
     else
-        printf '%s\n' "${color_blue:-}no changes${color_off:-}"
+        printf '%s\n' "${color_blue}no changes${color_off}"
     fi
 done

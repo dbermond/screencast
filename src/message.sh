@@ -29,19 +29,19 @@
 # return value: the message to print
 # return code (status): not relevant
 print_good() {
-    printf '%s\n' "${msg_header}${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_off} ${1}"
 }
 
 print_info() {
-    printf '%s\n' "${msg_header}${color_bold:-} info:${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_bold} info:${color_off} ${1}"
 }
 
 print_warn() {
-    printf '%s\n' "${msg_header}${color_yellow:-} warning:${color_off:-} ${1}"
+    printf '%s\n' "${msg_header}${color_yellow} warning:${color_off} ${1}"
 }
 
 print_error() {
-    printf '%s\n' "${msg_header}${color_red:-} error:${color_off:-} ${1}" >&2
+    printf '%s\n' "${msg_header}${color_red} error:${color_off} ${1}" >&2
 }
 
 # notify function: show a desktop notification if setted to do so

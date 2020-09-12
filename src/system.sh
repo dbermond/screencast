@@ -161,7 +161,7 @@ check_requirements() {
                 }
                 continue
             else
-                msg="${request_string:-}'${requirement}' was not found"
+                msg="${request_string}'${requirement}' was not found"
                 print_error "$msg"
                 printf '%s%s\n' '                      ' \
                           "please install ${installname}" >&2

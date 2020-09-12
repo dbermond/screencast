@@ -35,7 +35,7 @@ then
 fi
 
 # message header (colored, will fallback to non-colored if no color support)
-msg_header="${color_blue:-}[ ${color_bold:-}screencast${color_blue:-} ]"
+msg_header="${color_blue}[ ${color_bold}screencast${color_blue} ]"
 
 # enable some options if the executing shell is zsh
 if [ -n "$ZSH_VERSION" ]
