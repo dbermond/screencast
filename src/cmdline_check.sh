@@ -589,10 +589,10 @@ check_cmd_line() {
         unset -v vaapi_device
     fi
     
-    # do not allow to use -m option when -i or -a are setted to 'none'
+    # do not allow to use -m option when -i is setted to 'none'
     if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ]
     then
-        exit_program "--volume-factor (-m) option cannot be used when '-i' or '-a' are setted to 'none'"
+        exit_program "--volume-factor (-m) option cannot be used when '-i' is setted to 'none'"
     fi
     
     # check if the entered volume factor is a valid integer/float number (-m)
