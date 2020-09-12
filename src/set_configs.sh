@@ -49,7 +49,7 @@ set_live() {
     elif [ "$video_height" -eq '1440' ] ||
          {
              [ "$video_height" -lt '2160' ] &&
-             [ "$video_height" -gt '1440' ] ;
+             [ "$video_height" -gt '1440' ];
          }
     then
          if [ "$video_rate" -ge '60' ]
@@ -62,7 +62,7 @@ set_live() {
     elif [ "$video_height" -eq '1080' ] ||
          {
              [ "$video_height" -lt '1440' ] &&
-             [ "$video_height" -gt '1080' ] ;
+             [ "$video_height" -gt '1080' ];
          }
     then
          if [ "$video_rate" -ge '60' ]
@@ -75,7 +75,7 @@ set_live() {
     elif [ "$video_height" -eq '720' ] ||
          {
              [ "$video_height" -lt '1080' ] &&
-             [ "$video_height" -gt '720'  ] ;
+             [ "$video_height" -gt '720'  ];
          }
     then
          if [ "$video_rate" -ge '60' ]
@@ -88,7 +88,7 @@ set_live() {
     elif [ "$video_height" -eq '480' ] ||
          {
              [ "$video_height" -lt '720' ] &&
-             [ "$video_height" -gt '480' ] ;
+             [ "$video_height" -gt '480' ];
          }
     then
          video_encode_codec="${video_encode_codec} -maxrate 1M -bufsize 2M"
@@ -96,7 +96,7 @@ set_live() {
     elif [ "$video_height" -eq '360' ] ||
          {
              [ "$video_height" -lt '480' ] &&
-             [ "$video_height" -gt '360' ] ;
+             [ "$video_height" -gt '360' ];
          }
     then
          video_encode_codec="${video_encode_codec} -maxrate 500k -bufsize 1000k"
@@ -104,7 +104,7 @@ set_live() {
     elif [ "$video_height" -eq '240' ] ||
          {
              [ "$video_height" -lt '360' ] &&
-             [ "$video_height" -gt '240' ] ;
+             [ "$video_height" -gt '240' ];
          }
     then
          video_encode_codec="${video_encode_codec} -maxrate 400k -bufsize 800k"

@@ -236,7 +236,7 @@ check_cmd_line() {
                [ "$streaming" = 'false' ] ||
                {
                    [ "$streaming"  = 'true'  ] &&
-                   [ "$keep_video" = 'false' ] ;
+                   [ "$keep_video" = 'false' ];
                } ;
            }
         then
@@ -250,7 +250,7 @@ check_cmd_line() {
                [ "$streaming" = 'false' ] ||
                {
                    [ "$streaming"  = 'true'  ] &&
-                   [ "$keep_video" = 'false' ] ;
+                   [ "$keep_video" = 'false' ];
                } ;
            }
         then
@@ -303,7 +303,7 @@ check_cmd_line() {
     if [ "$format_setted" = 'true' ] ||
        {
            [ "$auto_filename" = 'false' ] &&
-           [ "$saving_output" = 'true'  ] ;
+           [ "$saving_output" = 'true'  ];
        }
     then
         if ! printf '%s' "$supported_formats_all" | grep -q "^${format}$"

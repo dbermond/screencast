@@ -87,30 +87,30 @@ check_requirements() {
         # skip disabled components (unnecessary checks)
         if {
                [ "$requirement"   = 'slop'  ] &&
-               [ "$select_region" = 'false' ] ;
+               [ "$select_region" = 'false' ];
            } ||
            {
                [ "$requirement" = 'ffprobe' ] &&
-               [ "$fade" = 'none'  ] ;
+               [ "$fade" = 'none' ];
            } ||
            {
                {
                    [ "$requirement" = 'convert' ] ||
-                   [ "$requirement" = 'magick'  ] ;
+                   [ "$requirement" = 'magick'  ];
                } &&
-               [ "$watermark" = 'false'  ] ;
+               [ "$watermark" = 'false' ];
            } ||
            {
                [ "$requirement"  = "$pngoptimizer" ] &&
-               [ "$pngoptimizer" = 'none'          ] ;
+               [ "$pngoptimizer" = 'none'          ];
            } ||
            {
                [ "$requirement"  = 'advdef' ] &&
-               [ "$pngoptimizer" = "none"   ] ;
+               [ "$pngoptimizer" = "none"   ];
            } ||
            {
                [ "$requirement"   = 'notify-send' ] &&
-               [ "$notifications" = 'false'       ] ;
+               [ "$notifications" = 'false'       ];
            }
         then
             continue
