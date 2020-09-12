@@ -49,7 +49,7 @@ then
     
     sed -i "8s/[[:alnum:]]*$/${version} - $(date +%Y-%m-%d)/" CHANGELOG
     
-    printf '%s\n' "      CHANGELOG: ${color_green}changed version to ${color_blue}'$(sed -n '8p' CHANGELOG | \
+    printf '%s\n' "      CHANGELOG: ${color_green}changed version to ${color_blue}'$(sed -n '8p' CHANGELOG |
                                                                                          awk '{ print $3, $4, $5 }')'${color_off}"
     
     sed -i "s/RELEASE[[:space:]]:=[[:space:]].*$/RELEASE := v${version}/" Makefile
@@ -62,7 +62,7 @@ then
     
     sed -i '7G'                 CHANGELOG
     sed -i '8i### version next' CHANGELOG
-    printf '%s\n' "      CHANGELOG: ${color_green}changed version to ${color_blue}'$(sed -n '8p' CHANGELOG | \
+    printf '%s\n' "      CHANGELOG: ${color_green}changed version to ${color_blue}'$(sed -n '8p' CHANGELOG |
                                                                                          awk '{ print $NF }')'${color_off}"
     
     sed -i '/RELEASE[[:space:]]:=[[:space:]].*$/s/$/\.next/' Makefile
@@ -76,11 +76,11 @@ else
     exit 1
 fi
 
-printf '%s\n' "       Makefile: ${color_green}changed version to ${color_blue}'$(grep 'RELEASE[[:space:]]:=[[:space:]].*$' Makefile | \
+printf '%s\n' "       Makefile: ${color_green}changed version to ${color_blue}'$(grep 'RELEASE[[:space:]]:=[[:space:]].*$' Makefile |
                                                                            awk '{ print $NF }')'${color_off}"
 
 sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $4 }')/\"$(LANG='en_US.UTF.8' date +%B)/" doc/screencast.1
 sed -i "2s/$(sed -n '2p' doc/screencast.1 | awk '{ print $5 }')/$(date +%Y)\"/"                    doc/screencast.1
 
-printf '%s\n' "doc/screencast1: ${color_green}changed version to ${color_blue}'$(sed -n '2p' doc/screencast.1 | \
+printf '%s\n' "doc/screencast1: ${color_green}changed version to ${color_blue}'$(sed -n '2p' doc/screencast.1 |
                                                                                      awk '{ print $4, $5, $6, $7}')'${color_off}"
