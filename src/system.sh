@@ -28,7 +28,7 @@
 # return code (status): not relevant
 cleanup() {
     # delete temporary PNG (waterwark) image
-    [ "$watermark" = 'true' ] && rm -f "${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
+    [ "$watermark" = 'true' ] && rm -f "${tmpdir}/screencast-tmpimage-${rndstr_png}.png"
     
     if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] && [ -n "$ff_output" ]
     then
@@ -37,16 +37,16 @@ cleanup() {
         then
             if [ "$auto_filename" = 'true' ]
             then
-                mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
+                mv -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}" \
                       "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}"
             else
-                mv -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
+                mv -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}" \
                       "${tmpdir}/${output_file%.*}-lossless.${rec_extension}"
             fi
             
         # delete temporary (lossless) video
         else
-            rm -f "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
+            rm -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
         fi
         
         # delete temporary directory if it was created

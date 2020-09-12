@@ -95,7 +95,7 @@ optimize_png() {
 create_watermark() {
     print_good 'generating watermark image'
     rndstr_png="$(randomstr '20')" # random string for tmp png filename
-    wmark_image="${tmpdir}/screencast-tmpimage-${$}-${rndstr_png}.png"
+    wmark_image="${tmpdir}/screencast-tmpimage-${rndstr_png}.png"
     
     # get font pointsize
     if watermark_pointsize="$(magick \
@@ -167,7 +167,7 @@ videofade() {
     
     # get recorded video length in seconds
     video_length="$(ffprobe \
-                        -i "${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}" \
+                        -i "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}" \
                         -show_entries format='duration' \
                         -v quiet \
                         -of csv='p=0')"

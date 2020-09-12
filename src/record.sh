@@ -115,7 +115,7 @@ record_offline_two_steps() {
     
     ff_audio_codec="$audio_record_codec"
     ff_video_codec="$video_record_codec"
-    ff_output="${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
+    ff_output="${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
     
     print_good 'recording'
     notify 'normal' "$expire_time_short" "$record_icon" 'recording...'
@@ -142,7 +142,7 @@ record_offline_two_steps() {
         set_volume
         
         ff_audio_options="${audio_channel_layout}"
-        ff_video_options="-i ${tmpdir}/screencast-lossless-${$}-${rndstr_video}.${rec_extension}"
+        ff_video_options="-i ${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"
         ff_pixfmt_options="-pix_fmt ${pixel_format}"
