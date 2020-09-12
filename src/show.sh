@@ -238,7 +238,7 @@ show_settings() {
     effects="${effects:-none}"
     
     print_good "${color_bold}video encoder   :${color_off} ${video_encoder} ${video_outstr}"
-    print_good "${color_bold}audio encoder   :${color_off} ${audio_encoder:-"no input audio"} ${audio_outstr}"
+    print_good "${color_bold}audio encoder   :${color_off} ${audio_encoder:-"no audio input"} ${audio_outstr}"
     
     [ "$saving_output" = 'true' ] && print_good "${color_bold}container format:${color_off} ${format} ${format_outstr}"
     
