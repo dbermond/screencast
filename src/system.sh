@@ -357,7 +357,7 @@ set_tmpdir() {
                 then
                     tmpdir="$(mktemp -d "${XDG_CACHE_HOME}/screencast/tmp.XXXXXX")"
                 else
-                    tmpdir="${XDG_CACHE_HOME}/screencast/tmp.$(randomstr '20')"
+                    tmpdir="${XDG_CACHE_HOME}/screencast/tmp.$(randomstr '12')"
                 fi
             else
                 exit_program "failed to create directory '${XDG_CACHE_HOME}/screencast'"
@@ -370,7 +370,7 @@ set_tmpdir() {
                 then
                     tmpdir="$(mktemp -d "${HOME}/.screencast/tmp.XXXXXX")"
                 else
-                    tmpdir="${HOME}/.screencast/tmp.$(randomstr '20')"
+                    tmpdir="${HOME}/.screencast/tmp.$(randomstr '12')"
                 fi
             else
                 exit_program "failed to create directory '${HOME}/.screencast'"

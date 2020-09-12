@@ -94,7 +94,7 @@ optimize_png() {
 # sets special variables: $watermark_vfilter - ffmpeg video filter options for watermark
 create_watermark() {
     print_good 'generating watermark image'
-    rndstr_png="$(randomstr '20')" # random string for tmp png filename
+    rndstr_png="$(randomstr '12')" # random string for tmp png filename
     wmark_image="${tmpdir}/screencast-tmpimage-${rndstr_png}.png"
     
     # get font pointsize

@@ -111,7 +111,7 @@ record_offline_two_steps() {
     check_dir "$savedir"
     check_dir "$tmpdir"
     
-    rndstr_video="$(randomstr '20')" # random string for tmp video filename
+    rndstr_video="$(randomstr '12')" # random string for tmp video filename
     
     ff_audio_codec="$audio_record_codec"
     ff_video_codec="$video_record_codec"
