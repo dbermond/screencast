@@ -25,7 +25,10 @@
 trap 'cleanup' EXIT HUP INT QUIT ABRT TERM # signal handling
 
 # check for color output support
-if command -v tput >/dev/null 2>&1
+if [ -n "$TERM" ] &&
+   [ "$TERM" != 'dumb'    ] &&
+   [ "$TERM" != 'unknown' ] &&
+   command -v tput >/dev/null 2>&1
 then
     color_off="$(tput sgr0)"
     color_bold="${color_off}$(tput bold)"
