@@ -22,16 +22,20 @@ initial_year='2015'
 if [ "$#" -eq '0' ] ||
    [ "$#" -gt '1' ]
 then
-    printf '%s\n' 'error: invalid usage'
-    printf '%s\n' '       use --help for help'
+    cat <<- __EOF__
+		error: invalid usage
+		       use --help for help
+__EOF__
     exit 1
 fi
 
 if [ "$1" = '-h'     ] ||
    [ "$1" = '--help' ]
 then
-    printf '%s\n' 'chyear - change copyright year of all files in directory'
-    printf '%s\n' 'Usage: chyear <year>'
+    cat <<- __EOF__
+		chyear - change copyright year of all files in directory
+		Usage: chyear <year>
+__EOF__
     exit 0
 fi
 
@@ -43,7 +47,10 @@ else
     exit 1
 fi
 
-if command -v tput >/dev/null 2>&1
+if [ -n "$TERM" ] &&
+   [ "$TERM" != 'dumb'    ] &&
+   [ "$TERM" != 'unknown' ] &&
+   command -v tput >/dev/null 2>&1
 then
     color_off="$(tput sgr0)"
     color_green="$(tput setaf 2)"

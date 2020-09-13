@@ -20,16 +20,20 @@
 if [ "$#" -eq '0' ] ||
    [ "$#" -gt '1' ]
 then
-    printf '%s\n' 'error: invalid usage'
-    printf '%s\n' '       use --help for help'
+    cat <<- __EOF__
+		error: invalid usage
+		       use --help for help
+__EOF__
     exit 1
 fi
 
 if [ "$1" = '-h'     ] ||
    [ "$1" = '--help' ]
 then
-    printf '%s\n' 'chshell - change shell in screencast shebang'
-    printf '%s\n' 'Usage: chshell <shell>'
+    cat <<- __EOF__
+		chshell - change shell in screencast shebang
+		Usage: chshell <shell>
+__EOF__
     exit 0
 fi
 

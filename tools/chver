@@ -20,23 +20,30 @@
 if [ "$#" -eq '0' ] ||
    [ "$#" -gt '1' ]
 then
-    printf '%s\n' 'error: invalid usage'
-    printf '%s\n' '       use --help for help'
+    cat <<- __EOF__
+		error: invalid usage
+		       use --help for help
+__EOF__
     exit 1
 fi
 
 if [ "$1" = '-h'     ] ||
    [ "$1" = '--help' ]
 then
-    printf '%s\n' 'chver - change screencast release version'
-    printf '%s\n' 'Usage: chver <version>'
-    printf '\n'
-    printf '%s\n' 'Special values for <version>:'
-    printf '%s\n' 'next, dev or devel: bump to development version'
+    cat <<- __EOF__
+		chver - change screencast release version
+		Usage: chver <version>
+		
+		Special values for <version>:
+		next, dev or devel: bump to development version
+__EOF__
     exit 0
 fi
 
-if command -v tput >/dev/null 2>&1
+if [ -n "$TERM" ] &&
+   [ "$TERM" != 'dumb'    ] &&
+   [ "$TERM" != 'unknown' ] &&
+   command -v tput >/dev/null 2>&1
 then
     color_off="$(tput sgr0)"
     color_green="$(tput setaf 2)"

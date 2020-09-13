@@ -521,10 +521,13 @@ else
     vaapi_info="${color_dark_yellow}disabled${color_off}"
 fi
 
-printf '%s\n' "${color_green}webcam tests:${color_off} ${webcam_info}"
-printf '%s\n' "${color_green}VAAPI  tests:${color_off} ${vaapi_info}"
-printf '%s\n' "${color_green}testing sheells: ${test_shells}${color_off}"
-printf '%s\n' "${color_green}starting screencast tests${color_off}"
+# show startup information
+cat <<- __EOF__
+	${color_green}webcam tests:${color_off} ${webcam_info}
+	${color_green}VAAPI  tests:${color_off} ${vaapi_info}
+	${color_green}testing sheells: ${test_shells}${color_off}
+	${color_green}starting screencast tests${color_off}
+__EOF__
 
 errors='0' # failed tests counter
 n='1'      # all    tests counter
@@ -574,7 +577,6 @@ then
         
         run_tests
     done
-    
 # run test for a single shell
 else
     last_shell="$shell"
@@ -586,21 +588,21 @@ if [ "$errors" -eq '0' ]
 then
     printf '\n%s\n' "${color_green}Result: all tests passed successfully!${color_off}"
 else
-    printf '\n'
-    printf '%s\n' "${color_green}Result:${color_off}"
-    printf '%s\n' "  ${color_green}- $(printf '%03d' $((total - errors))) test(s) passed successfully${color_off}"
-    printf '%s\n' "  ${color_red}- $(printf '%03d' "$errors") test(s) failed${color_off}"
-    printf '\n'
-    printf '%s\n' "${color_red}The following commands failed:${color_off}"
-    
-    IFS='
-'
-    for cmd in $failed_cdms
+    cat <<- __EOF__
+		
+		  ${color_green}Result:${color_off}
+		  ${color_green}- $(printf '%03d' $((total - errors))) test(s) passed successfully${color_off}
+		  ${color_red}- $(printf '%03d' "$errors") test(s) failed${color_off}
+		
+		${color_red}The following commands failed:${color_off}
+__EOF__
+
+    while read -r cmd
     do
         printf '%s\n' "  ${color_red}- ${cmd}${color_off}"
-    done
-    
-    unset -v IFS
+    done <<- __EOF__
+		$(printf '%s' "$failed_cdms")
+__EOF__
     
     exit 1
 fi
