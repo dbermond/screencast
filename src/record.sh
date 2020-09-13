@@ -22,7 +22,7 @@
 #                record                 #
 #########################################
 
-# live_streaming function: record and live stream
+# description: record and live stream
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -62,8 +62,9 @@ live_streaming() {
     fi
 }
 
-# record_offline_one_step function: record offline (without live streaming) using one step
-#                                   (recording and encoding at the same time).
+# description:
+#   record offline (without live streaming) using one step
+#   (recording and encoding at the same time).
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -98,8 +99,9 @@ record_offline_one_step() {
     fi
 }
 
-# record_offline_two_steps function: record offline (without live streaming) using two steps
-#                                    (1st step: lossless recording. 2nd step: encoding).
+# description:
+#   record offline (without live streaming) using two steps
+#   (1st step: lossless recording. 2nd step: encoding).
 # arguments: none
 # return value: none
 # return code (status): not relevant

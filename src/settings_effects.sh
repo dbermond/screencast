@@ -39,7 +39,8 @@ webcam_size='320x240'
 webcam_input='/dev/video0'
 webcam_position='topright'
 
-# effect settings functions: make settings for the selected effect(s)
+# effect settings functions
+# description: make settings for the selected effect(s)
 # arguments: none
 # return value: none
 # return code (status): not relevant

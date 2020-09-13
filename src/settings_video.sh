@@ -138,13 +138,14 @@ largefile_videocodecs_lossless="$(cat <<- __EOF__
 __EOF__
 )"
 
-# get_videocodecs_for_nonmulti8_msg function: defines video encoders to be used with dimension_msg()
+# description: defines video encoders to be used with dimension_msg()
 # arguments: none
 # return value: none
 # return code (status): not relevant
-# sets special variables: $msg_speedloss_videocodecs   - video encoders that can lead to speedloss with non multiple of
-#                                                        8 dimensions (one per line)
-#                         $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
+# sets special variables:
+#   $msg_speedloss_videocodecs -
+#     video encoders that can lead to speedloss with non multiple of 8 dimensions (one per line)
+#   $msg_requirement_videocodecs - video encoders requires multiple of 8 dimensions (one per line)
 get_videocodecs_for_nonmulti8_msg() {
     msg_speedloss_videocodecs="$(del_multiline "$supported_videocodecs_all" "$(cat <<- __EOF__
 		$videocodecs_hevc
@@ -158,14 +159,18 @@ __EOF__
 )"
 }
 
-# lossless video encoder settings functions: make checks and settings for lossless video encoder
-#                                           (for the 1st step, lossless recording)
+# lossless video encoder settings functions
+# description:
+#   make checks and settings for lossless video encoder (for the 1st step, lossless recording)
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - the detected ffmpeg build has support for the tested lossless video_encoder
-#                       1 - the detected ffmpeg build has no support for the tested lossless video encoder
+# return code (status):
+#   0 - the detected ffmpeg build has support for the tested lossless video_encoder
+#   1 - the detected ffmpeg build has no support for the tested lossless video encoder
 # sets special variable: $video_record_codec - ffmpeg lossless video codec option and settings
-# note: the program will exit with error if the selected lossless video encoder is not supported by the detected ffmpeg build
+# note:
+#   the program will exit with error if the selected lossless video encoder is not supported
+#   by the detected ffmpeg build
 lossless_videocodec_settings_ffv1() {
     if check_component ffv1 encoder &&
        check_component ffv1 decoder
@@ -196,12 +201,15 @@ lossless_videocodec_settings_huffyuv() {
     fi
 }
 
-# video encoder settings functions: make checks and settings for the selected video encoder
+# video encoder settings functions
+# description: make checks and settings for the selected video encoder
 # arguments: none
 # return value: none
 # return code (status): not relevant
 # sets special variable: $video_encode_codec - ffmpeg video codec settings
-# note: the program will exit with error if the selected video encoder is not supported by the detected ffmpeg build
+# note:
+#   the program will exit with error if the selected video encoder is not supported
+#   by the detected ffmpeg build
 videocodec_settings_x264() {
     check_component libx264 encoder || component_error libx264 'video encoder' true
     

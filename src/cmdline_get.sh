@@ -22,8 +22,9 @@
 #           get command line            #
 #########################################
 
-# get_cmd_line function: get command line arguments and adjust related variables
-# arguments: $1 - the positional parameters passed with double quotes ("$@")
+# description: get command line arguments and adjust related variables
+# arguments:
+#   the positional parameters passed with double quotes ("$@")
 # return value: none
 # return code (status): not relevant
 # sets special variables: $shift_count - how many shifts were executed

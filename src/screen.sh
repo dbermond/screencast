@@ -22,9 +22,10 @@
 #                screen                 #
 #########################################
 
-# dimension_msg function: create an error/warning message to use with
-#                         a given inappropriate video dimension
-# arguments: $1 - a string denoting the given dimension (width/height)
+# description:
+#   create an error/warning message to use with a given inappropriate video dimension
+# arguments:
+#   $1 - a string denoting the given dimension (width/height)
 # return value: a string with the created message
 # return code (status): not relevant
 dimension_msg() {
@@ -55,11 +56,13 @@ dimension_msg() {
     unset -v msg
 }
 
-# check_dimension function: check if a given dimension is a multiple of 8
-# arguments:  $1 - the given dimension (the actual variable value)
+# description: check if a given dimension is a multiple of 8
+# arguments:
+#   $1 - the given dimension (the actual variable value)
 # return value: none
-# return code (status): 0 - the dimension is a multiple of 8
-#                       1 - the dimension is not a multiple of 8
+# return code (status):
+#   0 - the dimension is a multiple of 8
+#   1 - the dimension is not a multiple of 8
 check_dimension() {
     dimension_value="$1"
     
@@ -67,9 +70,10 @@ check_dimension() {
     [ "$((dimension_value % 8))" = '0' ]
 }
 
-# adjust_dimension function: change a given dimension to the immediately higher
-#                            number that is a multiple of 8
-# arguments: $1 - a string denoting the given dimension (width/height)
+# description:
+#   change a given dimension to the immediately higher number that is a multiple of 8
+# arguments:
+#   $1 - a string denoting the given dimension (width/height)
 # return value = not relevant
 # return code (status): not relevant
 adjust_dimension() {
@@ -106,8 +110,9 @@ adjust_dimension() {
     esac
 }
 
-# check_screen function: check for valid video size and position in relation to the current screen size
-#                        (will exit with error if any problem is encountered)
+# description:
+#   check for valid video size and position in relation to the current screen size
+#   (will exit with error if any problem is encountered)
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
@@ -130,8 +135,9 @@ check_screen() {
     fi
 }
 
-# get_region function: select with mouse the screen region to record
-#                      (will exit with error if region selection is canceled)
+# description:
+#   select with mouse the screen region to record
+#   (will exit with error if region selection is canceled)
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant

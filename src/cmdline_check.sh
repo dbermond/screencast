@@ -22,9 +22,11 @@
 #          command line checks          #
 #########################################
 
-# check_cmd_line function: check validity of command line options and arguments (aslo set some variables)
-#                          (will exit with error if any inconsistency is found)
-# arguments: the remainder positional parameters passed with double quotes ("$@")
+# description:
+#   check validity of command line options and arguments (aslo set some variables)
+#   (will exit with error if any inconsistency is found)
+# arguments:
+#   the remainder positional parameters passed with double quotes ("$@")
 # return value: none
 # return code (status): not relevant
 check_cmd_line() {

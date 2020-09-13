@@ -22,18 +22,22 @@
 #            error messages             #
 #########################################
 
-# command_error function: print an error message regarding invalid command
-#                         line arguments, show notification and exit with error
-# arguments: $1 - command line option name (e.g.: "--fade (-e)")
+# description:
+#   print an error message regarding invalid command
+#   line arguments, show notification and exit with error
+# arguments:
+#   $1 - command line option name (e.g.: "--fade (-e)")
 # return value: not relevant
 # return code (status): not relevant
 command_error() {
     exit_program "${1} option requires an argument"
 }
 
-# exit_program: print an error message to stderr, a desktop notification
-#               (if it is enabled) and exit with error
-# arguments: $1 - error message to print/notificate
+# description:
+#   print an error message to stderr, a desktop notification
+#   (if it is enabled) and exit with error
+# arguments:
+#   $1 - error message to print/notificate
 # return value: not relevant
 # return code (status): not relevant
 exit_program() {
@@ -42,12 +46,13 @@ exit_program() {
     exit 1
 }
 
-# component_error function: print an error message and show an error notification
-#                           about a not found ffmpeg component and exit the program
-# arguments: $1 - the not found ffmpeg component
-#            $2 - ffmpeg component type
-#                 ([audio/video ]encoder, [audio/video ]decoder, muxer, demuxer)
-#            $3 - show suggestion to try a different component (true, false)
+# description:
+#   print an error message and show an error notification
+#   about a not found ffmpeg component and exit the program
+# arguments:
+#   $1 - the not found ffmpeg component
+#   $2 - ffmpeg component type ([audio/video] encoder, [audio/video] decoder, muxer, demuxer)
+#   $3 - show suggestion to try a different component (true, false)
 # return value: not relevant
 # return code (status): not relevant
 component_error() {
@@ -72,9 +77,10 @@ component_error() {
     exit 1
 }
 
-# ffmpeg_version_error function:
+# description:
 #   exit the program with the proper message/notifications if the detected ffmpeg version is unsupported
-# arguments: $1 - error message to print/notificate
+# arguments:
+#   $1 - error message to print/notificate
 # return value: not relevant
 # return code (status): not relevant
 ffmpeg_version_error() {

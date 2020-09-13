@@ -22,7 +22,7 @@
 #              set configs              #
 #########################################
 
-# set_vaapi_qsv function: set needed options for live streaming (-L/--live-streaming)
+# description: set needed options for live streaming (-L/--live-streaming)
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -116,7 +116,7 @@ set_live() {
     video_encode_codec="${video_encode_codec} -g $((video_rate * 2))" # set gop size
 }
 
-# set_watermark function: enable watermark effect if chosen by user (-w/--watermark)
+# description: enable watermark effect if chosen by user (-w/--watermark)
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -142,7 +142,7 @@ set_watermark() {
     fi
 }
 
-# set_webcam function: enable webcam overlay effect if chosen by user (-W/--webcam)
+# description: enable webcam overlay effect if chosen by user (-W/--webcam)
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -161,8 +161,9 @@ set_webcam() {
     fi
 }
 
-# set_volume function: enable volume increase effect if chosen by user (-m/--volume-factor)
-#                      (to enable: a value different than '1.0' or '0.0')
+# description:
+#   enable volume increase effect if chosen by user (-m/--volume-factor)
+#   (to enable: a value different than '1.0' or '0.0')
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -170,7 +171,7 @@ set_volume() {
     [ "$volume_increase" = 'true' ] && ff_volume_options="-af volume=${volume_factor}"
 }
 
-# fix_pass_duration function: fix 'pass duration too large' messages in ffmpeg
+# description: fix 'pass duration too large' messages in ffmpeg
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -180,8 +181,9 @@ fix_pass_duration() {
     ff_vfilter_settings="${ff_vfilter_settings:-"fps=${video_rate}"}"
 }
 
-# set_vaapi_qsv function: set needed options for vaapi and qsv hardware accelerated video encoders (-v/--video-encoder)
-#                         if they are chosen by the user
+# description:
+#   set needed options for vaapi and qsv hardware accelerated video encoders
+#   (-v/--video-encoder) if they are chosen by the user
 # arguments: none
 # return value: none
 # return code (status): not relevant

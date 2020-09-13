@@ -58,8 +58,7 @@ wcam="--webcam --webcam-input=${WEBCAM}"
 #              functions                #
 #########################################
 
-# cleanup function: restore screencast script to original state and
-#                   delete duplicated live streaming videos
+# execute cleanup routines after program termination
 cleanup() {
     # restore original shell (shebang) in screencast script file
     [ -n "$USESHELL" ] && ./tools/chshell "$original_shell" >/dev/null 2>&1
@@ -80,7 +79,7 @@ cleanup() {
     done
 }
 
-# check_requirements function - check if needed programs are installed
+# check if needed programs are installed
 check_requirements() {
     # some optional dependencies must be installed for making the tests
     for requirement in ffmpeg xdpyinfo ffprobe bc convert magick
@@ -307,7 +306,7 @@ set_tests() {
     fi
 }
 
-# run_tests function: execute the tests
+# execute the tests
 run_tests() {
     shell_fullpath=$(sed -n '1p' "$scfile" | sed 's/#!//')
     

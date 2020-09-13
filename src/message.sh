@@ -22,10 +22,10 @@
 #               messages                #
 #########################################
 
-# print_good, print_info, print_warn and print_error functions:
-# print a formated message with colors if avaiable, otherwise it will fallback
-# to non-color output (note: print_error() prints to stderr by default)
-# arguments: $1 - message to print
+# print functions
+# description: print formated messages
+# arguments:
+#   $1 - message to print
 # return value: the message to print
 # return code (status): not relevant
 print_good() {
@@ -44,11 +44,12 @@ print_error() {
     printf '%s\n' "${msg_header}${color_red} error:${color_off} ${1}" >&2
 }
 
-# notify function: show a desktop notification if setted to do so
-# arguments: $1 - urgency level (low, normal, critial)
-#            $2 - duration in milliseconds
-#            $3 - icon name
-#            $4 - text message
+# description: show a desktop notification if setted to do so
+# arguments:
+#   $1 - urgency level (low, normal, critial)
+#   $2 - duration in milliseconds
+#   $3 - icon name
+#   $4 - text message
 # return value: none
 # return code (status): not relevant
 notify() {
@@ -56,7 +57,7 @@ notify() {
     [ "$notifications" = 'true' ] && notify-send $notify_args screencast "$(remove_spaces "$4")"
 }
 
-# finish function: print message and show notification when finished
+# description: print message and show notification when finished
 # arguments: none
 # return value: the printed message
 # return code (status): not relevant

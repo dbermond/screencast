@@ -59,15 +59,18 @@ supported_audiocodecs_lossless="$(cat <<- __EOF__
 		flac
 __EOF__
 )"
-
-# lossless audio encoder settings functions: make checks and settings for lossless audio encoder
-#                                           (for the 1st step, lossless recording)
+# lossless audio encoder settings functions
+# description:
+#   make checks and settings for lossless audio encoder (for the 1st step, lossless recording)
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - the detected ffmpeg build has support for the tested lossless audio_encoder
-#                       1 - the detected ffmpeg build has no support for the tested lossless audio encoder
+# return code (status):
+#   0 - the detected ffmpeg build has support for the tested lossless audio_encoder
+#   1 - the detected ffmpeg build has no support for the tested lossless audio encoder
 # sets special variable: $audio_record_codec - ffmpeg lossless audio codec option and settings
-# note: the program will exit with error if the selected lossless audio encoder is not supported by the detected ffmpeg build
+# note:
+#   the program will exit with error if the selected lossless audio encoder is not supported
+#   by the detected ffmpeg build
 lossless_audiocodec_settings_pcm_s16le() {
     if check_component pcm_s16le encoder &&
        check_component pcm_s16le decoder
@@ -88,12 +91,15 @@ lossless_audiocodec_settings_flac() {
     fi
 }
 
-# audio encoder settings functions: make checks and settings for the selected audio encoder
+# audio encoder settings functions
+# description: make checks and settings for the selected audio encoder
 # arguments: none
 # return value: none
 # return code (status): not relevant
 # sets special variable: $audio_encode_codec - ffmpeg audio codec option and settings
-# note: the program will exit with error if the selected audio encoder is not supported by the detected ffmpeg build
+# note:
+#   the program will exit with error if the selected audio encoder is not supported
+#   by the detected ffmpeg build
 audiocodec_settings_aac() {
     if check_component libfdk_aac encoder
     then

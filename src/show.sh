@@ -22,7 +22,7 @@
 #               show info               #
 #########################################
 
-# get_list_format function:
+# description:
 #   format the supported componenets for use with show_list() in -l/--list option
 # arguments:
 #   $1 - variable with all supported components
@@ -68,8 +68,9 @@ __EOF__
     unset -v formated_components
 }
 
-# show_header function: show program header
-# arguments: $1 - the positional parameters passed with double quotes ("$@")
+# description: show program header
+# arguments:
+#   $1 - the positional parameters passed with double quotes ("$@")
 # return value: the program header
 # return code (status): not relevant
 show_header() {
@@ -89,8 +90,9 @@ show_header() {
 __EOF__
 }
 
-# help function
-# arguments: $1 - the positional parameters passed with double quotes ("$@")
+# description: show help
+# arguments:
+#   $1 - the positional parameters passed with double quotes ("$@")
 # return value: the program help screen
 # return code (status): not relevant
 show_help() {
@@ -152,8 +154,9 @@ show_help() {
 __EOF__
 }
 
-# show_list function: print a list of arguments supported by this program
-# arguments: $1 - the positional parameters passed with double quotes ("$@")
+# description: print a list of arguments supported by this program
+# arguments:
+#   $1 - the positional parameters passed with double quotes ("$@")
 # return value: the described list
 # return code (status): not relevant
 show_list() {
@@ -200,7 +203,7 @@ show_list() {
 __EOF__
 }
 
-# show_settings function: show information about some program settings
+# description: show information about some program settings
 # arguments: none
 # return value: program settings information
 # return code (status): not relevant
@@ -245,7 +248,7 @@ show_settings() {
     print_good "${color_bold}effects         :${color_off} ${effects}"
 }
 
-# show_warnings function: show warnings that should appear right after show_settings()
+# description: show warnings that should appear right after show_settings()
 # arguments: none
 # return value: program early warnings
 # return code (status): not relevant

@@ -22,11 +22,13 @@
 #                effects                #
 #########################################
 
-# check_special_position function: check for a valid special position string
-# arguments: $1 - the string to check
+# description: check for a valid special position string
+# arguments:
+#   $1 - the string to check
 # return value: not relevant
-# return code (status): 0 - a valid special positon string was passed
-#                       1 - an invalid special positon string was passed
+# return code (status):
+#   0 - a valid special positon string was passed
+#   1 - an invalid special positon string was passed
 # sets special variables: $special_position - the value to which the string translates
 check_special_position() {
     case "$1" in
@@ -48,14 +50,16 @@ check_special_position() {
     esac
 }
 
-# check_pngoptimizer function: check for a valid png optimizer (-g/--png-optimizer)
-#                              (will exit with error if an invalid png optimizer is chosen)
+# description:
+#   check for a valid png optimizer (-g/--png-optimizer)
+#   (will exit with error if an invalid png optimizer is chosen)
 # arguments: none
 # return value: not relevant
 # return code (status): 0 - a valid png optimizer was selected
 # note1: it will make the program exit with error if an invalid png optimizer was selected
-# note2: this png optimizer check should be on check_cmd_line(), but it is implemented
-#        as a separate function to allow it to be executed before check_requirements()
+# note2:
+#   this png optimizer check should be on check_cmd_line(), but it is implemented
+#   as a separate function to allow it to be executed before check_requirements()
 check_pngoptimizer() {
     if [ "$pngoptimizer_setted" = 'true' ]
     then
@@ -68,7 +72,7 @@ check_pngoptimizer() {
     fi
 }
 
-# optimize_png function: optimize the png (watermark) image
+# description: optimize the png (watermark) image
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
@@ -85,12 +89,12 @@ optimize_png() {
     advdef $advdef_settings "$wmark_image"
 }
 
-# create_watermark function: create a text watermark and set watermark options
-#                            to be passed to ffmpeg command
+# description: create a text watermark and set watermark options to be passed to ffmpeg command
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - text watermark image was successfully created
-#                       1 - failed to create text watermark image
+# return code (status):
+#   0 - text watermark image was successfully created
+#   1 - failed to create text watermark image
 # sets special variables: $watermark_vfilter - ffmpeg video filter options for watermark
 create_watermark() {
     print_good 'generating watermark image'
@@ -157,7 +161,7 @@ create_watermark() {
     fi # end: if watermark_pointsize=
 }
 
-# video_fade function: sets video fade options to be passed to ffmpeg command
+# description: sets video fade options to be passed to ffmpeg command
 # arguments: none
 # return value: none
 # return code (status): not relevant

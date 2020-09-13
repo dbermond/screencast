@@ -22,13 +22,19 @@
 #                ffmpeg                 #
 #########################################
 
-# check_lossless_component: check if at least one supported lossless component of the given type is
-#                           available in the detected ffmpeg build
-# arguments: $1 - component type (format, audiocodec, videocodec)
+# description:
+#   check if at least one supported lossless component of the given type is
+#   available in the detected ffmpeg build
+# arguments:
+#   $1 - component type (format, audiocodec, videocodec)
 # return value: none
 # return code (status): not relevant
-# note1: it will fallback to the next supported lossless component of the given type that is found
-# note2: program will exit with error if no supported lossless components of the given type are available in ffmpeg
+# note1:
+#   it will automatically fallback to the next supported lossless component of the
+#   given type that is found
+# note2:
+#   program will exit with error if no supported lossless components of the given type
+#   is available in ffmpeg
 check_lossless_component() {
     case "$1" in
         format)
@@ -97,12 +103,14 @@ check_lossless_component() {
     unset -v previous_components
 }
 
-# check_component function: check if the detected ffmpeg build has support for a given component
-# arguments: $1 - component name
-# arguments: $2 - component type (encoder, decoder, muxer, demuxer)
+# description: check if the detected ffmpeg build has support for a given component
+# arguments:
+#   $1 - component name
+#   $2 - component type (encoder, decoder, muxer, demuxer)
 # return value: not relevant
-# reutrn code (status): 0 - ffmpeg build has support for the desired component
-#                       1 - ffmpeg build has no support for the desired component
+# reutrn code (status):
+#   0 - ffmpeg build has support for the desired component
+#   1 - ffmpeg build has no support for the desired component
 # note1: needs $ffmpeg_codecs for encoders and decoders - ffmpeg_codecs="$(ffmpeg -codecs -v quiet)"
 # note2: needs $ffmpeg_formats for muxers and demuxers - ffmpeg_formats="$(ffmpeg -formats -v quiet)"
 check_component() {
@@ -139,15 +147,17 @@ check_component() {
     esac
 }
 
-# check_minimum_ffmpeg_version function:
+# description:
 #   check if the version of the detected ffmpeg build is at least at a minium required
 #   version (checks if ffmpeg version is greater of equal than a specified one; checks
 #   for both release and git versions)
-# arguments: $1 - ffmpeg release version (example: 4.4)
-# arguments: $2 - ffmpeg internal git revision (example: 98615)
+# arguments:
+#   $1 - ffmpeg release version (example: 4.4)
+#   $2 - ffmpeg internal git revision (example: 98615)
 # return value: not relevant
-# reutrn code (status): 0 - ffmpeg version is greater or equal than the specified one
-#                       1 - ffmpeg version is not greater or equal than the specified one
+# reutrn code (status):
+#   0 - ffmpeg version is greater or equal than the specified one
+#   1 - ffmpeg version is not greater or equal than the specified one
 check_minimum_ffmpeg_version() {
     if [ -z "$1" ] || [ -z "$2" ]
     then
@@ -173,12 +183,13 @@ check_minimum_ffmpeg_version() {
     fi
 }
 
-# run_ffmpeg function: execute ffmpeg command according to predefined variables
+# description: execute ffmpeg command according to predefined variables
 # arguments: none
 # return value: not relevant
-# return code (status): the ffmpeg return status, usually:
-#                       0 - ffmpeg command executed successfully (ffmpeg normal exit)
-#                       1 - ffmpeg command failed                (ffmpeg error)
+# return code (status):
+#   the ffmpeg return status, usually:
+#   0 - ffmpeg command executed successfully (ffmpeg normal exit)
+#   1 - ffmpeg command failed (ffmpeg error)
 run_ffmpeg() {
     ffmpeg \
         $ff_audio_options \

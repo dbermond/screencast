@@ -22,7 +22,7 @@
 #                system                 #
 #########################################
 
-# cleanup function: delete (or rename) temporary files
+# description: execute cleanup routines after program termination
 # arguments: none
 # return value: none
 # return code (status): not relevant
@@ -76,7 +76,7 @@ cleanup() {
     fi
 }
 
-# check_requirements function: check if required programs are installed
+# description: check if required programs are installed
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
@@ -173,17 +173,17 @@ check_requirements() {
     done
 }
 
-# remove_spaces function: remove two or more consecutive spaces from a string,
-#                         making them to be a single space
-# arguments: $1 - the string to modify
+# description:
+#   remove two or more consecutive spaces from a string, making them to be a single space
+# arguments:
+#   $1 - the string to modify
 # return value: a modified string
 # return code (status): not relevant
 remove_spaces() {
     printf '%s' "$1" | sed 's/[[:space:]]\{1,\}/ /g'
 }
 
-# del_multiline function:
-#   delete multiple lines from a variable
+# description: delete multiple lines from a variable
 # arguments:
 #   $1 - variable to delete the multiple lines from
 #   $2 - the multiple lines to be deleted
@@ -205,20 +205,24 @@ __EOF__
     unset -v var
 }
 
-# check_vaapi_device function: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
+# description: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - a valid DRM render node (vaapi device) exists
-# note: it will make the program exit with error if an invalid DRM render node (vaapi device) was selected
+# return code (status):
+#   0 - a valid DRM render node (vaapi device) exists
+# note:
+#   it will make the program exit with error if an invalid DRM render node
+#   (vaapi device) was selected
 check_vaapi_device() {
     [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node (VAAPI device) on this system"
 }
 
-# check_alsa_long_name function: check for a valid ALSA input device long name
+# description: check for a valid ALSA input device long name
 # arguments: none
 # return value: none
-# return code (status): 0 - a valid ALSA input device long name was entered
-#                       1 - an invalid ALSA input device long name was entered
+# return code (status):
+#   0 - a valid ALSA input device long name was entered
+#   1 - an invalid ALSA input device long name was entered
 # note: it will make the program exit with error user selects the 'null' input device
 check_alsa_long_name() {
     arecord="$(arecord -L)"
@@ -232,11 +236,12 @@ check_alsa_long_name() {
     fi
 }
 
-# check_alsa_short_name function: check for a valid ALSA input device short name
+# description: check for a valid ALSA input device short name
 # arguments: none
 # return value: none
-# return code (status): 0 - a valid ALSA input device short name was entered
-#                       1 - an invalid ALSA input device short name was entered
+# return code (status):
+#   0 - a valid ALSA input device short name was entered
+#   1 - an invalid ALSA input device short name was entered
 check_alsa_short_name() {
     arecord="$(arecord -l)"
     
@@ -292,9 +297,11 @@ check_alsa_short_name() {
     fi
 }
 
-# check_dir function: check for valid output and tmp directories (-o and -t)
-#                     (will exit with error if any problem is encountered)
-# arguments: $1 - the directory to check
+# description:
+#   check for valid output and tmp directories (-o and -t)
+#   (will exit with error if any problem is encountered)
+# arguments:
+#   $1 - the directory to check
 # return value: not relevant
 # return code (status): not relevant
 check_dir() {
@@ -339,9 +346,10 @@ check_dir() {
     fi
 }
 
-# set_tmpdir function: set a temporary directory for holding temporary files
-#                      (defauls to '${XDG_CACHE_HOME}/screencast', or to
-#                      '${HOME}/.screencast' if $XDG_CACHE_HOME is not set)
+# description:
+#   set a temporary directory for holding temporary files (defauls to
+#   '${XDG_CACHE_HOME}/screencast', or to '${HOME}/.screencast' if
+#   $XDG_CACHE_HOME is not set)
 # arguments: none
 # return value: not relevant
 # return code (status): not relevant
@@ -379,8 +387,9 @@ set_tmpdir() {
     fi
 }
 
-# randomstr function: generate a random string
-# arguments: $1 - desired string length
+# description: generate a random string
+# arguments:
+#   $1 - desired string length
 # return value: a random string
 # return code (status): not relevant
 randomstr() {

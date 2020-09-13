@@ -50,14 +50,19 @@ possible_unplayable_formats="$(cat <<- __EOF__
 __EOF__
 )"
 
-# lossless container format settings functions: make checks and settings for container format to store lossless video
-#                                               (for the 1st step, lossless recording)
+# lossless container format settings functions
+# description:
+#   make checks and settings for container format to store lossless video
+#   (for the 1st step, lossless recording)
 # arguments: none
 # return value: not relevant
-# return code (status): 0 - the detected ffmpeg build has support for the tested container format
-#                       1 - the detected ffmpeg build has no support for the tested container format
+# return code (status):
+#   0 - the detected ffmpeg build has support for the tested container format
+#   1 - the detected ffmpeg build has no support for the tested container format
 # sets special variable: $rec_extension - file extension (container format) of the lossless video
-# note: the program will exit with error if the tested container format is not supported by the detected ffmpeg build
+# note:
+#   the program will exit with error if the tested container format is not supported
+#   by the detected ffmpeg build
 lossless_format_settings_matroska() {
     if check_component  matroska       muxer &&
        check_component 'matroska,webm' demuxer
@@ -78,13 +83,17 @@ lossless_format_settings_nut() {
     fi
 }
 
-# format settings functions: make checks and settings for the selected container format
+# format settings functions
+# description: make checks and settings for the selected container format
 # arguments: none
 # return value: none
 # return code (status): not relevant
-# sets special variables: $supported_audiocodecs - audio encoders supported by the selected container format (one per line)
-#                         $supported_videocodecs - video encoders supported by the selected container format (one per line)
-# note: the program will exit with error if the selected container format is not supported by the detected ffmpeg build
+# sets special variables:
+#   $supported_audiocodecs - audio encoders supported by the selected container format (one per line)
+#   $supported_videocodecs - video encoders supported by the selected container format (one per line)
+# note:
+#   the program will exit with error if the selected container format is not supported
+#   by the detected ffmpeg build
 format_settings_mp4() {
     supported_audiocodecs="$(cat <<- __EOF__
 		$audiocodecs_aac
