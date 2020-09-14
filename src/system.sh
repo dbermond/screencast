@@ -171,6 +171,9 @@ check_requirements() {
             fi
         fi
     done
+    
+    unset -v requirement
+    unset -v installname
 }
 
 # description:

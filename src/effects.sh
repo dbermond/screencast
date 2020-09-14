@@ -196,4 +196,10 @@ videofade() {
             fade_options="${fadein},${fadeout}"
             ;;
     esac
+    
+    unset -v video_length
+    unset -v total_fadeout
+    unset -v fadeout_start
+    unset -v fadein
+    unset -v fadeout
 }

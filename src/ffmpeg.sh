@@ -100,6 +100,12 @@ check_lossless_component() {
         fi
     done
     
+    unset -v component_list
+    unset -v component_generic_name
+    unset -v first_component
+    unset -v second_component
+    unset -v last_component
+    unset -v component
     unset -v previous_components
 }
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# shellcheck disable=SC2154,SC2086
+# shellcheck disable=SC2154
 
 # message.sh - messages for for screencast
 #
@@ -53,8 +53,11 @@ print_error() {
 # return value: none
 # return code (status): not relevant
 notify() {
-    notify_args="--urgency=${1} --expire-time=${2} --icon=${3}"
-    [ "$notifications" = 'true' ] && notify-send $notify_args screencast "$(remove_spaces "$4")"
+    if [ "$notifications" = 'true' ]
+    then
+        notify-send --urgency="$1" --expire-time="$2" --icon="$3" \
+            screencast "$(remove_spaces "$4")"
+    fi
 }
 
 # description: print message and show notification when finished
@@ -78,4 +81,6 @@ finish() {
     then
         ffplay -v quiet -nodisp -autoexit -volume "$ffplay_volume" "$finish_sound" >/dev/null 2>&1 &
     fi
+    
+    unset -v finish_icon
 }

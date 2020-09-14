@@ -64,10 +64,8 @@ dimension_msg() {
 #   0 - the dimension is a multiple of 8
 #   1 - the dimension is not a multiple of 8
 check_dimension() {
-    dimension_value="$1"
-    
     # the dimension will be a multiple of 8 if the remainder is 0
-    [ "$((dimension_value % 8))" = '0' ]
+    [ "$(("$1" % 8))" = '0' ]
 }
 
 # description:
@@ -108,6 +106,12 @@ adjust_dimension() {
             video_height="$new_dimension_value"
             ;;
     esac
+    
+    unset -v dimension
+    unset -v dimension_value
+    unset -v remainder
+    unset -v to_reach
+    unset -v new_dimension_value
 }
 
 # description:
@@ -133,6 +137,10 @@ check_screen() {
         exit_program 'recording area is out of screen bounds
                       (video height + position Y is greater than the current screen height)'
     fi
+    
+    unset -v screen_size
+    unset -v screen_width
+    unset -v screen_height
 }
 
 # description:
@@ -165,4 +173,6 @@ get_region() {
     
     video_size="${video_width}x${video_height}"
     video_position="${video_position_x},${video_position_y}"
+    
+    unset -v screen_region
 }

@@ -65,6 +65,7 @@ __EOF__
     unset -v chars
     unset -v item
     unset -v ending_chars
+    unset -v separator
     unset -v formated_components
 }
 
@@ -201,6 +202,9 @@ show_list() {
 	  note: the container formats mkv and nut support a combination of all audio
 	        and video encoders. Restrictions apply to other container formats.
 __EOF__
+    
+    unset -v list_wmark_position
+    unset -v list_webcam_position
 }
 
 # description: show information about some program settings
