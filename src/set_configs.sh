@@ -156,8 +156,8 @@ set_webcam() {
         ff_webcam_options="${webcam_input_options} ${ff_webcam_options} -video_size ${webcam_size} -i ${webcam_input}"
         
         ff_vfilter_option='-filter_complex'
-        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},overlay=${webcam_position},format=bgr0"}"
-        ff_vfilter_settings="${ff_vfilter_settings:-"overlay=${webcam_position},format=bgr0"}"
+        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},overlay=${webcam_position}:format=auto"}"
+        ff_vfilter_settings="${ff_vfilter_settings:-"overlay=${webcam_position}:format=auto"}"
     fi
 }
 
