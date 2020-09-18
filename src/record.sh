@@ -109,7 +109,6 @@ record_offline_one_step() {
 record_offline_two_steps() {
     [ "$webcam_overlay" = 'false' ] && [ "$watermark" = 'true' ] && ff_vfilter_option='-vf'
     
-    set_tmpdir
     check_dir "$savedir"
     check_dir "$tmpdir"
     

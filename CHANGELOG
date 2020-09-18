@@ -14,6 +14,7 @@ https://github.com/dbermond/screencast/
 - added support for recording a lossless video without encoding it (through '-a none' and '-v none') (#9)
 - only '-i none' can be used to disable audio recording, as '-a none' has now other functionality as above
 - changed default font for text watermark to DejaVu-Sans
+- lossless video is now moved to the output directory when using -K
 - remove bc requirement for the fade effect
 - new option: select tickness of the screen region border delimiter
 - new option: select the X server display and screen

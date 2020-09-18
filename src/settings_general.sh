@@ -27,12 +27,13 @@ screencast_version=
 screencast_website='https://github.com/dbermond/screencast/'
 
 # system related settings
-savedir="$(pwd)"             # path to save output files
 queue_size='3096'            # ffmpeg thread queue size
 ffplay_volume='35'           # ffplay playback volume (0-100)
 expire_time_short='1700'     # expire time for short notifications
 expire_time_normal='3000'    # expire time for normal notifications
 expire_time_long='5000'      # expire time for long notifications
+savedir="$(pwd)"             # path to save output files
+tmpdir="${XDG_CACHE_HOME:-"${HOME}/.cache"}/screencast" # path to save temporary files
 error_icon='dialog-error'
 record_icon='media-record'
 encode_icon='media-playback-stop'

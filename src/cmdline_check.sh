@@ -287,13 +287,13 @@ check_cmd_line() {
     # show full path when using dot folder hardlinks in -t/--tmp-dir
     if [ "$tmpdir_setted" = 'true' ]
     then
-        # tmpdir in format '../myvideo.mp4' or '../path/to/myvideo.mp4' (parent dir as double dot folder hardlink)
+        # tmpdir in format '../' or '../path/to/' (parent dir as double dot folder hardlink)
         if printf '%s' "$tmpdir" | grep -Eq '^\.\.[/]?.*'
         then
             tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.\\.|$(dirname "$(pwd)")|")"
             tmpdir="${tmpdir%/}" # remove ending '/' if present
             
-        # tmpdir in format './myvideo.mp4' or './path/to/myvideo.mp4' (current dir as single dot folder hardlink)
+        # tmpdir in format './' or './path/to/' (current dir as single dot folder hardlink)
         elif printf '%s' "$tmpdir" | grep -Eq '^\.[/]?.*'
         then
             tmpdir="$(printf '%s' "$tmpdir" | sed "s|^\\.|$(pwd)|")"

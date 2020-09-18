@@ -123,11 +123,7 @@ set_live() {
 set_watermark() {
     if [ "$watermark" = 'true' ]
     then
-        if [ -z "$tmpdir" ]
-        then
-            set_tmpdir
-            check_dir "$tmpdir"
-        fi
+        check_dir "$tmpdir"
         
         if create_watermark
         then

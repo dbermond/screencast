@@ -33,46 +33,42 @@ cleanup() {
     if [ "$streaming" = 'false' ] && [ "$one_step" = 'false' ] && [ -n "$ff_output" ]
     then
         # rename temporary (lossless) video to a better name if user selected to keep it (--keep/-K)
+        # and move it to $savedir
         if [ "$keep_video" = 'true' ]
         then
             if [ "$auto_filename" = 'true' ]
             then
-                mv -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}" \
-                      "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}"
+                tmpvideo="${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
+                tmpvideo_newname="${savedir}/screencast-lossless-${current_time}.${rec_extension}"
             else
-                mv -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}" \
-                      "${tmpdir}/${output_file%.*}-lossless.${rec_extension}"
+                tmpvideo="${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
+                tmpvideo_newname="${savedir}/${output_file%.*}-lossless.${rec_extension}"
             fi
             
-        # delete temporary (lossless) video
-        else
-            rm -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
-        fi
-        
-        # delete temporary directory if it was created
-        if [ "$tmpdir_setted" = 'false' ]
-        then
-            if [ "$keep_video" = 'true' ]
+            if [ -f "$tmpvideo" ]
             then
-                # move the temporary video to the parent dir (without random string)
-                if [ "$auto_filename" = 'true' ]
+                filesize="$(du -k "$tmpvideo" | awk '{ print $1 }')"
+                
+                if [ "$filesize" -eq '0' ]
                 then
-                    mv -f "${tmpdir}/screencast-lossless-${current_time}.${rec_extension}" "${tmpdir}/../"
+                    # delete zero-sized tmpvideo file in case some unexpected error occurred
+                    rm -f "$tmpvideo"
                 else
-                    mv -f "${tmpdir}/${output_file%.*}-lossless.${rec_extension}" "${tmpdir}/../"
+                    mv -f "$tmpvideo" "$tmpvideo_newname"
                 fi
             fi
-            
-            rm -rf "$tmpdir"
+        # delete temporary (lossless) video if not saving it
+        else
+            rm -f "${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
         fi
     fi
     
     # delete zero-sized output file in case some unexpected error occurred
     if [ -f "${savedir}/${output_file}" ]
     then
-        output_filesize="$(du -k "${savedir}/${output_file}" | awk '{ print $1 }')"
+        filesize="$(du -k "${savedir}/${output_file}" | awk '{ print $1 }')"
         
-        [ "$output_filesize" -eq '0' ] && rm -f "${savedir}/${output_file}"
+        [ "$filesize" -eq '0' ] && rm -f "${savedir}/${output_file}"
     fi
 }
 
@@ -308,9 +304,30 @@ check_alsa_short_name() {
 # return value: not relevant
 # return code (status): not relevant
 check_dir() {
-    # check if the entered $savedir/$tmpdir already exists and mkdir if not
-    if [ ! -e "$1" ]
+    # check if the entered $savedir/$tmpdir already exists
+    if [ -e "$1" ]
     then
+        # check if the entered $savedir/$tmpdir is a directory
+        if [ -d "$1" ]
+        then
+            # check if the entered $savedir/$tmpdir has write permission
+            if [ ! -w "$1" ]
+            then
+                case "$1" in
+                    "$savedir")
+                        msg='output'
+                        ;;
+                    "$tmpdir")
+                        msg='temporary files'
+                        ;;
+                esac
+                exit_program "no write permission for ${msg} directory '${1}'"
+            fi
+        else
+            exit_program "'${1}' is not a directory"
+        fi
+    # create the entered $savedir/$tmpdir if it does not exists
+    else
         [ "$1" = "$tmpdir" ] && mode='-m 700'
         
         # shellcheck disable=SC2174
@@ -325,67 +342,6 @@ check_dir() {
                     ;;
             esac
             exit_program "failed to create ${msg} directory '${1}'"
-        fi
-    fi
-    
-    # check if the entered $savedir/$tmpdir is a directory
-    if [ -d "$1" ]
-    then
-        # check if the entered $savedir/$tmpdir has write permission
-        if [ ! -w "$1" ]
-        then
-            case "$1" in
-                "$savedir")
-                    msg='output'
-                    ;;
-                "$tmpdir")
-                    msg='temporary files'
-                    ;;
-            esac
-            exit_program "no write permission for ${msg} directory '${1}'"
-        fi
-    else
-        exit_program "'${1}' is not a directory"
-    fi
-}
-
-# description:
-#   set a temporary directory for holding temporary files (defauls to
-#   '${XDG_CACHE_HOME}/screencast', or to '${HOME}/.screencast' if
-#   $XDG_CACHE_HOME is not set)
-# arguments: none
-# return value: not relevant
-# return code (status): not relevant
-set_tmpdir() {
-    if [ "$tmpdir_setted" = 'false' ]
-    then
-        if [ -n "$XDG_CACHE_HOME" ]
-        then
-            # shellcheck disable=SC2174
-            if mkdir -p -m 700 "${XDG_CACHE_HOME}/screencast"
-            then
-                if command -v mktemp >/dev/null 2>&1
-                then
-                    tmpdir="$(mktemp -d "${XDG_CACHE_HOME}/screencast/tmp.XXXXXX")"
-                else
-                    tmpdir="${XDG_CACHE_HOME}/screencast/tmp.$(randomstr '12')"
-                fi
-            else
-                exit_program "failed to create directory '${XDG_CACHE_HOME}/screencast'"
-            fi
-        else
-            # shellcheck disable=SC2174
-            if mkdir -p -m 700 "${HOME}/.screencast"
-            then
-                if command -v mktemp >/dev/null 2>&1
-                then
-                    tmpdir="$(mktemp -d "${HOME}/.screencast/tmp.XXXXXX")"
-                else
-                    tmpdir="${HOME}/.screencast/tmp.$(randomstr '12')"
-                fi
-            else
-                exit_program "failed to create directory '${HOME}/.screencast'"
-            fi
         fi
     fi
 }
