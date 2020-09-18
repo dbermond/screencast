@@ -317,7 +317,7 @@ show_warnings() {
                 
                 if [ "$one_step_setted" = 'false' ]
                 then
-                    print_warn 'one step process will be auto chosen due to no encoding the lossless video'
+                    print_warn 'one step process is auto chosen due to no encoding the lossless video'
                 fi
             fi
         fi
