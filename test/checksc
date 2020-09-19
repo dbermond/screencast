@@ -82,7 +82,7 @@ cleanup() {
 # check if needed programs are installed
 check_requirements() {
     # some optional dependencies must be installed for making the tests
-    for requirement in ffmpeg xdpyinfo ffprobe bc convert magick
+    for requirement in ffmpeg xdpyinfo ffprobe convert magick
     do
         if ! command -v "$requirement" >/dev/null 2>&1
         then
