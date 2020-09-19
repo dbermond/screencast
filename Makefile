@@ -180,7 +180,6 @@ install: all
 	install -D -m644 bash-completion/$(NAME) $(DESTDIR)$(BCOMPDIR)/$(NAME)
 	install -D -m644 README.md                  $(DESTDIR)$(DOCDIR)/$(NAME)/README.md
 	install -D -m644 doc/$(NAME).1           $(DESTDIR)$(MANDIR)/man1/$(NAME).1
-	gzip    -9 -n -f $(DESTDIR)$(MANDIR)/man1/$(NAME).1
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/$(NAME)
