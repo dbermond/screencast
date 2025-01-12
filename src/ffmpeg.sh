@@ -136,13 +136,13 @@ check_component() {
             fi
             ;;
         muxer)
-            if ! printf '%s' "$ffmpeg_formats" | grep -q "^[[:space:]].E[[:space:]]${1}[[:space:]]"
+            if ! printf '%s' "$ffmpeg_formats" | grep -Eq "^[[:space:]].E(|.)[[:space:]]${1}[[:space:]]"
             then
                 return 1
             fi
             ;;
         demuxer)
-            if ! printf '%s' "$ffmpeg_formats" | grep -q "^[[:space:]]D.[[:space:]]${1}[[:space:]]"
+            if ! printf '%s' "$ffmpeg_formats" | grep -Eq "^[[:space:]]D.(|.)[[:space:]]${1}[[:space:]]"
             then
                 return 1
             fi
