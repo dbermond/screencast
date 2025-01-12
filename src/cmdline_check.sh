@@ -23,7 +23,7 @@
 #########################################
 
 # description:
-#   check validity of command line options and arguments (aslo set some variables)
+#   check validity of command line options and arguments (also set some variables)
 #   (will exit with error if any inconsistency is found)
 # arguments:
 #   the remainder positional parameters passed with double quotes ("$@")
