@@ -123,14 +123,14 @@ check_component() {
     case "$2" in
         encoder)
             if ! printf '%s' "$ffmpeg_codecs" | grep -q "(encoders:.*${1}" &&
-               ! printf '%s' "$ffmpeg_codecs" | grep -q "^[[:space:]].E.\\{4\\}[[:space:]]${1}[[:space:]]"
+               ! printf '%s' "$ffmpeg_codecs" | grep -Eq "^[[:space:]].E.{4}[[:space:]]${1}[[:space:]]"
             then
                 return 1
             fi
             ;;
         decoder)
             if ! printf '%s' "$ffmpeg_codecs" | grep -q "(decoders:.*${1}" &&
-               ! printf '%s' "$ffmpeg_codecs" | grep -q "^[[:space:]]D.\\{5\\}[[:space:]]${1}[[:space:]]"
+               ! printf '%s' "$ffmpeg_codecs" | grep -Eq "^[[:space:]]D.{5}[[:space:]]${1}[[:space:]]"
             then
                 return 1
             fi
