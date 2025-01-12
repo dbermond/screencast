@@ -65,7 +65,7 @@ dimension_msg() {
 #   1 - the dimension is not a multiple of 8
 check_dimension() {
     # the dimension will be a multiple of 8 if the remainder is 0
-    [ "$(("$1" % 8))" = '0' ]
+    [ "$(($1 % 8))" = '0' ]
 }
 
 # description:
