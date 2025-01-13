@@ -45,8 +45,15 @@ live_streaming() {
     then
         check_dir "$savedir"
         
+        if [ "$ff_vfilter_option" = '-filter_complex' ] && [ -n "$ff_vfilter_settings" ]
+        then
+            ff_vfilter_settings="${ff_vfilter_settings}[outv]"
+            ff_map='-map [outv] -map 0:a'
+        else
+            ff_map='-map 1:v -map 0:a'
+        fi
+        
         ff_flag_global_header='-flags +global_header'
-        ff_map='-map 1:v -map 0:a'
         ff_output="-f tee ${tee_faststart}${savedir}/${output_file}|[f=flv]${streaming_url}"
         
     # live streaming only, do not save the recorded content to an output file
@@ -147,7 +154,6 @@ record_offline_two_steps() {
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"
         ff_pixfmt_options="-pix_fmt ${pixel_format}"
-        ff_map='-map 0'
         ff_output="${savedir}/${output_file}"
         
         print_good 'encoding'
