@@ -23,7 +23,7 @@ display=':0.0'          # the X server display and screen to record from
 scfile='./screencast'   # screencast file to modify and execute
 outdir='test/output'    # output directory for resulting test videos
 live_streaming='true'   # controls if local live streaming tests will be made
-font='DejaVuSans'       # font for text watermark
+font='DejaVu-Sans'      # font for text watermark
 
 supported_shells='bash dash yash ksh zsh'
 

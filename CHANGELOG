@@ -8,6 +8,7 @@ https://github.com/dbermond/screencast/
 ### version next
 - fix: dimension check in POSIX shells
 - fix: muxers and demuxers checks with FFmpeg 7.0 and later
+- fix: tests: default text watermark font name
 
 ### version 1.6.0 - 2020-09-19
 - added support for AOM AV1 video encoder
