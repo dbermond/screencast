@@ -234,7 +234,7 @@ videocodec_settings_h264_nvenc() {
 videocodec_settings_h264_vaapi() {
     check_component h264_vaapi encoder || component_error h264_vaapi 'video encoder' true
     check_vaapi_device
-    video_encode_codec='h264_vaapi -qp 18'
+    video_encode_codec='h264_vaapi -rc_mode CQP -global_quality 18'
 }
 
 videocodec_settings_h264_qsv() {
@@ -277,7 +277,7 @@ videocodec_settings_hevc_nvenc() {
 videocodec_settings_hevc_vaapi() {
     check_component hevc_vaapi encoder || component_error hevc_vaapi 'video encoder' true
     check_vaapi_device
-    video_encode_codec='hevc_vaapi -qp 22'
+    video_encode_codec='hevc_vaapi -rc_mode CQP -global_quality 22'
 }
 
 videocodec_settings_hevc_qsv() {
@@ -293,7 +293,7 @@ videocodec_settings_vp8() {
 videocodec_settings_vp8_vaapi() {
     check_component vp8_vaapi encoder || component_error vp8_vaapi 'video encoder' true
     check_vaapi_device
-    video_encode_codec='vp8_vaapi -global_quality 30'
+    video_encode_codec='vp8_vaapi -rc_mode CQP -global_quality 30'
 }
 
 videocodec_settings_vp9() {
@@ -309,7 +309,7 @@ videocodec_settings_svt_vp9() {
 videocodec_settings_vp9_vaapi() {
     check_component vp9_vaapi encoder || component_error vp9_vaapi 'video encoder' true
     check_vaapi_device
-    video_encode_codec='vp9_vaapi -global_quality 80'
+    video_encode_codec='vp9_vaapi -rc_mode CQP -global_quality 80'
 }
 
 videocodec_settings_theora() {
