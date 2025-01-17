@@ -228,7 +228,7 @@ videocodec_settings_x264() {
 
 videocodec_settings_h264_nvenc() {
     check_component h264_nvenc encoder || component_error h264_nvenc 'video encoder' true
-    video_encode_codec='h264_nvenc -qmin 10 -qmax 42 -preset slow -cq 10 -bf 2 -g 150'
+    video_encode_codec='h264_nvenc -rc constqp -qp 15 -preset p7'
 }
 
 videocodec_settings_h264_vaapi() {
@@ -271,7 +271,7 @@ videocodec_settings_svt_hevc() {
 
 videocodec_settings_hevc_nvenc() {
     check_component hevc_nvenc encoder || component_error hevc_nvenc 'video encoder' true
-    video_encode_codec='hevc_nvenc -preset slow'
+    video_encode_codec='hevc_nvenc -rc constqp -qp 15 -preset p7'
 }
 
 videocodec_settings_hevc_vaapi() {
