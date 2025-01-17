@@ -239,7 +239,7 @@ videocodec_settings_h264_vaapi() {
 
 videocodec_settings_h264_qsv() {
     check_component h264_qsv encoder || component_error h264_qsv 'video encoder' true
-    video_encode_codec='h264_qsv -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
+    video_encode_codec='h264_qsv -global_quality 21 -preset:v veryslow -rdo 1'
 }
 
 videocodec_settings_x265() {
@@ -282,7 +282,7 @@ videocodec_settings_hevc_vaapi() {
 
 videocodec_settings_hevc_qsv() {
     check_component hevc_qsv encoder || component_error hevc_qsv 'video encoder' true
-    video_encode_codec='hevc_qsv -load_plugin hevc_hw -preset:v medium -rdo 1 -qscale:v 5 -look_ahead 0'
+    video_encode_codec='hevc_qsv -global_quality 25 -preset:v veryslow -rdo 1'
 }
 
 videocodec_settings_vp8() {
