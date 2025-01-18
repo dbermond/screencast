@@ -186,15 +186,25 @@ supported types: x264, h264_nvenc, h264_vaapi, h264_qsv,
 .fi
 .RE
 .TP
-\fB\-A\fR, \fB\-\-vaapi\-device\fR=\fINODE\fR
+\fB\-D\fR, \fB\-\-hw\-device\fR=\fIDEVICE\fR
 .RS
-DRM render node (VAAPI device) that will be used to encode the recorded video.
-This option can be used only when specifying a VAAPI hardware accelerated
-video encoder with the the \fB\-v\fR option and cannot be used when selecting
-other video encoders. Please make sure that the specified DRM render node is
-the right one.
+Hardware device to use with a hardware video encoder. The device is specific
+to each hardware type. For NVENC encoders, the device is the NVIDIA GPU number,
+starting at \fI0\fR. For QSV encoders, the device is the MFX implementation
+name, and allowed values are \fIhw\fR, \fIhw2\fR, \fIhw3\fR, \fIhw4\fR,
+\fIhw_any\fR, \fIauto\fR, \fIauto_any\fR and \fIsw\fR (notice that modern
+MFX/VPL do not support the software (\fIsw\fR) implementation). For VAAPI
+encoders, the device is the DRM render node in the system. This option can be
+used only when specifying a hardware accelerated video encoder with the
+\fB\-v\fR option and cannot be used when selecting a software video encoder.
 .PP
-default: /dev/dri/renderD128
+.nf
+default values:
+
+         NVENC: 0
+           QSV: hw
+         VAAPI: /dev/dri/renderD128
+.fi
 .RE
 .TP
 \fB\-e\fR, \fB\-\-fade\fR=\fITYPE\fR

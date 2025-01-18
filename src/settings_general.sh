@@ -62,7 +62,7 @@ audio_encoder_setted='false' # if audio encoder  was setted by cmd line with -a
 display_setted='false'       # if display        was setted by cmd line with -d
 border_setted='false'        # if border         was setted by cmd line with -b
 video_encoder_setted='false' # if video encoder  was setted by cmd line with -v
-vaapi_device_setted='false'  # if a DRM node     was setted by cmd line with -A
+hwdevice_setted='false'      # if the hw device  was setted by cmd line with -D
 video_size_setted='false'    # if video size     was setted by cmd line with -s
 video_posi_setted='false'    # if video position was setted by cmd line with -p
 video_rate_setted='false'    # if video rate/fps was setted by cmd line with -r
@@ -97,11 +97,14 @@ video_position='0,0' #200,234      # X and Y screen coordinates to record video 
 video_size='640x480'               # video size (resolution)
 video_rate='25'                    # video framerate (fps)
 corner_padding='10'                # video corner padding (for watermark and webcam effects)
-vaapi_device='/dev/dri/renderD128' # DRM render node (vaapi device) (for vaapi video encoders)
 display=':0.0'                     # display (and screen) number(s) ($DISPLAY environment variable)
 border='2'                         # tickness of the screen region border delimiter (0 to disable border)
 border_options="-show_region 1 -region_border ${border}"
 video_input_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M"
+hwencoder='false'
+nvenc_default_hwdevice='0'
+qsv_default_hwdevice='hw'
+vaapi_default_hwdevice='/dev/dri/renderD128'
 
 # metadata settings
 metadata="comment=$(printf '%s\n%s' "Created with screencast ${screencast_version}" "${screencast_website}")"

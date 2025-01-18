@@ -14,7 +14,7 @@ screencast
     - [`-i, --audio-input=NAME`](#-i---audio-inputname)
     - [`-a, --audio-encoder=NAME`](#-a---audio-encodername)
     - [`-v, --video-encoder=NAME`](#-v---video-encodername)
-    - [`-A, --vaapi-device=NODE`](#-a---vaapi-devicenode)
+    - [`-D, --hw-device=DEVICE`](#-d---hw-devicedevice)
     - [`-e, --fade=TYPE`](#-e---fadetype)
     - [`-m, --volume-factor=N`](#-m---volume-factorn)
     - [`-w, --watermark=TEXT`](#-w---watermarktext)
@@ -148,11 +148,15 @@ default: `x264`
 - supported types:
     - `x264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `x265`, `kvazaar`, `svt_hevc`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `vp8`, `vp8_vaapi`, `vp9`, `svt_vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`, `svt_av1`, `rav1e`, `none`
 
-#### `-A, --vaapi-device=NODE`
+#### `-D, --hw-device=DEVICE`
 
-DRM render node (VAAPI device) that will be used to encode the recorded video. This option can be used only when specifying a VAAPI hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option and cannot be used when selecting other video encoders. Please make sure that the specified DRM render node is the right one.
+Hardware device to use with a hardware video encoder. The device is specific to each hardware type. For NVENC encoders, the device is the NVIDIA GPU number, starting at `0`. For QSV encoders, the device is the MFX implementation name, and allowed values are `hw`, `hw2`, `hw3`, `hw4`, `hw_any`, `auto`, `auto_any` and `sw` (notice that modern MFX/VPL do not support the software (`sw`) implementation). For VAAPI encoders, the device is the DRM render node in the system. This option can be used only when specifying a hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option and cannot be used when selecting a software video encoder.
 
-default: `/dev/dri/renderD128`
+default values:
+
+  - NVENC: `0`
+  - QSV: `hw`
+  - VAAPI: `/dev/dri/renderD128`
 
 #### `-e, --fade=TYPE`
 

@@ -198,8 +198,8 @@ check_minimum_ffmpeg_version() {
 #   1 - ffmpeg command failed (ffmpeg error)
 run_ffmpeg() {
     ffmpeg \
+        $ff_init_hw_options \
         $ff_audio_options \
-        $ff_vaapi_options \
         $ff_video_options \
         $ff_webcam_options \
         $ff_watermark_options \

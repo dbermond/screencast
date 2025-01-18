@@ -30,12 +30,11 @@
 live_streaming() {
     set_live
     set_watermark
-    set_vaapi_qsv
+    set_hw_device_and_pixel_format
     set_volume
 
     ff_audio_codec="$audio_encode_codec"
     ff_video_codec="$video_encode_codec"
-    ff_pixfmt_options="-pix_fmt ${pixel_format}"
     
     print_good 'live streaming'
     notify 'normal' "$expire_time_short" "$record_icon" 'live streaming...'
@@ -78,7 +77,7 @@ live_streaming() {
 # note: it will make the program exit with error if a recording error occurs
 record_offline_one_step() {
     set_watermark
-    set_vaapi_qsv
+    set_hw_device_and_pixel_format
     set_volume
     check_dir "$savedir"
     
@@ -89,7 +88,6 @@ record_offline_one_step() {
     else
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"
-        ff_pixfmt_options="-pix_fmt ${pixel_format}"
     fi
     
     ff_output="${savedir}/${output_file}"
@@ -146,14 +144,13 @@ record_offline_two_steps() {
             ff_vfilter_settings="${ff_vfilter_settings:-"${fade_options}"}"
         fi
         
-        set_vaapi_qsv
+        set_hw_device_and_pixel_format
         set_volume
         
         ff_audio_options="${audio_channel_layout}"
         ff_video_options="-i ${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"
-        ff_pixfmt_options="-pix_fmt ${pixel_format}"
         ff_output="${savedir}/${output_file}"
         
         print_good 'encoding'

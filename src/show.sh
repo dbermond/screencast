@@ -124,7 +124,7 @@ show_help() {
 	  -i, --audio-input=NAME    audio input device [${audio_input}]
 	  -a, --audio-encoder=NAME  audio encoder [${audio_encoder}]
 	  -v, --video-encoder=NAME  video encoder [${video_encoder}]
-	  -A, --vaapi-device=NODE   DRM render node [${vaapi_device}]
+	  -D, --hw-device=DEVICE    hardware device to use with hardware encoders [see bellow]
 	  -e, --fade=TYPE           video fade effect [${fade}]
 	  -m, --volume-factor=N     volume increase effect factor (1.0 disable) [${volume_factor}]
 	  -w, --watermark=TEXT      enable and set text watermark effect [disabled]
@@ -150,6 +150,11 @@ show_help() {
 	  -l, --list                list arguments supported by these options
 	  -h, --help                this help screen
 	  -V, --version             version information
+	
+	When using hardware encoder, the device is specific to each hardware type, and defaults to:
+	  nvenc : ${nvenc_default_hwdevice}
+	  qsv   : ${qsv_default_hwdevice}
+	  vaapi : ${vaapi_default_hwdevice}
 	
 	For further help run 'man screencast'
 __EOF__
@@ -217,9 +222,9 @@ show_settings() {
     [ "$format"        = "$format_default"        ] && [ "$format_setted"        = 'false' ] &&
         [ "$auto_filename" = 'true'  ] && format_outstr='(default)'
     
-    if printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+    if [ "$hwencoder" = 'true' ]
     then
-        video_outstr="(${vaapi_device})"
+        video_outstr="(device: ${hwdevice})"
     fi
     
     [ "$fade" != 'none' ] && effects="fade-${fade}"

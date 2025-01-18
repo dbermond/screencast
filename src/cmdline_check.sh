@@ -571,9 +571,6 @@ check_cmd_line() {
         audio_encode_codec='-an'
     fi
     
-    # execute video encoder checks and settings
-    [ "$video_encoder" != 'none' ] && "videocodec_settings_${video_encoder}"
-    
     # do not allow to use slow video encoders in a one step process (-1/--one-step)
     # (aom_av1 is still experimental and very slow in ffmpeg)
     if printf '%s' "$videocodecs_av1_slow" | grep -q "^${video_encoder}$"
@@ -581,15 +578,49 @@ check_cmd_line() {
         exit_program "'${video_encoder}' cannot be used for a one step process (very slow in FFmpeg)"
     fi
     
-    # do not allow to use -A/--vaapi-device without setting a vaapi video encoder
-    if ! printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+    # settings for hardware encoders (-v/--video-encoder)
+    if printf '%s' "$supported_videocodecs_hardware" | grep -q "^${video_encoder}$"
     then
-        if [ "$vaapi_device_setted" = 'true' ]
+        hwencoder='true'
+        
+        # set hwaccel
+        case "$video_encoder" in
+            *_nvenc)
+                hwaccel='cuda'
+                ;;
+            *)
+                hwaccel="$(printf '%s' "$video_encoder" | sed 's/.*_//')"
+                ;;
+        esac
+        
+        # set the hw device if user did not selected one with the -D/--hw-device option
+        if [ "$hwdevice_setted" = 'false' ]
         then
-            exit_program '--vaapi-device (-A) option can be used only when a VAAPI video encoder is selected'
+            case "$hwaccel" in
+                cuda)
+                    hwdevice="$nvenc_default_hwdevice"
+                    ;;
+                qsv)
+                    hwdevice="$qsv_default_hwdevice"
+                    ;;
+                vaapi)
+                    hwdevice="$vaapi_default_hwdevice"
+                    ;;
+                *)
+                    exit_program "invalid hwaccel '${hwaccel}' (this should not happen)"
+                    ;;
+            esac
         fi
-        unset -v vaapi_device
+    else
+        # do not allow to use -D/--hw-device without setting a hardware video encoder
+        if [ "$hwdevice_setted" = 'true' ]
+        then
+            exit_program '--hw-device (-D) option can be used only when a hardware video encoder is selected'
+        fi
     fi
+    
+    # execute video encoder checks and settings
+    [ "$video_encoder" != 'none' ] && "videocodec_settings_${video_encoder}"
     
     # do not allow to use -m option when -i is setted to 'none'
     if [ "$recording_audio" = 'false' ] && [ "$volume_factor_setted" = 'true' ]

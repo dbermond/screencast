@@ -178,13 +178,13 @@ fix_pass_duration() {
 }
 
 # description:
-#   set needed options for vaapi and qsv hardware accelerated video encoders
+#   initialize hardware for accelerated video encoders
 #   (-v/--video-encoder) if they are chosen by the user
 # arguments: none
 # return value: none
 # return code (status): not relevant
-set_vaapi_qsv() {
-    if printf '%s' "$videocodecs_vaapi" | grep -q "^${video_encoder}$"
+set_hw_device_and_pixel_format() {
+    if [ "$hwencoder" = 'true' ]
     then
         if [ "$one_step" = 'true' ]
         then
@@ -193,14 +193,11 @@ set_vaapi_qsv() {
             [ "$streaming"      = 'false' ] && [ "$watermark" = 'false' ] && [ "$fade" = 'none'  ] && ff_vfilter_option='-vf'
         fi
         
-        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=nv12,hwupload"}"
-        ff_vfilter_settings="${ff_vfilter_settings:-format=nv12,hwupload}"
-        
-        ff_vaapi_options="-vaapi_device ${vaapi_device}"
-        pixel_format='vaapi_vld'
-    
-    elif printf '%s' "$videocodecs_qsv" | grep -q "^${video_encoder}$"
-    then
         pixel_format='nv12'
+        ff_init_hw_options="-init_hw_device ${hwaccel}=gpu:${hwdevice} -filter_hw_device gpu"
+        ff_vfilter_settings="${ff_vfilter_settings:+"${ff_vfilter_settings},format=${pixel_format},hwupload"}"
+        ff_vfilter_settings="${ff_vfilter_settings:-"format=${pixel_format},hwupload"}"
+    else
+        ff_pixfmt_options="-pix_fmt ${pixel_format}"
     fi
 }

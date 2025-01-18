@@ -256,27 +256,27 @@ get_cmd_line() {
                 command_error '--video-encoder (-v)'
                 ;;
             
-            -A|--vaapi-device)
+            -D|--hw-device)
                 if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
-                        command_error '--vaapi-device (-A)'
+                        command_error '--hw-device (-D)'
                     else
-                        vaapi_device="$2"
-                        vaapi_device_setted='true'
+                        hwdevice="$2"
+                        hwdevice_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
-                    command_error '--vaapi-device (-A)'
+                    command_error '--hw-device (-D)'
                 fi
                 ;;
-            --vaapi-device=?*)
-                vaapi_device="${1#*=}"
-                vaapi_device_setted='true'
+            --hw-device=?*)
+                hwdevice="${1#*=}"
+                hwdevice_setted='true'
                 ;;
-            --vaapi-device=)
-                command_error '--vaapi-device (-A)'
+            --hw-device=)
+                command_error '--hw-device (-D)'
                 ;;
             
             -e|--fade)

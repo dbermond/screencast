@@ -9,6 +9,8 @@ https://github.com/dbermond/screencast/
 - fix: dimension check in POSIX shells
 - fix: muxers and demuxers checks with FFmpeg 7.0 and later
 - fix: tests: default text watermark font name
+- fix: vaapi encoders with modern FFmpeg
+- -A/--vaapi-device option changed to -D/--hw-device, and now is used for device selection in all hardware types
 
 ### version 1.6.0 - 2020-09-19
 - added support for AOM AV1 video encoder

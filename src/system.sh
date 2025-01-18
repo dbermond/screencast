@@ -204,7 +204,39 @@ __EOF__
     unset -v var
 }
 
-# description: check if specified DRM render node (vaapi device) exists (-A/--vaapi-device)
+# description: check if specified nvidia gpu device is valid for FFmpeg (-D/--hw-device)
+# arguments: none
+# return value: not relevant
+# return code (status):
+#   0 - a valid nvidia gpu device was specified
+# note:
+#   it will make the program exit with error if an invalid nvidia gpu device was selected
+check_nvidia_gpu_device() {
+    if ! printf '%s' "$hwdevice" | grep -Eq '^[0-9]+$'
+    then
+        exit_program "'${hwdevice}' is not a valid NVIDIA GPU number"
+    fi
+}
+
+# description: check if specified qsv device is valid for FFmpeg (-D/--hw-device)
+# arguments: none
+# return value: not relevant
+# return code (status):
+#   0 - a valid qsv device was specified
+# note:
+#   it will make the program exit with error if an invalid qsv device was selected
+check_qsv_device() {
+    case "$hwdevice" in
+        hw|hw2|hw3|hw4|hw_any|auto|auto_any|sw)
+            :
+            ;;
+        *)
+            exit_program "'${hwdevice}' is not a valid QSV device"
+            ;;
+    esac
+}
+
+# description: check if specified DRM render node (vaapi device) exists (-D/--hw-device)
 # arguments: none
 # return value: not relevant
 # return code (status):
@@ -213,7 +245,7 @@ __EOF__
 #   it will make the program exit with error if an invalid DRM render node
 #   (vaapi device) was selected
 check_vaapi_device() {
-    [ -c "$vaapi_device" ] || exit_program "'${vaapi_device}' is not a valid DRM render node (VAAPI device) on this system"
+    [ -c "$hwdevice" ] || exit_program "'${hwdevice}' is not a valid DRM render node (VAAPI device) on this system"
 }
 
 # description: check for a valid ALSA input device long name
