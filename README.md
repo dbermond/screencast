@@ -439,6 +439,6 @@ Copyright © 2015-2025 Daniel Bermond
 GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
 For details see the file COPYING or visit:
-[http://www.gnu.org/licenses/](http://www.gnu.org/licenses/)
+[https://www.gnu.org/licenses/](https://www.gnu.org/licenses/)
 
 ------------------------------------------------------------------------
