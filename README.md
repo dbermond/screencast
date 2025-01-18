@@ -344,7 +344,7 @@ Show program version information.
     
     - VAAPI H.264 using the DRM render node /dev/dri/renderD129:
     
-        - `$ screencast -u -v h264_vaapi -A /dev/dri/renderD129`
+        - `$ screencast -u -v h264_vaapi -D /dev/dri/renderD129`
     
 - Live streaming:
 
