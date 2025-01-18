@@ -34,7 +34,7 @@ _screencast() {
           -i --audio-input
           -a --audio-encoder
           -v --video-encoder
-          -A --vaapi-device
+          -D --hw-device
           -e --fade
           -m --volume-factor
           -w --watermark
@@ -83,9 +83,12 @@ _screencast() {
             COMPREPLY=( $(compgen -W "$video_encoders" -- $cur) )
             return 0
             ;;
-        -A|--vaapi-device)
-            local vaapi_devices=$(ls -1 /dev/dri/render* 2>/dev/null)
-            COMPREPLY=( $(compgen -W "$vaapi_devices" -- $cur) )
+        -D|--hw-device)
+            local hw_devices
+            hw_devices="$(ls -1 /dev/dri/render* 2>/dev/null)"
+            hw_devices+=$'\n'
+            hw_devices+="$(printf '%s\n' hw hw2 hw3 hw4 hw_any auto auto_any sw)"
+            COMPREPLY=( $(compgen -W "$hw_devices" -- $cur) )
             return 0
             ;;
         -e|--fade)
@@ -99,7 +102,8 @@ _screencast() {
             return 0
             ;;
         -I|--webcam-input)
-            local webcam_inputs=$(ls -1 /dev/video* 2>/dev/null)
+            local webcam_inputs
+            webcam_inputs="$(ls -1 /dev/video* 2>/dev/null)"
             COMPREPLY=( $(compgen -W "$webcam_inputs" -- $cur) )
             return 0
             ;;
