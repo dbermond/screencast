@@ -102,63 +102,55 @@ create_watermark() {
     wmark_image="${tmpdir}/screencast-tmpimage-${rndstr_png}.png"
     
     # get font pointsize
-    if watermark_pointsize="$(magick \
-                                  -size "$watermark_size" \
+    watermark_pointsize="$(magick -size "$watermark_size" \
                                   -font "$watermark_font" \
                                   label:"$watermark_text" \
                                   -format '%[label:pointsize]' \
                                   info:)"
+    
+    # check if font pointsize was correctly obtained (integer/float number)
+    if ! printf '%s' "$watermark_pointsize" | grep -Eq '^[0-9]+(|\.[0-9]+)$'
     then
-        # check if font pointsize was correctly obtained (integer/float number)
-        if printf '%s' "$watermark_pointsize" | grep -Eq '^[0-9]+(\.[0-9]+)?$'
-        then
-            # generate the watermark
-            if magick \
-                   -size "$watermark_size" \
-                   -font "$watermark_font" \
-                   -pointsize "$watermark_pointsize" \
-                   -gravity center \
-                   \( \
-                       xc:grey30 \
-                       -draw "fill gray70  text 0,0  '${watermark_text}'" \
-                   \) \
-                   \( \
-                       xc:black \
-                       -draw "fill white  text  1,1  '${watermark_text}'  \
-                                          text  0,0  '${watermark_text}'  \
-                              fill black  text -1,-1 '${watermark_text}'" \
-                       -alpha Off \
-                   \) \
-                   -alpha Off \
-                   -compose copy-opacity \
-                   -composite \
-                   -trim \
-                   +repage \
-                   "$wmark_image"
-            then
-                # check if the generated watermark file is truly a PNG image
-                if file "$wmark_image" | grep -q 'PNG image data'
-                then
-                    # optimize PNG image if chosen by user (-g/--png-optimizer)
-                    [ "$pngoptimizer" != 'none' ] && optimize_png
-                    
-                    return 0
-                else
-                    print_warn 'the generated watermark is not a PNG file (watermarking aborted)' >&2
-                    return 1
-                fi # end: if file
-            else
-                print_warn 'failed to create watermark image (watermarking aborted)' >&2
-                return 1
-            fi # end: if magick
-        else
-            print_warn 'the obtained watermark font pointsize is not a valid integer/float number (watermarking aborted)' >&2
-            return 1
-        fi # end: if printf
-    else
-        print_warn 'failed to obtain watermark font pointsize (watermarking aborted)' >&2
-        return 1
-    fi # end: if watermark_pointsize=
+        exit_program 'failed to obtain the watermark font pointsize'
+    fi
+    
+    # generate the watermark
+    if ! magick \
+            -size "$watermark_size" \
+            -font "$watermark_font" \
+            -pointsize "$watermark_pointsize" \
+            -gravity center \
+            \( \
+                xc:grey30 \
+                -draw "fill gray70  text 0,0  '${watermark_text}'" \
+            \) \
+            \( \
+                xc:black \
+                -draw "fill white  text  1,1  '${watermark_text}'  \
+                                   text  0,0  '${watermark_text}'  \
+                       fill black  text -1,-1 '${watermark_text}'" \
+                -alpha Off \
+            \) \
+            -alpha Off \
+            -compose copy-opacity \
+            -composite \
+            -trim \
+            +repage \
+            "$wmark_image"
+    then
+        exit_program 'failed to create the watermark image'
+    fi
+    
+    # check if the generated watermark is a PNG image file
+    if ! file "$wmark_image" | grep -q 'PNG image data'
+    then
+        exit_program 'the generated watermark is not a PNG image file'
+    fi
+    
+    # optimize PNG image if chosen by user (-g/--png-optimizer)
+    [ "$pngoptimizer" != 'none' ] && optimize_png
+    
+    return 0
 }
 
 # description: sets video fade options to be passed to ffmpeg command
