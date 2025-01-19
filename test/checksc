@@ -403,7 +403,7 @@ ffmpeg_codecs="$( ffmpeg -codecs  -v quiet)" # encoders and decoders
 . src/ffmpeg.sh
 
 # check for some required ffmpeg components
-for component in matroska flv vorbis mp3lame theora x264 h264_vaapi video4linux2,v4l2
+for component in matroska flv vorbis libmp3lame theora libx264 h264_vaapi video4linux2,v4l2
 do
     [ "$component" = 'h264_vaapi' ] && [ -z "$VAAPI" ] && continue
     
@@ -423,7 +423,7 @@ do
     
     if ! check_component "$component" "$type"
     then
-        if [ "$component" = 'flv' ] || [ "$component" = 'mp3lame' ] || [ "$component" = 'x264' ]
+        if [ "$component" = 'flv' ] || [ "$component" = 'libmp3lame' ] || [ "$component" = 'libx264' ]
         then
             tests_per_group='6'
             live_streaming='false'
