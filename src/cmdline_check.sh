@@ -572,15 +572,10 @@ check_cmd_line() {
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option to audio input
         audio_input_channels="-channels ${audio_input_channels}" # add ffmpeg '-channels' option to audio input channels
         
-    fi # end: [ "$recording_audio" = 'true' ]
-    
-    # execute audio encoder checks and settings (only if recording audio)
-    if [ "$recording_audio" = 'true' ]
-    then
+        # audio encoder checks and settings
         [ "$audio_encoder" != 'none' ] && "audiocodec_settings_${audio_encoder}"
-    
-    # adjust settings if user is not recording audio (video without audio stream)
     else
+        # adjust settings if user is not recording audio (video without audio stream)
         unset -v audio_input
         unset -v audio_input_channels
         unset -v audio_output_channels
@@ -589,7 +584,7 @@ check_cmd_line() {
         unset -v audio_encoder
         audio_record_codec='-an'
         audio_encode_codec='-an'
-    fi
+    fi # end: [ "$recording_audio" = 'true' ]
     
     # do not allow to use slow video encoders in a one step process (-1/--one-step)
     # (aom_av1 is still experimental and very slow in ffmpeg)
