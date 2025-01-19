@@ -552,7 +552,25 @@ check_cmd_line() {
             
         fi # end: else clause of: if check_component alsa demuxer
         
-        audio_input="-i ${audio_input}" # add ffmpeg '-i' option for audio input
+        # check for valid audio input channels
+        if [ "$audio_channels_setted" = 'true' ] &&
+           { ! printf '%s' "$audio_input_channels" | grep -Eq '^[0-9]+$' || [ ! "$audio_input_channels" -gt '0' ]; }
+        then
+            exit_program "'${audio_input_channels}' is not a valid number of audio input channels"
+        fi
+        
+        # set audio channel layout of audio input if needed
+        if [ "$audio_input_channels" -eq '2' ]
+        then
+            audio_channel_layout='-channel_layout stereo'
+        elif [ "$audio_input_channels" -gt '2' ]
+        then
+            unset -v audio_channel_layout
+            audio_output_channels="$audio_input_channels"
+        fi
+        
+        audio_input="-i ${audio_input}" # add ffmpeg '-i' option to audio input
+        audio_input_channels="-channels ${audio_input_channels}" # add ffmpeg '-channels' option to audio input channels
         
     fi # end: [ "$recording_audio" = 'true' ]
     
@@ -564,6 +582,8 @@ check_cmd_line() {
     # adjust settings if user is not recording audio (video without audio stream)
     else
         unset -v audio_input
+        unset -v audio_input_channels
+        unset -v audio_output_channels
         unset -v audio_channel_layout
         unset -v audio_input_options
         unset -v audio_encoder
@@ -692,7 +712,7 @@ check_cmd_line() {
         msg='option can be used only with --watermark (-w) option'
         [ "$wmark_size_setted"   = 'true' ] && exit_program "--wmark-size (-z) ${msg}"
         [ "$wmark_posi_setted"   = 'true' ] && exit_program "--wmark-position (-k) ${msg}"
-        [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-c) ${msg}"
+        [ "$wmark_font_setted"   = 'true' ] && exit_program "--wmark-font (-F) ${msg}"
         [ "$pngoptimizer_setted" = 'true' ] && exit_program "--png-optimizer (-g) ${msg}"
         unset -v msg
     fi

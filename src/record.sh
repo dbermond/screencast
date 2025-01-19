@@ -32,7 +32,7 @@ live_streaming() {
     set_watermark
     set_hw_device_and_pixel_format
     set_volume
-
+    
     ff_audio_codec="$audio_encode_codec"
     ff_video_codec="$video_encode_codec"
     
@@ -147,7 +147,14 @@ record_offline_two_steps() {
         set_hw_device_and_pixel_format
         set_volume
         
-        ff_audio_options="${audio_channel_layout}"
+        # set audio channel layout of lossless recording input if needed
+        if [ "$recording_audio" = 'true' ] &&
+           [ "$(printf '%s' "$audio_input_channels" | sed 's/-channels[[:space:]]//')" -le '2' ]
+        then
+            audio_channel_layout='-channel_layout stereo'
+        fi
+        
+        ff_audio_options="$audio_channel_layout"
         ff_video_options="-i ${tmpdir}/screencast-lossless-${rndstr_video}.${rec_extension}"
         ff_audio_codec="$audio_encode_codec"
         ff_video_codec="$video_encode_codec"

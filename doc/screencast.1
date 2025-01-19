@@ -155,6 +155,17 @@ determine possible PulseAudio input source names you can use the \fBpactl\fR
 utility (\'$ \fBpactl list sources\fR\').
 .RE
 .TP
+\fB\-c\fR, \fB\-\-audio\-channels\fR=\fIN\fR
+.RS
+Number of channels in the audio input device.
+.PP
+default: 1
+.PP
+\fBnote:\fR If recording from a mono audio input (1 channel), the output will
+always be stereo (2 channels). When recording from an input with 2 or more
+channels, the output channel number will be the same as input.
+.RE
+.TP
 \fB\-a\fR, \fB\-\-audio\-encoder\fR=\fINAME\fR
 .RS
 Audio encoder that will be used to encode the recorded audio. For details
@@ -277,7 +288,7 @@ supported predefined special values: \fItopleft\fR/\fItl\fR,
 default: bottomright
 .RE
 .TP
-\fB\-c\fR, \fB\-\-wmark\-font\fR=\fINAME\fR
+\fB\-F\fR, \fB\-\-wmark\-font\fR=\fINAME\fR
 .RS
 Set text watermark font to \fINAME\fR. To get a list of the available font
 names for text watermarking on your system you can use the \fBmagick\fR

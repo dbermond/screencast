@@ -76,7 +76,7 @@ show_warnings
 # common settings for all recording ways
 set_webcam
 fix_pass_duration
-ff_audio_options="${audio_input_options} ${audio_input}"
+ff_audio_options="${audio_input_options} ${audio_input_channels} ${audio_channel_layout} ${audio_input}"
 ff_video_options="${video_input_options} ${border_options} -framerate ${video_rate} -video_size ${video_size} -i ${display}+${video_position}"
 
 # do a live streaming if chosen by user (-L/--live-streaming)

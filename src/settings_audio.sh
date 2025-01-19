@@ -75,7 +75,7 @@ lossless_audiocodec_settings_pcm_s16le() {
     if check_component pcm_s16le encoder &&
        check_component pcm_s16le decoder
     then
-        audio_record_codec='-codec:a pcm_s16le -ar 48000 -ac 2'
+        audio_record_codec="-codec:a pcm_s16le -ar 48000 -ac ${audio_output_channels}"
     else
         return 1
     fi
@@ -85,7 +85,7 @@ lossless_audiocodec_settings_flac() {
     if check_component flac encoder &&
        check_component flac decoder
     then
-        audio_record_codec='-codec:a flac -b:a 320k -ar 48000 -ac 2'
+        audio_record_codec="-codec:a flac -b:a 320k -ar 48000 -ac ${audio_output_channels}"
     else
         return 1
     fi
@@ -105,30 +105,30 @@ audiocodec_settings_aac() {
     then
         if [ "$streaming" = 'true' ]
         then
-            audio_encode_codec='-codec:a libfdk_aac -b:a  96k -ar 44100 -ac 2'
+            audio_encode_codec="-codec:a libfdk_aac -b:a  96k -ar 44100 -ac ${audio_output_channels}"
         else
-            audio_encode_codec='-codec:a libfdk_aac -b:a 128k -ar 44100 -ac 2'
+            audio_encode_codec="-codec:a libfdk_aac -b:a 128k -ar 44100 -ac ${audio_output_channels}"
         fi
     else
         check_component aac encoder || component_error 'libfdk_aac or aac' 'audio encoder' true
         
         if [ "$streaming" = 'true' ]
         then
-            audio_encode_codec='-codec:a aac -b:a  96k -ar 44100 -ac 2'
+            audio_encode_codec="-codec:a aac -b:a  96k -ar 44100 -ac ${audio_output_channels}"
         else
-            audio_encode_codec='-codec:a aac -b:a 128k -ar 44100 -ac 2'
+            audio_encode_codec="-codec:a aac -b:a 128k -ar 44100 -ac ${audio_output_channels}"
         fi
     fi
 }
 
 audiocodec_settings_vorbis() {
     check_component libvorbis encoder || component_error libvorbis 'audio encoder' true
-    audio_encode_codec='-codec:a libvorbis -qscale:a 4 -ar 44100 -ac 2'
+    audio_encode_codec="-codec:a libvorbis -qscale:a 4 -ar 44100 -ac ${audio_output_channels}"
 }
 
 audiocodec_settings_opus() {
     check_component libopus encoder || component_error libopus 'audio encoder' true
-    audio_encode_codec='-codec:a libopus -b:a 128k -ar 48000 -ac 2'
+    audio_encode_codec="-codec:a libopus -b:a 128k -ar 48000 -ac ${audio_output_channels}"
 }
 
 audiocodec_settings_mp3lame() {
@@ -136,9 +136,9 @@ audiocodec_settings_mp3lame() {
     
     if [ "$streaming" = 'true' ]
     then
-        audio_encode_codec='-codec:a libmp3lame -b:a  96k -ar 44100 -ac 2'
+        audio_encode_codec="-codec:a libmp3lame -b:a  96k -ar 44100 -ac ${audio_output_channels}"
     else
-        audio_encode_codec='-codec:a libmp3lame -b:a 128k -ar 44100 -ac 2'
+        audio_encode_codec="-codec:a libmp3lame -b:a 128k -ar 44100 -ac ${audio_output_channels}"
     fi
 }
 
@@ -147,13 +147,13 @@ audiocodec_settings_shine() {
     
     if [ "$streaming" = 'true' ]
     then
-        audio_encode_codec='-codec:a libshine -b:a  96k -ar 44100 -ac 2'
+        audio_encode_codec="-codec:a libshine -b:a  96k -ar 44100 -ac ${audio_output_channels}"
     else
-        audio_encode_codec='-codec:a libshine -b:a 128k -ar 44100 -ac 2'
+        audio_encode_codec="-codec:a libshine -b:a 128k -ar 44100 -ac ${audio_output_channels}"
     fi
 }
 
 audiocodec_settings_wma() {
     check_component wmav2 encoder || component_error wmav2 'audio encoder' true
-    audio_encode_codec='-codec:a wmav2 -b:a 128k -ar 44100 -ac 2'
+    audio_encode_codec="-codec:a wmav2 -b:a 128k -ar 44100 -ac ${audio_output_channels}"
 }

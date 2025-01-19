@@ -210,6 +210,29 @@ get_cmd_line() {
                 command_error '--audio-input (-i)'
                 ;;
             
+            -c|--audio-channels)
+                if [ -n "$2" ]
+                then
+                    if printf '%.1s\n' "$2" | grep -q '-'
+                    then
+                        command_error '--audio-channels (-c)'
+                    else
+                        audio_input_channels="${2}"
+                        audio_channels_setted='true'
+                        shift && shift_count="$((shift_count + 1))"
+                    fi
+                else
+                    command_error '--audio-channels (-c)'
+                fi
+                ;;
+            --audio-channels=?*)
+                audio_input_channels="${1#*=}"
+                audio_channels_setted='true'
+                ;;
+            --audio-channels=)
+                command_error '--audio-channels (-c)'
+                ;;
+            
             -a|--audio-encoder)
                 if [ -n "$2" ]
                 then
@@ -394,19 +417,19 @@ get_cmd_line() {
                 command_error '--wmark-position (-k)'
                 ;;
             
-            -c|--wmark-font)
+            -F|--wmark-font)
                 if [ -n "$2" ]
                 then
                     if printf '%.1s\n' "$2" | grep -q '-'
                     then
-                        command_error '--wmark-font (-c)'
+                        command_error '--wmark-font (-F)'
                     else
                         watermark_font="$2"
                         wmark_font_setted='true'
                         shift && shift_count="$((shift_count + 1))"
                     fi
                 else
-                    command_error '--wmark-font (-c)'
+                    command_error '--wmark-font (-F)'
                 fi
                 ;;
             --wmark-font=?*)
@@ -414,7 +437,7 @@ get_cmd_line() {
                 wmark_font_setted='true'
                 ;;
             --wmark-font=)
-                command_error '--wmark-font (-c)'
+                command_error '--wmark-font (-F)'
                 ;;
             
             -W|--webcam) # option without argument

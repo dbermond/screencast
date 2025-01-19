@@ -12,6 +12,9 @@ https://github.com/dbermond/screencast/
 - fix: vaapi encoders with modern FFmpeg
 - -A/--vaapi-device option changed to -D/--hw-device, and now is used for device selection in all hardware types
 - error out when failing to create the watermark image, instead of warn and skip watermaking
+- new option: select number of channels in the audio input device
+- default number of channels in the audio input device changed from 2 to 1
+- watermark font short option changed from -c to -F
 
 ### version 1.6.0 - 2020-09-19
 - added support for AOM AV1 video encoder

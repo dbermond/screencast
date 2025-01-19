@@ -32,6 +32,7 @@ _screencast() {
           -r --fps
           -f --format
           -i --audio-input
+          -c --audio-channels
           -a --audio-encoder
           -v --video-encoder
           -D --hw-device
@@ -40,7 +41,7 @@ _screencast() {
           -w --watermark
           -z --wmark-size
           -k --wmark-position
-          -c --wmark-font
+          -F --wmark-font
           -W --webcam
           -I --webcam-input
           -Z --webcam-size

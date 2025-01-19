@@ -122,6 +122,7 @@ show_help() {
 	  -r, --fps=N               video framerate (fps) [${video_rate}]
 	  -f, --format=TYPE         container format (to use with -u) [${format}]
 	  -i, --audio-input=NAME    audio input device [${audio_input}]
+	  -c, --audio-channels=N    number of channels in the audio input device [${audio_input_channels}]
 	  -a, --audio-encoder=NAME  audio encoder [${audio_encoder}]
 	  -v, --video-encoder=NAME  video encoder [${video_encoder}]
 	  -D, --hw-device=DEVICE    hardware device to use with hardware encoders [see bellow]
@@ -131,7 +132,7 @@ show_help() {
 	  -z, --wmark-size=NxN      watermark image size (resolution) [${watermark_size}]
 	  -k, --wmark-position=N,N  watermark position (video XY topleft offsets,
 	      --wmark-position=PRE    or a predefined special value) [${watermark_position}]
-	  -c, --wmark-font=NAME     watermark font [${watermark_font}]
+	  -F, --wmark-font=NAME     watermark font [${watermark_font}]
 	  -W, --webcam              enable webcam overlay effect [disabled]
 	  -I, --webcam-input=DEV    webcam input device [${webcam_input}]
 	  -Z, --webcam-size=NxN     webcam video size (resolution) [${webcam_size}]

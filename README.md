@@ -12,6 +12,7 @@ screencast
     - [`-r, --fps=N`](#-r---fpsn)
     - [`-f, --format=TYPE`](#-f---formattype)
     - [`-i, --audio-input=NAME`](#-i---audio-inputname)
+    - [`-c, --audio-channels=N`](#-c---audio-channelsn)
     - [`-a, --audio-encoder=NAME`](#-a---audio-encodername)
     - [`-v, --video-encoder=NAME`](#-v---video-encodername)
     - [`-D, --hw-device=DEVICE`](#-d---hw-devicedevice)
@@ -21,7 +22,7 @@ screencast
     - [`-z, --wmark-size=NxN`](#-z---wmark-sizenxn)
     - [`-k, --wmark-position=N,N`](#-k---wmark-positionpre---wmark-positionnn)
     - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[`--wmark-position=PRE`](#-k---wmark-positionpre---wmark-positionnn)
-    - [`-c, --wmark-font=NAME`](#-c---wmark-fontname)
+    - [`-F, --wmark-font=NAME`](#-f---wmark-fontname)
     - [`-W, --webcam`](#-w---webcam)
     - [`-I, --webcam-input=DEV`](#-i---webcam-inputdev)
     - [`-Z, --webcam-size=NxN`](#-z---webcam-sizenxn)
@@ -131,6 +132,14 @@ default: `default`
 
 **note**: the default audio recording backend used by **screencast** is ALSA. If your FFmpeg build has no support for ALSA, it will fallback to use the PulseAudio backend (a warning message will be displayed), and in this case you can use this option to specify a PulseAudio input source name. To determine possible PulseAudio input source names you can use the `pactl` utility (`$ pactl list sources`).
 
+#### `-c, --audio-channels=N`
+
+Number of channels in the audio input device.
+
+default: `1`
+
+**note**: if recording from a mono audio input (1 channel), the output will always be stereo (2 channels). When recording from an input with 2 or more channels, the output channel number will be the same as input.
+
 #### `-a, --audio-encoder=NAME`
 
 Audio encoder that will be used to encode the recorded audio. For details about the special value `none`, please see the [REMARKS](#remarks) section bellow.
@@ -200,7 +209,7 @@ supported predefined special values: `topleft`/`tl`, `topright`/`tr`, `bottomlef
 
 default: `bottomright`
 
-#### `-c, --wmark-font=NAME`
+#### `-F, --wmark-font=NAME`
 
 Set text watermark font to *NAME*. To get a list of the available font names for text watermarking on your system you can use the `magick` (ImageMagick) utility and execute this command: `$ magick -list font`. You can also specify a full filepath of a font file. This option can be used only with the [`-w`](#-w---watermarktext) option.
 
