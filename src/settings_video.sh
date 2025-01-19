@@ -361,7 +361,26 @@ videocodec_settings_aom_av1() {
 
 videocodec_settings_svt_av1() {
     check_component libsvtav1 encoder || component_error libsvtav1 'video encoder' true
-    video_encode_codec='libsvtav1 -qp 36'
+    
+    # libsvtav1 encoder: use '-crf' option instead of '-qp' (ffmpeg 5.1 or git master N-105761-g1dddb930aa)
+    # also requires libsvtav1 >= 0.9.0
+    if check_minimum_ffmpeg_version '5.1' '105761'
+    then
+        if [ "$streaming" = 'true' ]
+        then
+            video_encode_codec='libsvtav1 -crf 40 -preset 10'
+        else
+            video_encode_codec='libsvtav1 -crf 35 -preset 5'
+        fi
+    else
+        if [ "$streaming" = 'true' ]
+        then
+            # libsvtav1 < 0.9.0 presets: 0-8
+            video_encode_codec='libsvtav1 -qp 40 -preset 8'
+        else
+            video_encode_codec='libsvtav1 -qp 35 -preset 5'
+        fi
+    fi
 }
 
 videocodec_settings_rav1e() {
