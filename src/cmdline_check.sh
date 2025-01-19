@@ -587,8 +587,7 @@ check_cmd_line() {
     fi # end: [ "$recording_audio" = 'true' ]
     
     # do not allow to use slow video encoders in a one step process (-1/--one-step)
-    # (aom_av1 is still experimental and very slow in ffmpeg)
-    if printf '%s' "$videocodecs_av1_slow" | grep -q "^${video_encoder}$"
+    if [ "$one_step" = 'true' ] && printf '%s' "$videocodecs_av1_slow" | grep -q "^${video_encoder}$"
     then
         exit_program "'${video_encoder}' cannot be used for a one step process (very slow in FFmpeg)"
     fi

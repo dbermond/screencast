@@ -10,6 +10,7 @@ https://github.com/dbermond/screencast/
 - fix: muxers and demuxers checks with FFmpeg 7.0 and later
 - fix: tests: default text watermark font name
 - fix: vaapi encoders with modern FFmpeg
+- fix: usage of "slow" av1 encoders
 - -A/--vaapi-device option changed to -D/--hw-device, and now is used for device selection in all hardware types
 - error out when failing to create the watermark image, instead of warn and skip watermaking
 - new option: select number of channels in the audio input device
