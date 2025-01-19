@@ -127,7 +127,6 @@ videocodecs_av1="$(cat <<- __EOF__
 __EOF__
 )"
 videocodecs_av1_slow="$(cat <<- __EOF__
-		aom_av1
 		rav1e
 __EOF__
 )"
@@ -339,7 +338,25 @@ videocodec_settings_wmv() {
 
 videocodec_settings_aom_av1() {
     check_component libaom-av1 encoder || component_error libaom-av1 'video encoder' true
-    video_encode_codec='libaom-av1 -crf 27 -b:v 0 -strict experimental'
+    
+    if [ "$streaming" = 'true' ]
+    then
+        video_encode_codec='libaom-av1 -crf 32 -cpu-used 8 -usage realtime'
+    else
+        video_encode_codec='libaom-av1 -crf 27 -cpu-used 3'
+    fi
+    
+    # libaom encoder: needs '-strict experimental' with libaom < 2.0.0 (ffmpeg 4.3 / git master N-98059-g49d37b4b61 or lower)
+    if ! check_minimum_ffmpeg_version '4.3' '98059'
+    then
+        video_encode_codec="${video_encode_codec} -strict experimental"
+        
+        # libaom encoder: needs '-b:v 0' for correct crf usage (ffmpeg 4.3 / git master N-94625-g711c59bc57 or lower)
+        if ! check_minimum_ffmpeg_version '4.3' '94625'
+        then
+            video_encode_codec="${video_encode_codec} -b:v 0"
+        fi
+    fi
 }
 
 videocodec_settings_svt_av1() {
