@@ -620,6 +620,9 @@ check_cmd_line() {
                 vaapi)
                     hwdevice="$vaapi_default_hwdevice"
                     ;;
+                vulkan)
+                    hwdevice="$vulkan_default_hwdevice"
+                    ;;
                 *)
                     exit_program "invalid hwaccel '${hwaccel}' (this should not happen)"
                     ;;

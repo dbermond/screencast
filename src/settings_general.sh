@@ -108,6 +108,7 @@ hwencoder='false'
 nvenc_default_hwdevice='0'
 qsv_default_hwdevice='hw'
 vaapi_default_hwdevice='/dev/dri/renderD128'
+vulkan_default_hwdevice='0'
 
 # metadata settings
 metadata="comment=$(printf '%s\n%s' "Created with screencast ${screencast_version}" "${screencast_website}")"

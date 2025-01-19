@@ -29,12 +29,14 @@ supported_videocodecs_all="$(cat <<- __EOF__
 		h264_nvenc
 		h264_vaapi
 		h264_qsv
+		h264_vulkan
 		x265
 		kvazaar
 		svt_hevc
 		hevc_nvenc
 		hevc_vaapi
 		hevc_qsv
+		hevc_vulkan
 		vp8
 		vp8_vaapi
 		vp9
@@ -87,10 +89,16 @@ videocodecs_qsv="$(cat <<- __EOF__
 		av1_qsv
 __EOF__
 )"
+videocodecs_vulkan="$(cat <<- __EOF__
+		h264_vulkan
+		hevc_vulkan
+__EOF__
+)"
 supported_videocodecs_hardware="$(cat <<- __EOF__
 		$videocodecs_nvenc
 		$videocodecs_qsv
 		$videocodecs_vaapi
+		$videocodecs_vulkan
 __EOF__
 )"
 videocodecs_h264="$(cat <<- __EOF__
@@ -99,6 +107,7 @@ videocodecs_h264="$(cat <<- __EOF__
 		h264_nvenc
 		h264_vaapi
 		h264_qsv
+		h264_vulkan
 __EOF__
 )"
 videocodecs_hevc="$(cat <<- __EOF__
@@ -108,6 +117,7 @@ videocodecs_hevc="$(cat <<- __EOF__
 		hevc_nvenc
 		hevc_vaapi
 		hevc_qsv
+		hevc_vulkan
 __EOF__
 )"
 videocodecs_vp8="$(cat <<- __EOF__
@@ -292,6 +302,12 @@ videocodec_settings_h264_qsv() {
     video_encode_codec='h264_qsv -global_quality 21 -preset veryslow -rdo 1'
 }
 
+videocodec_settings_h264_vulkan() {
+    check_component h264_vulkan encoder || component_error h264_vulkan 'video encoder' true
+    check_vulkan_device
+    video_encode_codec='h264_vulkan -rc_mode cqp -qp 16 -tune hq'
+}
+
 videocodec_settings_x265() {
     check_component libx265 encoder || component_error libx265 'video encoder' true
     
@@ -335,6 +351,12 @@ videocodec_settings_hevc_qsv() {
     check_component hevc_qsv encoder || component_error hevc_qsv 'video encoder' true
     check_qsv_device
     video_encode_codec='hevc_qsv -global_quality 25 -preset veryslow -rdo 1'
+}
+
+videocodec_settings_hevc_vulkan() {
+    check_component hevc_vulkan encoder || component_error hevc_vulkan 'video encoder' true
+    check_vulkan_device
+    video_encode_codec='hevc_vulkan -rc_mode cqp -qp 16 -tune hq'
 }
 
 videocodec_settings_vp8() {

@@ -248,6 +248,20 @@ check_vaapi_device() {
     [ -c "$hwdevice" ] || exit_program "'${hwdevice}' is not a valid DRM render node (VAAPI device) on this system"
 }
 
+# description: check if specified vulkan device is valid for FFmpeg (-D/--hw-device)
+# arguments: none
+# return value: not relevant
+# return code (status):
+#   0 - a valid vulkan device was specified
+# note:
+#   it will make the program exit with error if an invalid vulkan device was selected
+check_vulkan_device() {
+    if ! printf '%s' "$hwdevice" | grep -Eq '^[0-9]+$'
+    then
+        exit_program "'${hwdevice}' is not a valid Vulkan device number"
+    fi
+}
+
 # description: check for a valid ALSA input device long name
 # arguments: none
 # return value: none
