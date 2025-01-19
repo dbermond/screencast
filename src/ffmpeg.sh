@@ -122,14 +122,14 @@ check_lossless_component() {
 check_component() {
     case "$2" in
         encoder)
-            if ! printf '%s' "$ffmpeg_codecs" | grep -q "(encoders:.*${1}" &&
+            if ! printf '%s' "$ffmpeg_codecs" | grep -Eq "\(encoders:.*[[:space:]]${1}([[:space:]]|\)\$)" &&
                ! printf '%s' "$ffmpeg_codecs" | grep -Eq "^[[:space:]].E.{4}[[:space:]]${1}[[:space:]]"
             then
                 return 1
             fi
             ;;
         decoder)
-            if ! printf '%s' "$ffmpeg_codecs" | grep -q "(decoders:.*${1}" &&
+            if ! printf '%s' "$ffmpeg_codecs" | grep -Eq "\(decoders:.*[[:space:]]${1}([[:space:]]|\)\$)" &&
                ! printf '%s' "$ffmpeg_codecs" | grep -Eq "^[[:space:]]D.{5}[[:space:]]${1}[[:space:]]"
             then
                 return 1
