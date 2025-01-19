@@ -17,6 +17,7 @@ https://github.com/dbermond/screencast/
 - default number of channels in the audio input device changed from 2 to 1
 - watermark font short option changed from -c to -F
 - added support for OpenH264 video encoder
+- added support for AV1 hardware accelerated video encoding with NVENC, QSV and VAAPI
 
 ### version 1.6.0 - 2020-09-19
 - added support for AOM AV1 video encoder

@@ -45,6 +45,9 @@ supported_videocodecs_all="$(cat <<- __EOF__
 		aom_av1
 		svt_av1
 		rav1e
+		av1_nvenc
+		av1_qsv
+		av1_vaapi
 		none
 __EOF__
 )"
@@ -67,6 +70,7 @@ __EOF__
 videocodecs_nvenc="$(cat <<- __EOF__
 		h264_nvenc
 		hevc_nvenc
+		av1_nvenc
 __EOF__
 )"
 videocodecs_vaapi="$(cat <<- __EOF__
@@ -74,11 +78,13 @@ videocodecs_vaapi="$(cat <<- __EOF__
 		hevc_vaapi
 		vp8_vaapi
 		vp9_vaapi
+		av1_vaapi
 __EOF__
 )"
 videocodecs_qsv="$(cat <<- __EOF__
 		h264_qsv
 		hevc_qsv
+		av1_qsv
 __EOF__
 )"
 supported_videocodecs_hardware="$(cat <<- __EOF__
@@ -127,6 +133,9 @@ videocodecs_av1="$(cat <<- __EOF__
 		aom_av1
 		svt_av1
 		rav1e
+		av1_nvenc
+		av1_qsv
+		av1_vaapi
 __EOF__
 )"
 videocodecs_av1_slow="$(cat <<- __EOF__
@@ -415,4 +424,22 @@ videocodec_settings_svt_av1() {
 videocodec_settings_rav1e() {
     check_component librav1e encoder || component_error librav1e 'video encoder' true
     video_encode_codec='librav1e -qp 90 -speed 5 -rav1e-params low_latency=true'
+}
+
+videocodec_settings_av1_nvenc() {
+    check_component av1_nvenc encoder || component_error av1_nvenc 'video encoder' true
+    check_nvidia_gpu_device
+    video_encode_codec='av1_nvenc -rc constqp -qp 20 -preset p7'
+}
+
+videocodec_settings_av1_qsv() {
+    check_component av1_qsv encoder || component_error av1_qsv 'video encoder' true
+    check_qsv_device
+    video_encode_codec='av1_qsv -global_quality 35 -preset veryslow -rdo 1'
+}
+
+videocodec_settings_av1_vaapi() {
+    check_component av1_vaapi encoder || component_error av1_vaapi 'video encoder' true
+    check_vaapi_device
+    video_encode_codec='av1_vaapi -rc_mode CQP -global_quality 18'
 }
