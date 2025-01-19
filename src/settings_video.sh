@@ -25,6 +25,7 @@
 # supported video encoders (one per line for accurate grepping and easy deletion)
 supported_videocodecs_all="$(cat <<- __EOF__
 		x264
+		openh264
 		h264_nvenc
 		h264_vaapi
 		h264_qsv
@@ -49,6 +50,7 @@ __EOF__
 )"
 supported_videocodecs_software="$(cat <<- __EOF__
 		x264
+		openh264
 		x265
 		kvazaar
 		svt_hevc
@@ -87,6 +89,7 @@ __EOF__
 )"
 videocodecs_h264="$(cat <<- __EOF__
 		x264
+		openh264
 		h264_nvenc
 		h264_vaapi
 		h264_qsv
@@ -234,6 +237,32 @@ videocodec_settings_x264() {
             video_encode_codec='libx264 -crf 21 -preset veryslow'
         fi
     fi
+}
+
+videocodec_settings_openh264() {
+    check_component libopenh264 encoder || component_error libopenh264 'video encoder' true
+    
+    if [ "$video_height" -ge '4320' ]
+    then
+        slices='10'
+    elif [ "$video_height" -ge '2160' ]
+    then
+        slices='8'
+    elif [ "$video_height" -ge '1440' ]
+    then
+        slices='6'
+    elif [ "$video_height" -ge '1080' ]
+    then
+        slices='4'
+    elif [ "$video_height" -ge '720' ]
+    then
+        slices='2'
+    else
+        slices='1'
+    fi
+    
+    video_encode_codec="libopenh264 -coder cabac -rc_mode off -slices ${slices} -profile:v high"
+    unset -v slices
 }
 
 videocodec_settings_h264_nvenc() {
