@@ -46,8 +46,8 @@ video_encoder_vaapi='--video-encoder=h264_vaapi'
 common_cmd_all="${scfile} --no-notifications --fixed=3.0 --display=${display} --border=0"
 common_cmd_soft="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_soft}"
 common_cmd_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_live}"
-common_cmd_vaapi="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_vaapi} --vaapi-device=${VAAPI}"
-common_cmd_vaapi_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_vaapi} --vaapi-device=${VAAPI}"
+common_cmd_vaapi="${common_cmd_all} ${audio_input} ${audio_encoder} ${video_encoder_vaapi} --hw-device=${VAAPI}"
+common_cmd_vaapi_live="${common_cmd_all} ${audio_input} ${audio_encoder_live} ${video_encoder_vaapi} --hw-device=${VAAPI}"
 live="--live-streaming="
 keep="--keep"
 one_step='--one-step'
@@ -511,7 +511,7 @@ then
     if [ -c "$VAAPI" ]
     then
         use_vaapi='true'
-        vaapi_info="${color_green}enabled (${VAAPI})${color_off}"
+        vaapi_info="${color_green}enabled (device: ${VAAPI})${color_off}"
     else
         printf '%s\n' "${color_red}error:${color_off} '${VAAPI}' is not a valid DRM render node (VAAPI device) on this system, aborting tests" >&2
         exit 1
