@@ -159,13 +159,14 @@ default: `x264`
 
 #### `-D, --hw-device=DEVICE`
 
-Hardware device to use with a hardware video encoder. The device is specific to each hardware type. For NVENC encoders, the device is the NVIDIA GPU number, starting at `0`. For QSV encoders, the device is the MFX implementation name, and allowed values are `hw`, `hw2`, `hw3`, `hw4`, `hw_any`, `auto`, `auto_any` and `sw` (notice that modern MFX/VPL do not support the software (`sw`) implementation). For VAAPI encoders, the device is the DRM render node in the system. This option can be used only when specifying a hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option and cannot be used when selecting a software video encoder.
+Hardware device to use with a hardware video encoder. The device is specific to each hardware type. For NVENC encoders, the device is the NVIDIA GPU number, starting at `0`. For QSV encoders, the device is the MFX implementation name, and allowed values are `hw`, `hw2`, `hw3`, `hw4`, `hw_any`, `auto`, `auto_any` and `sw` (notice that modern MFX/VPL do not support the software (`sw`) implementation). For VAAPI encoders, the device is the DRM render node in the system. For Vulkan encoders, the device is the Vulkan device number, starting at `0`. This option can be used only when specifying a hardware accelerated video encoder with the [`-v`](#-v---video-encodername) option and cannot be used when selecting a software video encoder.
 
 default values:
 
   - NVENC: `0`
   - QSV: `hw`
   - VAAPI: `/dev/dri/renderD128`
+  - Vulkan: `0`
 
 #### `-e, --fade=TYPE`
 
