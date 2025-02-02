@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 NAME    := screencast
 RELEASE := v1.6.0.next
@@ -60,7 +60,7 @@ HEADER_DESC     := \# $(NAME) - POSIX-compliant shell script to record a X11 des
 
 # shell regular expressions
 HEADER_START    := ^\#!\/bin\/.*
-HEADER_END      := <http:\/\/www\.gnu\.org\/licenses\/>\.$$
+HEADER_END      := <https:\/\/www\.gnu\.org\/licenses\/>\.$$
 COPYRIGHT_LINE  := ^\#[[:space:]]Copyright[[:space:]](c)[[:space:]]2015.*Daniel[[:space:]]Bermond[[:space:]]<.*
 SHELLCHECK_LINE := ^\#[[:space:]]shellcheck[[:space:]]disable=.*
 
