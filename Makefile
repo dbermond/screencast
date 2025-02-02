@@ -65,7 +65,7 @@ COPYRIGHT_LINE  := ^\#[[:space:]]Copyright[[:space:]](c)[[:space:]]2015.*Daniel[
 SHELLCHECK_LINE := ^\#[[:space:]]shellcheck[[:space:]]disable=.*
 
 # skip these global shellcheck ignores (should be used only in module files)
-SHELLCHECK_SKIP := SC2034 SC2154
+SHELLCHECK_SKIP := SC2034 SC2154 SC2317
 
 # correctly assign program version (development/git or stable release)
 ifeq ($(shell [ -d '.git' ] ; printf '%s' "$$?"), 0)

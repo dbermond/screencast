@@ -1,5 +1,5 @@
 #!/bin/sh
-# shellcheck disable=SC2154,SC2086
+# shellcheck disable=SC2086,SC2154,SC2317
 
 # system.sh - system related functions for screencast
 #
