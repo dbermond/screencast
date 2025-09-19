@@ -245,6 +245,18 @@ lossless_videocodec_settings_huffyuv() {
 # note:
 #   the program will exit with error if the selected video encoder is not supported
 #   by the detected ffmpeg build
+videocodec_settings_add_vulkan_usage() {
+    if [ "$streaming" = 'true' ]
+    then
+        video_encode_codec="${video_encode_codec} -usage stream"
+    elif [ "$one_step" = 'true' ]
+    then
+        video_encode_codec="${video_encode_codec} -usage record"
+    else
+        video_encode_codec="${video_encode_codec} -usage transcode"
+    fi
+}
+
 videocodec_settings_x264() {
     check_component libx264 encoder || component_error libx264 'video encoder' true
     
@@ -309,6 +321,7 @@ videocodec_settings_h264_vulkan() {
     check_component h264_vulkan encoder || component_error h264_vulkan 'video encoder' true
     check_vulkan_device
     video_encode_codec='h264_vulkan -rc_mode cqp -qp 16 -tune hq'
+    videocodec_settings_add_vulkan_usage
 }
 
 videocodec_settings_x265() {
@@ -360,6 +373,7 @@ videocodec_settings_hevc_vulkan() {
     check_component hevc_vulkan encoder || component_error hevc_vulkan 'video encoder' true
     check_vulkan_device
     video_encode_codec='hevc_vulkan -rc_mode cqp -qp 16 -tune hq'
+    videocodec_settings_add_vulkan_usage
 }
 
 videocodec_settings_vp8() {
@@ -473,4 +487,5 @@ videocodec_settings_av1_vulkan() {
     check_component av1_vulkan encoder || component_error av1_vulkan 'video encoder' true
     check_vulkan_device
     video_encode_codec='av1_vulkan -rc_mode cqp -qp 16 -tune hq'
+    videocodec_settings_add_vulkan_usage
 }
