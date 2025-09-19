@@ -50,6 +50,7 @@ supported_videocodecs_all="$(cat <<- __EOF__
 		av1_nvenc
 		av1_qsv
 		av1_vaapi
+		av1_vulkan
 		none
 __EOF__
 )"
@@ -92,6 +93,7 @@ __EOF__
 videocodecs_vulkan="$(cat <<- __EOF__
 		h264_vulkan
 		hevc_vulkan
+		av1_vulkan
 __EOF__
 )"
 supported_videocodecs_hardware="$(cat <<- __EOF__
@@ -146,6 +148,7 @@ videocodecs_av1="$(cat <<- __EOF__
 		av1_nvenc
 		av1_qsv
 		av1_vaapi
+		av1_vulkan
 __EOF__
 )"
 videocodecs_av1_slow="$(cat <<- __EOF__
@@ -464,4 +467,10 @@ videocodec_settings_av1_vaapi() {
     check_component av1_vaapi encoder || component_error av1_vaapi 'video encoder' true
     check_vaapi_device
     video_encode_codec='av1_vaapi -rc_mode CQP -global_quality 18'
+}
+
+videocodec_settings_av1_vulkan() {
+    check_component av1_vulkan encoder || component_error av1_vulkan 'video encoder' true
+    check_vulkan_device
+    video_encode_codec='av1_vulkan -rc_mode cqp -qp 16 -tune hq'
 }

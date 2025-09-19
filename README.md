@@ -155,7 +155,7 @@ Video encoder that will be used to encode the recorded video. If using a hardwar
 default: `x264`
 
 - supported types:
-    - `x264`, `openh264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `h264_vulkan`, `x265`, `kvazaar`, `svt_hevc`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `hevc_vulkan`, `vp8`, `vp8_vaapi`, `vp9`, `svt_vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`, `svt_av1`, `rav1e`, `av1_nvenc`, `av1_qsv`, `av1_vaapi`, `none`
+    - `x264`, `openh264`, `h264_nvenc`, `h264_vaapi`, `h264_qsv`, `h264_vulkan`, `x265`, `kvazaar`, `svt_hevc`, `hevc_nvenc`, `hevc_vaapi`, `hevc_qsv`, `hevc_vulkan`, `vp8`, `vp8_vaapi`, `vp9`, `svt_vp9`, `vp9_vaapi`, `theora`, `wmv`, `aom_av1`, `svt_av1`, `rav1e`, `av1_nvenc`, `av1_qsv`, `av1_vaapi`, `av1_vulkan`, `none`
 
 #### `-D, --hw-device=DEVICE`
 

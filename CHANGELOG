@@ -18,7 +18,7 @@ https://github.com/dbermond/screencast/
 - watermark font short option changed from -c to -F
 - added support for OpenH264 video encoder
 - added support for AV1 hardware accelerated video encoding with NVENC, QSV and VAAPI
-- added support for Vulkan hardware accelerated video encoding with H.264 and HEVC
+- added support for Vulkan hardware accelerated video encoding with H.264, HEVC and AV1
 
 ### version 1.6.0 - 2020-09-19
 - added support for AOM AV1 video encoder
