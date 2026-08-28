@@ -560,17 +560,20 @@ check_cmd_line() {
         fi
         
         # set audio channel layout of audio input if needed
+        # -channel_layout handles this; -channels is deprecated in the ALSA demuxer
         if [ "$audio_input_channels" -eq '2' ]
         then
             audio_channel_layout='-channel_layout stereo'
         elif [ "$audio_input_channels" -gt '2' ]
         then
-            unset -v audio_channel_layout
             audio_output_channels="$audio_input_channels"
+            audio_channel_layout="-channel_layout ${audio_input_channels}C"
         fi
+        # audio_input_channels is no longer passed to ffmpeg (-channels is deprecated;
+        # -channel_layout / -ch_layout is used instead via audio_channel_layout)
+        unset -v audio_input_channels
         
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option to audio input
-        audio_input_channels="-channels ${audio_input_channels}" # add ffmpeg '-channels' option to audio input channels
         
         # audio encoder checks and settings
         [ "$audio_encoder" != 'none' ] && "audiocodec_settings_${audio_encoder}"
