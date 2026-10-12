@@ -148,8 +148,7 @@ record_offline_two_steps() {
         set_volume
         
         # set audio channel layout of lossless recording input if needed
-        if [ "$recording_audio" = 'true' ] &&
-           [ "$(printf '%s' "$audio_input_channels" | sed 's/-channels[[:space:]]//')" -le '2' ]
+        if [ "$recording_audio" = 'true' ] && [ "$audio_input_channels" -le '2' ]
         then
             audio_channel_layout='-channel_layout stereo'
         fi

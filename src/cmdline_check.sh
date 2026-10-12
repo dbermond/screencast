@@ -487,6 +487,23 @@ check_cmd_line() {
         # check if the detected ffmpeg build has support for a lossless audio encoder and decoder for recording
         check_lossless_component audiocodec
         
+        # check for valid audio input channels
+        if [ "$audio_channels_setted" = 'true' ] &&
+           { ! printf '%s' "$audio_input_channels" | grep -Eq '^[0-9]+$' || [ ! "$audio_input_channels" -gt '0' ]; }
+        then
+            exit_program "'${audio_input_channels}' is not a valid number of audio input channels"
+        fi
+        
+        # set audio channel layout of audio input if needed
+        if [ "$audio_input_channels" -eq '2' ]
+        then
+            audio_channel_layout='-channel_layout stereo'
+        elif [ "$audio_input_channels" -gt '2' ]
+        then
+            audio_channel_layout="-channel_layout ${audio_input_channels}c"
+            audio_output_channels="$audio_input_channels"
+        fi
+        
         # check for ALSA support in ffmpeg
         if check_component alsa demuxer
         then
@@ -516,6 +533,15 @@ check_cmd_line() {
                 esac
             fi
             
+            # ALSA demuxer replaced the -channels option for -ch_layout (ffmpeg 8.0 / git master N-118389-gc6194b50b1 or greater)
+            # https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/c6194b50b1b4001db23e8debab4ac4444e794f90
+            if check_minimum_ffmpeg_version '8.0' '118389'
+            then
+                audio_input_options="${audio_input_options} -ch_layout ${audio_input_channels}c"
+            else
+                audio_input_options="${audio_input_options} -channels ${audio_input_channels} ${audio_channel_layout}"
+            fi
+            
         # check for PulseAudio support in ffmpeg (fallback mode if ALSA is not available)
         elif check_component pulse demuxer
         then
@@ -523,6 +549,7 @@ check_cmd_line() {
             if check_component pulse demuxer
             then
                 audio_input_options="$(printf '%s' "$audio_input_options" | sed 's/alsa/pulse/')"
+                audio_input_options="${audio_input_options} -channels ${audio_input_channels} ${audio_channel_layout}"
                 
                 print_warn 'the detected ffmpeg build has no ALSA support, falling back to PulseAudio backend'
             fi
@@ -561,25 +588,7 @@ check_cmd_line() {
             
         fi # end: else clause of: if check_component alsa demuxer
         
-        # check for valid audio input channels
-        if [ "$audio_channels_setted" = 'true' ] &&
-           { ! printf '%s' "$audio_input_channels" | grep -Eq '^[0-9]+$' || [ ! "$audio_input_channels" -gt '0' ]; }
-        then
-            exit_program "'${audio_input_channels}' is not a valid number of audio input channels"
-        fi
-        
-        # set audio channel layout of audio input if needed
-        if [ "$audio_input_channels" -eq '2' ]
-        then
-            audio_channel_layout='-channel_layout stereo'
-        elif [ "$audio_input_channels" -gt '2' ]
-        then
-            unset -v audio_channel_layout
-            audio_output_channels="$audio_input_channels"
-        fi
-        
         audio_input="-i ${audio_input}" # add ffmpeg '-i' option to audio input
-        audio_input_channels="-channels ${audio_input_channels}" # add ffmpeg '-channels' option to audio input channels
         
         # audio encoder checks and settings
         [ "$audio_encoder" != 'none' ] && "audiocodec_settings_${audio_encoder}"
