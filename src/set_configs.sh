@@ -127,7 +127,14 @@ set_watermark() {
         
         if create_watermark
         then
-            ff_watermark_options="-framerate ${video_rate} -thread_queue_size ${queue_size} -i ${wmark_image}"
+            # add -thread_queue_size input option if ffmpeg < 9.1 (or git master < N-126735-g8d8c3fd813)
+            # https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/8d8c3fd81383ba9d6bde08b00efb5212bc24bc02
+            if ! check_minimum_ffmpeg_version '9.1' '126735'
+            then
+                ff_watermark_options="-thread_queue_size ${queue_size}"
+            fi
+            
+            ff_watermark_options="${ff_watermark_options:+"${ff_watermark_options} "}-framerate ${video_rate} -i ${wmark_image}"
             
             watermark_vfilter="overlay=${watermark_position}"
             

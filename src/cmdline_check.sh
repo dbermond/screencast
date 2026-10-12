@@ -461,6 +461,15 @@ check_cmd_line() {
         
     fi # end: [ "$saving_output" = 'true' ]
     
+    # add -thread_queue_size input option if ffmpeg < 9.1 (or git master < N-126735-g8d8c3fd813)
+    # https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/8d8c3fd81383ba9d6bde08b00efb5212bc24bc02
+    if ! check_minimum_ffmpeg_version '9.1' '126735'
+    then
+        audio_input_options="$(printf '%s' "${audio_input_options} -thread_queue_size ${queue_size}")"
+        video_input_options="$(printf '%s' "${video_input_options} -thread_queue_size ${queue_size}")"
+        webcam_input_options="$(printf '%s' "${webcam_input_options} -thread_queue_size ${queue_size}")"
+    fi
+    
     # check for the lossless ffmpeg components when needed
     if [ "$streaming" = 'false' ] &&
        {

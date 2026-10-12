@@ -90,7 +90,7 @@ volume_factor='1.0'          # volume increase effect factor (0.0/1.0 disable)
 audio_input_channels='1'
 audio_output_channels='2'
 audio_channel_layout='-channel_layout mono' # audio channel layout for inputs
-audio_input_options="-f alsa -thread_queue_size ${queue_size} -sample_rate 48000"
+audio_input_options='-f alsa -sample_rate 48000'
 
 # video settings
 video_encoder='x264'               # video encoder
@@ -103,7 +103,7 @@ corner_padding='10'                # video corner padding (for watermark and web
 display=':0.0'                     # display (and screen) number(s) ($DISPLAY environment variable)
 border='2'                         # tickness of the screen region border delimiter (0 to disable border)
 border_options="-show_region 1 -region_border ${border}"
-video_input_options="-f x11grab -thread_queue_size ${queue_size} -probesize 20M"
+video_input_options='-f x11grab -probesize 20M'
 hwencoder='false'
 nvenc_default_hwdevice='0'
 qsv_default_hwdevice='hw'

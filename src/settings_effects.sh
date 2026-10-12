@@ -34,7 +34,7 @@ watermark_position='bottomright'
     # 550,350 - centralized
 
 # webcam settings
-webcam_input_options="-f video4linux2 -thread_queue_size ${queue_size} -probesize 10M"
+webcam_input_options='-f video4linux2 -probesize 10M'
 webcam_size='320x240'
 webcam_input='/dev/video0'
 webcam_position='topright'
