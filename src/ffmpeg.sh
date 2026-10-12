@@ -172,7 +172,7 @@ check_minimum_ffmpeg_version() {
     
     ffmpeg_version="$(ffmpeg -version | awk '/Copyright/ { print $3 }')"
     
-    if printf '%s' "$ffmpeg_version" | grep -Eq '^[0-9]+\..*'
+    if printf '%s' "$ffmpeg_version" | grep -Eq '^n?[0-9]+\..*'
     then
         if [ "$(printf '%s\n' "$1" "$ffmpeg_version" | sort | head -n1)" != "$1" ]
         then
