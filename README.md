@@ -126,7 +126,8 @@ ALSA audio input device name. Make sure to have a working ALSA configuration, fo
 - Some special values that can be used:
     - `none`: audio will be disabled (video without audio, only video stream will be present)
     - `default`: the default ALSA device
-    - `pulse`: the default PulseAudio device
+    - `pipewire`: the default PipeWire audio device (depeding on system configuration)
+    - `pulse`: the default PulseAudio device (depeding on system configuration)
 
 default: `default`
 

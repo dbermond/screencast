@@ -511,7 +511,7 @@ check_cmd_line() {
             if [ "$audio_input_setted" = 'true' ]
             then
                 case "$audio_input" in
-                    pulse|default)
+                    pipewire|pulse|default)
                         :
                         ;;
                     # do not allow 'null' ALSA input device

@@ -67,7 +67,7 @@ _screencast() {
             return 0
             ;;
         -i|--audio-input)
-            local audio_inputs='default pulse none'
+            local audio_inputs='default pipewire pulse none'
             COMPREPLY=( $(compgen -W "$audio_inputs" -- $cur) )
             return 0
             ;;
