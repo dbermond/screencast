@@ -153,9 +153,10 @@ show_help() {
 	  -V, --version             version information
 	
 	When using hardware encoder, the device is specific to each hardware type, and defaults to:
-	  nvenc : ${nvenc_default_hwdevice}
-	  qsv   : ${qsv_default_hwdevice}
-	  vaapi : ${vaapi_default_hwdevice}
+	  nvenc  : ${nvenc_default_hwdevice}
+	  qsv    : ${qsv_default_hwdevice}
+	  vaapi  : ${vaapi_default_hwdevice}
+	  vulkan : ${vulkan_default_hwdevice}
 	
 	For further help run 'man screencast'
 __EOF__
